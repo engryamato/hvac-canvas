@@ -285,6 +285,14 @@ export default function DrawingCanvasWithFAB() {
     setHudPosition(null);
   }, []);
 
+  // Reset all drawing-related state to idle
+  const resetDrawingState = useCallback(() => {
+    setPendingStartPoint(null);
+    setDraftEnd(null);
+    setSnapTarget(null);
+    setDrawingPhase('idle');
+  }, []);
+
   // Clear snap target when exiting draw mode
   useEffect(() => {
     if (!isDrawActive) {
@@ -298,10 +306,7 @@ export default function DrawingCanvasWithFAB() {
 
       // Escape key: Cancel current drawing operation
       if (e.key === "Escape" && drawingPhase === 'waiting-for-end') {
-        setPendingStartPoint(null);
-        setDraftEnd(null);
-        setSnapTarget(null);
-        setDrawingPhase('idle');
+        resetDrawingState();
       }
 
       // Delete/Backspace key: Delete selected line
@@ -320,7 +325,7 @@ export default function DrawingCanvasWithFAB() {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [isDrawActive, selectedId, drawingPhase, deleteLine]);
+  }, [isDrawActive, selectedId, drawingPhase, deleteLine, resetDrawingState]);
 
   const render = useCallback(() => {
     const c = canvasRef.current; if (!c) return;
@@ -482,10 +487,7 @@ export default function DrawingCanvasWithFAB() {
         }
 
         // Reset to idle
-        setPendingStartPoint(null);
-        setDraftEnd(null);
-        setSnapTarget(null);
-        setDrawingPhase('idle');
+        resetDrawingState();
       }
     } else {
       // Selection mode
@@ -505,7 +507,7 @@ export default function DrawingCanvasWithFAB() {
 
       render();
     }
-  }, [isDrawActive, drawingPhase, pendingStartPoint, draftEnd, lines, defaultWidth, defaultColor, hitTest, render, calculateHudPosition]);
+  }, [isDrawActive, drawingPhase, pendingStartPoint, draftEnd, lines, defaultWidth, defaultColor, hitTest, render, calculateHudPosition, resetDrawingState]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
