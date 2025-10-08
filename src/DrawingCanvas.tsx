@@ -171,6 +171,16 @@ const SELECTION_HIGHLIGHT_WIDTH = 8;  // Additional width for selection highligh
 const HIT_TEST_MIN_TOLERANCE = 6;    // Minimum hit test tolerance in pixels
 const HIT_TEST_WIDTH_FACTOR = 1.5;   // Factor to calculate tolerance from line width
 
+/**
+ * Resolves the final point to use, applying snap if available
+ * @param rawPoint - The raw cursor position
+ * @param snapTarget - The snap target (if any)
+ * @returns The final point (snapped or raw)
+ */
+function resolveSnapPoint(rawPoint: Pt, snapTarget: SnapTarget | null): Pt {
+  return snapTarget ? snapTarget.point : rawPoint;
+}
+
 function findSnapTarget(
   cursor: Pt,
   lines: Line[],
@@ -458,7 +468,7 @@ export default function DrawingCanvasWithFAB() {
       if (drawingPhase === 'idle') {
         // First click: Set start point
         const snap = findSnapTarget(rawPos, lines);
-        const startPos = snap ? snap.point : rawPos;
+        const startPos = resolveSnapPoint(rawPos, snap);
 
         setSelectedId(null);
         setHudPosition(null);
@@ -525,7 +535,7 @@ export default function DrawingCanvasWithFAB() {
 
     // Only update draft end point when actively drawing (waiting for end point)
     if (drawingPhase === 'waiting-for-end' && pendingStartPoint) {
-      const endPos = snap ? snap.point : rawPos;
+      const endPos = resolveSnapPoint(rawPos, snap);
       setDraftEnd(endPos);
     }
   }, [isDrawActive, drawingPhase, pendingStartPoint, lines]);
