@@ -165,6 +165,12 @@ const SNAP_INDICATOR_RADIUS = 7;
 const SNAP_INDICATOR_COLOR = '#06B6D4'; // cyan
 const SNAP_INDICATOR_FILL = 'rgba(6, 182, 212, 0.3)';
 
+// Drawing interaction constants
+const MIN_LINE_LENGTH = 2;           // Minimum line length in pixels to create
+const SELECTION_HIGHLIGHT_WIDTH = 8;  // Additional width for selection highlight
+const HIT_TEST_MIN_TOLERANCE = 6;    // Minimum hit test tolerance in pixels
+const HIT_TEST_WIDTH_FACTOR = 1.5;   // Factor to calculate tolerance from line width
+
 function findSnapTarget(
   cursor: Pt,
   lines: Line[],
@@ -332,7 +338,7 @@ export default function DrawingCanvasWithFAB() {
       ctx.stroke();
 
       if (ln.id === selectedId) {
-        ctx.lineWidth = ln.width + 8;
+        ctx.lineWidth = ln.width + SELECTION_HIGHLIGHT_WIDTH;
         ctx.strokeStyle = "rgba(37, 99, 235, 0.15)";
         ctx.beginPath();
         ctx.moveTo(ln.a.x, ln.a.y);
@@ -371,7 +377,7 @@ export default function DrawingCanvasWithFAB() {
     let best: { id: string; d: number } | null = null;
     for (const ln of lines) {
       const d = distancePointToSegment(p, ln.a, ln.b);
-      const tol = Math.max(6, ln.width / 1.5);
+      const tol = Math.max(HIT_TEST_MIN_TOLERANCE, ln.width / HIT_TEST_WIDTH_FACTOR);
       if (d <= tol && (!best || d < best.d)) best = { id: ln.id, d };
     }
     return best?.id ?? null;
@@ -457,7 +463,7 @@ export default function DrawingCanvasWithFAB() {
         setDrawingPhase('waiting-for-end');
       } else if (drawingPhase === 'waiting-for-end' && pendingStartPoint && draftEnd) {
         // Second click: Create line
-        if (dist(pendingStartPoint, draftEnd) > 2) {
+        if (dist(pendingStartPoint, draftEnd) > MIN_LINE_LENGTH) {
           const newLine: Line = {
             id: uid(),
             a: pendingStartPoint,  // Already snapped if applicable
