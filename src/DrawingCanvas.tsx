@@ -530,20 +530,19 @@ export default function DrawingCanvasWithFAB() {
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
 
-    // Enable snapping in draw mode (both idle and waiting-for-end phases)
+    // Only process snapping when in draw mode
     if (!isDrawActive) return;
 
-    const rawPos = getPointerPos(c, e.nativeEvent as any);
+    const cursorPos = getPointerPos(c, e.nativeEvent as any);
 
-    // Check for snap target
-    const snap = findSnapTarget(rawPos, lines);
-
-    // Update snap indicator for both hover (idle) and active drawing (waiting-for-end)
+    // Find and update snap target for visual feedback
+    const snap = findSnapTarget(cursorPos, lines);
     setSnapTarget(snap);
 
-    // Only update draft end point when actively drawing (waiting for end point)
-    if (drawingPhase === 'waiting-for-end' && pendingStartPoint) {
-      const endPos = resolveSnapPoint(rawPos, snap);
+    // Update draft line endpoint when actively drawing
+    const isActivelyDrawing = drawingPhase === 'waiting-for-end' && pendingStartPoint;
+    if (isActivelyDrawing) {
+      const endPos = resolveSnapPoint(cursorPos, snap);
       setDraftEnd(endPos);
     }
   }, [isDrawActive, drawingPhase, pendingStartPoint, lines]);
