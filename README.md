@@ -123,9 +123,17 @@ The tool automatically snaps to existing lines when drawing:
 3. **Any point on line** (15px threshold) - Base priority
 
 ### Visual Feedback
-- **Cyan dot** appears at snap point
+- **Cyan dot** appears at snap point **immediately** when entering draw mode
+- Snap indicator visible **before** clicking (hover snap)
 - Cursor automatically aligns to snap point
 - Line connects precisely to snap location
+
+### How It Works
+1. Press **D** to enter drawing mode
+2. **Hover** near existing lines - cyan snap indicator appears automatically
+3. Click to place starting point (snaps to nearest point)
+4. Move to end position - snap indicator continues to guide you
+5. Click to complete the line
 
 ---
 

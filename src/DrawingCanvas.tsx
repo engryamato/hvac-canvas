@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 
 /**
  * Drawing Canvas + FAB — Straight-Line (HVAC prep) Edition — FULL SCREEN
@@ -235,11 +235,13 @@ function findSnapTarget(
 export default function DrawingCanvasWithFAB() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const hudRef = useRef<HTMLDivElement | null>(null);
 
   // Tool/UI state
   const [isDrawActive, setIsDrawActive] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hudPosition, setHudPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Click-click drawing state
   const [drawingPhase, setDrawingPhase] = useState<DrawingPhase>('idle');
@@ -274,7 +276,15 @@ export default function DrawingCanvasWithFAB() {
   const deleteLine = useCallback((lineId: string) => {
     setLines(prev => prev.filter(line => line.id !== lineId));
     setSelectedId(null);
+    setHudPosition(null);
   }, []);
+
+  // Clear snap target when exiting draw mode
+  useEffect(() => {
+    if (!isDrawActive) {
+      setSnapTarget(null);
+    }
+  }, [isDrawActive]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -367,6 +377,66 @@ export default function DrawingCanvasWithFAB() {
     return best?.id ?? null;
   }, [lines]);
 
+  /**
+   * Calculate optimal position for Width HUD based on selected line
+   * Strategy: Position above line midpoint, flip to below if near top edge
+   *
+   * Edge Padding Research:
+   * - Floating UI default: 5px (shift middleware)
+   * - MUI Base: 8px margin for popovers
+   * - Industry standard: 8px for floating UI elements
+   * Using 8px as it represents the modern design system standard
+   */
+  const calculateHudPosition = useCallback((lineId: string): { x: number; y: number } | null => {
+    const line = lines.find(l => l.id === lineId);
+    if (!line) return null;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const hud = hudRef.current;
+
+    // Get canvas bounds (accounts for sidebar)
+    const canvasBounds = canvas.getBoundingClientRect();
+
+    // Calculate line midpoint in canvas coordinates
+    const midX = (line.a.x + line.b.x) / 2;
+    const midY = (line.a.y + line.b.y) / 2;
+
+    // Get HUD dimensions (use fallback estimates if not yet rendered)
+    const hudWidth = hud?.offsetWidth || 450; // Fallback estimate for new controls
+    const hudHeight = hud?.offsetHeight || 50; // Fallback estimate
+
+    // Constants (based on design system research)
+    const VERTICAL_OFFSET = 16; // Space between line and HUD
+    const EDGE_PADDING = 8; // Industry standard (Floating UI, MUI Base)
+    const LINE_CLEARANCE = line.width / 2; // Half of line width
+
+    // Calculate initial position (above line, centered horizontally)
+    let x = midX - hudWidth / 2;
+    let y = midY - LINE_CLEARANCE - VERTICAL_OFFSET - hudHeight;
+
+    // Horizontal boundary checks
+    if (x < EDGE_PADDING) {
+      x = EDGE_PADDING; // Too far left, align to left edge
+    } else if (x + hudWidth > canvasBounds.width - EDGE_PADDING) {
+      x = canvasBounds.width - hudWidth - EDGE_PADDING; // Too far right
+    }
+
+    // Vertical boundary check - flip to below if too close to top
+    if (y < EDGE_PADDING) {
+      // Position below the line instead
+      y = midY + LINE_CLEARANCE + VERTICAL_OFFSET;
+
+      // If still doesn't fit, clamp to edge
+      if (y + hudHeight > canvasBounds.height - EDGE_PADDING) {
+        y = EDGE_PADDING; // Fallback: position at top edge
+      }
+    }
+
+    return { x, y };
+  }, [lines]);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
     c.setPointerCapture(e.pointerId);
@@ -380,6 +450,7 @@ export default function DrawingCanvasWithFAB() {
         const startPos = snap ? snap.point : rawPos;
 
         setSelectedId(null);
+        setHudPosition(null);
         setPendingStartPoint(startPos);
         setDraftEnd(null);
         setSnapTarget(snap);
@@ -396,6 +467,12 @@ export default function DrawingCanvasWithFAB() {
           };
           setLines(prev => [...prev, newLine]);
           setSelectedId(newLine.id);
+
+          // Calculate HUD position for newly created line
+          setTimeout(() => {
+            const position = calculateHudPosition(newLine.id);
+            setHudPosition(position);
+          }, 0);
         }
 
         // Reset to idle
@@ -408,24 +485,41 @@ export default function DrawingCanvasWithFAB() {
       // Selection mode
       const id = hitTest(rawPos);
       setSelectedId(id);
+
+      // Calculate HUD position when line is selected
+      if (id) {
+        // Use setTimeout to ensure HUD is rendered before measuring
+        setTimeout(() => {
+          const position = calculateHudPosition(id);
+          setHudPosition(position);
+        }, 0);
+      } else {
+        setHudPosition(null);
+      }
+
       render();
     }
-  }, [isDrawActive, drawingPhase, pendingStartPoint, draftEnd, lines, defaultWidth, defaultColor, hitTest, render]);
+  }, [isDrawActive, drawingPhase, pendingStartPoint, draftEnd, lines, defaultWidth, defaultColor, hitTest, render, calculateHudPosition]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
 
-    // Only show preview when waiting for end point
-    if (!isDrawActive || drawingPhase !== 'waiting-for-end' || !pendingStartPoint) return;
+    // Enable snapping in draw mode (both idle and waiting-for-end phases)
+    if (!isDrawActive) return;
 
     const rawPos = getPointerPos(c, e.nativeEvent as any);
 
-    // Check for snap target at end point
+    // Check for snap target
     const snap = findSnapTarget(rawPos, lines);
-    const endPos = snap ? snap.point : rawPos;
 
-    setDraftEnd(endPos);
-    setSnapTarget(snap); // Update snap indicator in real-time
+    // Update snap indicator for both hover (idle) and active drawing (waiting-for-end)
+    setSnapTarget(snap);
+
+    // Only update draft end point when actively drawing (waiting for end point)
+    if (drawingPhase === 'waiting-for-end' && pendingStartPoint) {
+      const endPos = snap ? snap.point : rawPos;
+      setDraftEnd(endPos);
+    }
   }, [isDrawActive, drawingPhase, pendingStartPoint, lines]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
@@ -435,10 +529,51 @@ export default function DrawingCanvasWithFAB() {
     // This handler just cleans up pointer capture
   }, []);
 
-  const updateSelectedWidth = (fn: (w: number) => number) => {
+  const updateSelectedWidth = useCallback((fn: (w: number) => number) => {
     if (!selectedId) return;
     setLines(prev => prev.map(l => l.id === selectedId ? { ...l, width: fn(l.width) } : l));
-  };
+  }, [selectedId]);
+
+  // Width input handlers for increment/decrement controls
+  const incrementWidth = useCallback(() => {
+    updateSelectedWidth(w => Math.min(60, w + 1));
+  }, [updateSelectedWidth]);
+
+  const decrementWidth = useCallback(() => {
+    updateSelectedWidth(w => Math.max(1, w - 1));
+  }, [updateSelectedWidth]);
+
+  const handleWidthInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Allow empty string for user to clear and retype
+    if (value === '') {
+      return;
+    }
+
+    // Parse as integer
+    const numValue = parseInt(value, 10);
+
+    // Validate: must be a number and within range
+    if (!isNaN(numValue) && numValue >= 1 && numValue <= 60) {
+      updateSelectedWidth(() => numValue);
+    }
+  }, [updateSelectedWidth]);
+
+  const handleWidthInputBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseInt(value, 10);
+
+    // If empty or invalid, reset to current width
+    if (value === '' || isNaN(numValue)) {
+      const currentWidth = lines.find(l => l.id === selectedId)?.width ?? 8;
+      e.target.value = currentWidth.toString();
+    } else {
+      // Clamp to valid range
+      const clampedValue = Math.max(1, Math.min(60, numValue));
+      updateSelectedWidth(() => clampedValue);
+    }
+  }, [updateSelectedWidth, selectedId, lines]);
 
   // Calculate line summary for sidebar table
   const lineSummary = useMemo((): LineSummaryRow[] => {
@@ -476,7 +611,27 @@ export default function DrawingCanvasWithFAB() {
     return rows.sort((a, b) => a.width - b.width);
   }, [lines, currentScale]);
 
-  useEffect(() => { render(); }, [lines, pendingStartPoint, draftEnd, selectedId, render]);
+  useEffect(() => { render(); }, [lines, pendingStartPoint, draftEnd, selectedId, snapTarget, render]);
+
+  // Recalculate HUD position when lines change (e.g., width updated)
+  useEffect(() => {
+    if (!selectedId) return;
+    const position = calculateHudPosition(selectedId);
+    setHudPosition(position);
+  }, [selectedId, lines, calculateHudPosition]);
+
+  // Recalculate HUD position on window resize
+  useEffect(() => {
+    if (!selectedId) return;
+
+    const handleResize = () => {
+      const position = calculateHudPosition(selectedId);
+      setHudPosition(position);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [selectedId, calculateHudPosition]);
 
   const sidebarWidth = sidebarCollapsed ? 0 : 320;
 
@@ -501,21 +656,60 @@ export default function DrawingCanvasWithFAB() {
           role="img"
         />
 
-        {selectedId && (
-          <div className="absolute top-3 left-3 rounded-2xl shadow-md border border-neutral-200 bg-white/95 backdrop-blur px-4 py-2 flex items-center gap-3">
+        {selectedId && hudPosition && (
+          <div
+            ref={hudRef}
+            className="absolute rounded-2xl shadow-md border border-neutral-200 bg-white/95 backdrop-blur px-4 py-2 flex items-center gap-3 transition-all duration-200 ease-out"
+            style={{
+              left: `${hudPosition.x}px`,
+              top: `${hudPosition.y}px`,
+            }}
+          >
             <span className="text-sm text-neutral-700">Width</span>
+
+            {/* Decrement Button */}
+            <button
+              type="button"
+              onClick={decrementWidth}
+              disabled={lines.find(l => l.id === selectedId)?.width === 1}
+              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Decrease width"
+              title="Decrease width (or press [)"
+            >
+              <ChevronDown className="w-4 h-4 text-neutral-700" />
+            </button>
+
+            {/* Number Input Field */}
             <input
-              type="range"
+              type="number"
               min={1}
               max={60}
               value={lines.find(l => l.id === selectedId)?.width ?? 8}
-              onChange={(e) => updateSelectedWidth(() => Number(e.target.value))}
-              className="accent-[var(--tech-blue-600)]"
-              aria-label="Selected line width"
+              onChange={handleWidthInputChange}
+              onBlur={handleWidthInputBlur}
+              className="w-16 px-2 py-1 text-center text-sm border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)] focus:border-transparent tabular-nums transition-shadow"
+              aria-label="Line width value"
+              title="Enter width (1-60)"
             />
+
+            {/* Increment Button */}
+            <button
+              type="button"
+              onClick={incrementWidth}
+              disabled={lines.find(l => l.id === selectedId)?.width === 60}
+              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Increase width"
+              title="Increase width (or press ])"
+            >
+              <ChevronUp className="w-4 h-4 text-neutral-700" />
+            </button>
+
+            {/* Display unit */}
             <span className="w-10 text-right tabular-nums text-sm text-neutral-800">
               {(lines.find(l => l.id === selectedId)?.width ?? 8)}px
             </span>
+
+            {/* Delete Button */}
             <button
               type="button"
               onClick={() => deleteLine(selectedId)}
