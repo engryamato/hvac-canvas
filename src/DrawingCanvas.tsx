@@ -458,6 +458,44 @@ export default function DrawingCanvasWithFAB() {
     return { x, y };
   }, [lines]);
 
+  // Handle first click in drawing mode - set start point
+  const handleDrawingFirstClick = useCallback((rawPos: Pt) => {
+    const snap = findSnapTarget(rawPos, lines);
+    const startPos = resolveSnapPoint(rawPos, snap);
+
+    setSelectedId(null);
+    setHudPosition(null);
+    setPendingStartPoint(startPos);
+    setDraftEnd(null);
+    setSnapTarget(snap);
+    setDrawingPhase('waiting-for-end');
+  }, [lines]);
+
+  // Handle second click in drawing mode - create line
+  const handleDrawingSecondClick = useCallback(() => {
+    if (!pendingStartPoint || !draftEnd) return;
+
+    if (dist(pendingStartPoint, draftEnd) > MIN_LINE_LENGTH) {
+      const newLine: Line = {
+        id: uid(),
+        a: pendingStartPoint,
+        b: draftEnd,
+        width: defaultWidth,
+        color: defaultColor
+      };
+      setLines(prev => [...prev, newLine]);
+      setSelectedId(newLine.id);
+
+      // Calculate HUD position for newly created line
+      setTimeout(() => {
+        const position = calculateHudPosition(newLine.id);
+        setHudPosition(position);
+      }, 0);
+    }
+
+    resetDrawingState();
+  }, [pendingStartPoint, draftEnd, defaultWidth, defaultColor, calculateHudPosition, resetDrawingState]);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
     c.setPointerCapture(e.pointerId);
@@ -466,38 +504,9 @@ export default function DrawingCanvasWithFAB() {
     if (isDrawActive) {
       // Click-click drawing logic
       if (drawingPhase === 'idle') {
-        // First click: Set start point
-        const snap = findSnapTarget(rawPos, lines);
-        const startPos = resolveSnapPoint(rawPos, snap);
-
-        setSelectedId(null);
-        setHudPosition(null);
-        setPendingStartPoint(startPos);
-        setDraftEnd(null);
-        setSnapTarget(snap);
-        setDrawingPhase('waiting-for-end');
-      } else if (drawingPhase === 'waiting-for-end' && pendingStartPoint && draftEnd) {
-        // Second click: Create line
-        if (dist(pendingStartPoint, draftEnd) > MIN_LINE_LENGTH) {
-          const newLine: Line = {
-            id: uid(),
-            a: pendingStartPoint,  // Already snapped if applicable
-            b: draftEnd,           // Already snapped if applicable
-            width: defaultWidth,
-            color: defaultColor
-          };
-          setLines(prev => [...prev, newLine]);
-          setSelectedId(newLine.id);
-
-          // Calculate HUD position for newly created line
-          setTimeout(() => {
-            const position = calculateHudPosition(newLine.id);
-            setHudPosition(position);
-          }, 0);
-        }
-
-        // Reset to idle
-        resetDrawingState();
+        handleDrawingFirstClick(rawPos);
+      } else if (drawingPhase === 'waiting-for-end') {
+        handleDrawingSecondClick();
       }
     } else {
       // Selection mode
@@ -506,7 +515,6 @@ export default function DrawingCanvasWithFAB() {
 
       // Calculate HUD position when line is selected
       if (id) {
-        // Use setTimeout to ensure HUD is rendered before measuring
         setTimeout(() => {
           const position = calculateHudPosition(id);
           setHudPosition(position);
@@ -517,7 +525,7 @@ export default function DrawingCanvasWithFAB() {
 
       render();
     }
-  }, [isDrawActive, drawingPhase, pendingStartPoint, draftEnd, lines, defaultWidth, defaultColor, hitTest, render, calculateHudPosition, resetDrawingState]);
+  }, [isDrawActive, drawingPhase, handleDrawingFirstClick, handleDrawingSecondClick, hitTest, render, calculateHudPosition]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
