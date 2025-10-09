@@ -248,6 +248,47 @@ function findSnapTarget(
   );
 }
 
+/**
+ * Custom hook for managing drawing state
+ * Consolidates all drawing-related state into a single hook
+ */
+function useDrawingState() {
+  const [phase, setPhase] = useState<DrawingPhase>('idle');
+  const [startPoint, setStartPoint] = useState<Pt | null>(null);
+  const [endPoint, setEndPoint] = useState<Pt | null>(null);
+  const [snapTarget, setSnapTarget] = useState<SnapTarget | null>(null);
+
+  const reset = useCallback(() => {
+    setStartPoint(null);
+    setEndPoint(null);
+    setSnapTarget(null);
+    setPhase('idle');
+  }, []);
+
+  const startDrawing = useCallback((point: Pt, snap: SnapTarget | null) => {
+    setStartPoint(point);
+    setEndPoint(null);
+    setSnapTarget(snap);
+    setPhase('waiting-for-end');
+  }, []);
+
+  const updateEndPoint = useCallback((point: Pt, snap: SnapTarget | null) => {
+    setEndPoint(point);
+    setSnapTarget(snap);
+  }, []);
+
+  return {
+    phase,
+    startPoint,
+    endPoint,
+    snapTarget,
+    reset,
+    startDrawing,
+    updateEndPoint,
+    setSnapTarget
+  };
+}
+
 export default function DrawingCanvasWithFAB() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -259,11 +300,8 @@ export default function DrawingCanvasWithFAB() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hudPosition, setHudPosition] = useState<{ x: number; y: number } | null>(null);
 
-  // Click-click drawing state
-  const [drawingPhase, setDrawingPhase] = useState<DrawingPhase>('idle');
-  const [pendingStartPoint, setPendingStartPoint] = useState<Pt | null>(null);
-  const [draftEnd, setDraftEnd] = useState<Pt | null>(null);
-  const [snapTarget, setSnapTarget] = useState<SnapTarget | null>(null);
+  // Drawing state (consolidated via custom hook)
+  const drawingState = useDrawingState();
 
   // Scale management state
   const [currentScale, setCurrentScale] = useState<Scale>({
@@ -295,28 +333,20 @@ export default function DrawingCanvasWithFAB() {
     setHudPosition(null);
   }, []);
 
-  // Reset all drawing-related state to idle
-  const resetDrawingState = useCallback(() => {
-    setPendingStartPoint(null);
-    setDraftEnd(null);
-    setSnapTarget(null);
-    setDrawingPhase('idle');
-  }, []);
-
   // Clear snap target when exiting draw mode
   useEffect(() => {
     if (!isDrawActive) {
-      setSnapTarget(null);
+      drawingState.setSnapTarget(null);
     }
-  }, [isDrawActive]);
+  }, [isDrawActive, drawingState]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "d") setIsDrawActive(v => !v);
 
       // Escape key: Cancel current drawing operation
-      if (e.key === "Escape" && drawingPhase === 'waiting-for-end') {
-        resetDrawingState();
+      if (e.key === "Escape" && drawingState.phase === 'waiting-for-end') {
+        drawingState.reset();
       }
 
       // Delete/Backspace key: Delete selected line
@@ -335,7 +365,7 @@ export default function DrawingCanvasWithFAB() {
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [isDrawActive, selectedId, drawingPhase, deleteLine, resetDrawingState]);
+  }, [isDrawActive, selectedId, drawingState, deleteLine]);
 
   const render = useCallback(() => {
     const c = canvasRef.current; if (!c) return;
@@ -363,9 +393,9 @@ export default function DrawingCanvasWithFAB() {
     }
 
     // Draw snap indicator
-    if (snapTarget) {
+    if (drawingState.snapTarget) {
       ctx.beginPath();
-      ctx.arc(snapTarget.point.x, snapTarget.point.y, SNAP_INDICATOR_RADIUS, 0, Math.PI * 2);
+      ctx.arc(drawingState.snapTarget.point.x, drawingState.snapTarget.point.y, SNAP_INDICATOR_RADIUS, 0, Math.PI * 2);
       ctx.fillStyle = SNAP_INDICATOR_FILL;
       ctx.fill();
       ctx.strokeStyle = SNAP_INDICATOR_COLOR;
@@ -374,17 +404,17 @@ export default function DrawingCanvasWithFAB() {
     }
 
     // Draw rubber-band preview (click-click mode)
-    if (isDrawActive && drawingPhase === 'waiting-for-end' && pendingStartPoint && draftEnd) {
+    if (isDrawActive && drawingState.phase === 'waiting-for-end' && drawingState.startPoint && drawingState.endPoint) {
       ctx.setLineDash([8, 6]);
       ctx.lineWidth = defaultWidth;
       ctx.strokeStyle = "#64748B";
       ctx.beginPath();
-      ctx.moveTo(pendingStartPoint.x, pendingStartPoint.y);
-      ctx.lineTo(draftEnd.x, draftEnd.y);
+      ctx.moveTo(drawingState.startPoint.x, drawingState.startPoint.y);
+      ctx.lineTo(drawingState.endPoint.x, drawingState.endPoint.y);
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  }, [lines, selectedId, isDrawActive, drawingPhase, pendingStartPoint, draftEnd, defaultWidth, snapTarget]);
+  }, [lines, selectedId, isDrawActive, drawingState, defaultWidth]);
 
   useEffect(() => { render(); }, [render]);
 
@@ -465,21 +495,18 @@ export default function DrawingCanvasWithFAB() {
 
     setSelectedId(null);
     setHudPosition(null);
-    setPendingStartPoint(startPos);
-    setDraftEnd(null);
-    setSnapTarget(snap);
-    setDrawingPhase('waiting-for-end');
-  }, [lines]);
+    drawingState.startDrawing(startPos, snap);
+  }, [lines, drawingState]);
 
   // Handle second click in drawing mode - create line
   const handleDrawingSecondClick = useCallback(() => {
-    if (!pendingStartPoint || !draftEnd) return;
+    if (!drawingState.startPoint || !drawingState.endPoint) return;
 
-    if (dist(pendingStartPoint, draftEnd) > MIN_LINE_LENGTH) {
+    if (dist(drawingState.startPoint, drawingState.endPoint) > MIN_LINE_LENGTH) {
       const newLine: Line = {
         id: uid(),
-        a: pendingStartPoint,
-        b: draftEnd,
+        a: drawingState.startPoint,
+        b: drawingState.endPoint,
         width: defaultWidth,
         color: defaultColor
       };
@@ -493,8 +520,8 @@ export default function DrawingCanvasWithFAB() {
       }, 0);
     }
 
-    resetDrawingState();
-  }, [pendingStartPoint, draftEnd, defaultWidth, defaultColor, calculateHudPosition, resetDrawingState]);
+    drawingState.reset();
+  }, [drawingState, defaultWidth, defaultColor, calculateHudPosition]);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
@@ -503,9 +530,9 @@ export default function DrawingCanvasWithFAB() {
 
     if (isDrawActive) {
       // Click-click drawing logic
-      if (drawingPhase === 'idle') {
+      if (drawingState.phase === 'idle') {
         handleDrawingFirstClick(rawPos);
-      } else if (drawingPhase === 'waiting-for-end') {
+      } else if (drawingState.phase === 'waiting-for-end') {
         handleDrawingSecondClick();
       }
     } else {
@@ -525,7 +552,7 @@ export default function DrawingCanvasWithFAB() {
 
       render();
     }
-  }, [isDrawActive, drawingPhase, handleDrawingFirstClick, handleDrawingSecondClick, hitTest, render, calculateHudPosition]);
+  }, [isDrawActive, drawingState, handleDrawingFirstClick, handleDrawingSecondClick, hitTest, render, calculateHudPosition]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
@@ -537,15 +564,15 @@ export default function DrawingCanvasWithFAB() {
 
     // Find and update snap target for visual feedback
     const snap = findSnapTarget(cursorPos, lines);
-    setSnapTarget(snap);
+    drawingState.setSnapTarget(snap);
 
     // Update draft line endpoint when actively drawing
-    const isActivelyDrawing = drawingPhase === 'waiting-for-end' && pendingStartPoint;
+    const isActivelyDrawing = drawingState.phase === 'waiting-for-end' && drawingState.startPoint;
     if (isActivelyDrawing) {
       const endPos = resolveSnapPoint(cursorPos, snap);
-      setDraftEnd(endPos);
+      drawingState.updateEndPoint(endPos, snap);
     }
-  }, [isDrawActive, drawingPhase, pendingStartPoint, lines]);
+  }, [isDrawActive, drawingState, lines]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
@@ -636,7 +663,7 @@ export default function DrawingCanvasWithFAB() {
     return rows.sort((a, b) => a.width - b.width);
   }, [lines, currentScale]);
 
-  useEffect(() => { render(); }, [lines, pendingStartPoint, draftEnd, selectedId, snapTarget, render]);
+  useEffect(() => { render(); }, [lines, drawingState, selectedId, render]);
 
   // Recalculate HUD position when lines change (e.g., width updated)
   useEffect(() => {
