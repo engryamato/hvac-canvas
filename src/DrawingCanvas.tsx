@@ -27,12 +27,81 @@ const TechBlueTokens = () => (
 type Pt = { x: number; y: number };
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
 
-function getPointerPos(canvas: HTMLCanvasElement, evt: PointerEvent | React.PointerEvent) {
-  const r = canvas.getBoundingClientRect();
-  return { x: evt.clientX - r.left, y: evt.clientY - r.top };
+// Viewport transform type
+type ViewportTransform = {
+  scale: number;
+  offset: Pt;
+};
+
+// Zoom/Pan constants
+const ZOOM_FACTOR = 1.1;           // 10% per wheel tick
+const MIN_ZOOM = 0.1;              // 10% minimum
+const MAX_ZOOM = 10.0;             // 1000% maximum
+
+/**
+ * Convert screen coordinates to canvas coordinates
+ * Accounts for viewport zoom and pan
+ */
+function screenToCanvas(
+  screenX: number,
+  screenY: number,
+  transform: ViewportTransform
+): Pt {
+  return {
+    x: (screenX - transform.offset.x) / transform.scale,
+    y: (screenY - transform.offset.y) / transform.scale
+  };
 }
 
-function setupHiDPICanvas(canvas: HTMLCanvasElement) {
+/**
+ * Convert canvas coordinates to screen coordinates
+ * Accounts for viewport zoom and pan
+ */
+function canvasToScreen(
+  canvasX: number,
+  canvasY: number,
+  transform: ViewportTransform
+): Pt {
+  return {
+    x: canvasX * transform.scale + transform.offset.x,
+    y: canvasY * transform.scale + transform.offset.y
+  };
+}
+
+/**
+ * Apply viewport transform to canvas context
+ * Must be called before any drawing operations
+ */
+function applyViewportTransform(
+  ctx: CanvasRenderingContext2D,
+  transform: ViewportTransform,
+  dpr: number
+): void {
+  ctx.setTransform(
+    transform.scale * dpr,
+    0,
+    0,
+    transform.scale * dpr,
+    transform.offset.x * dpr,
+    transform.offset.y * dpr
+  );
+}
+
+function getPointerPos(
+  canvas: HTMLCanvasElement,
+  evt: PointerEvent | React.PointerEvent,
+  transform: ViewportTransform
+) {
+  const r = canvas.getBoundingClientRect();
+  const screenX = evt.clientX - r.left;
+  const screenY = evt.clientY - r.top;
+  return screenToCanvas(screenX, screenY, transform);
+}
+
+function setupHiDPICanvas(
+  canvas: HTMLCanvasElement,
+  transform: ViewportTransform
+) {
   const dpr = window.devicePixelRatio || 1;
   const { width: cssW, height: cssH } = canvas.getBoundingClientRect();
   const w = Math.max(1, Math.floor(cssW));
@@ -40,7 +109,9 @@ function setupHiDPICanvas(canvas: HTMLCanvasElement) {
   canvas.width = Math.floor(w * dpr);
   canvas.height = Math.floor(h * dpr);
   const ctx = canvas.getContext("2d");
-  if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (ctx) {
+    applyViewportTransform(ctx, transform, dpr);
+  }
 }
 
 // Model
@@ -317,14 +388,19 @@ export default function DrawingCanvasWithFAB() {
   const [defaultWidth, setDefaultWidth] = useState(8);
   const [defaultColor] = useState("#111827");
 
-  useEffect(() => {
-    const c = canvasRef.current, container = containerRef.current;
-    if (!c || !container) return;
-    setupHiDPICanvas(c);
-    const ro = new ResizeObserver(() => { setupHiDPICanvas(c); render(); });
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, []);
+  // Viewport transform state
+  const [viewportScale, setViewportScale] = useState(1.0);
+  const [viewportOffset, setViewportOffset] = useState<Pt>({ x: 0, y: 0 });
+
+  // Pan interaction state (right-click only)
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState<Pt | null>(null);
+  const [panOffsetStart, setPanOffsetStart] = useState<Pt | null>(null);
+
+  // Touch gesture state
+  const [touchStartDistance, setTouchStartDistance] = useState<number | null>(null);
+  const [touchStartScale, setTouchStartScale] = useState(1.0);
+  const [touchStartOffset, setTouchStartOffset] = useState<Pt | null>(null);
 
   // Helper functions
   const deleteLine = useCallback((lineId: string) => {
@@ -362,6 +438,21 @@ export default function DrawingCanvasWithFAB() {
         if (e.key === "[") setDefaultWidth(w => Math.max(1, w - 1));
         if (e.key === "]") setDefaultWidth(w => Math.min(60, w + 1));
       }
+
+      // Zoom shortcuts
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        setViewportScale(s => Math.min(MAX_ZOOM, s * ZOOM_FACTOR));
+      }
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        setViewportScale(s => Math.max(MIN_ZOOM, s / ZOOM_FACTOR));
+      }
+      if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        setViewportScale(1.0);
+        setViewportOffset({ x: 0, y: 0 });
+      }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
@@ -370,7 +461,20 @@ export default function DrawingCanvasWithFAB() {
   const render = useCallback(() => {
     const c = canvasRef.current; if (!c) return;
     const ctx = c.getContext("2d"); if (!ctx) return;
-    ctx.clearRect(0, 0, c.width, c.height);
+
+    const dpr = window.devicePixelRatio || 1;
+    const transform = { scale: viewportScale, offset: viewportOffset };
+
+    // Apply viewport transform
+    applyViewportTransform(ctx, transform, dpr);
+
+    // Clear with transform applied
+    ctx.clearRect(
+      -viewportOffset.x / viewportScale,
+      -viewportOffset.y / viewportScale,
+      c.width / (viewportScale * dpr),
+      c.height / (viewportScale * dpr)
+    );
 
     for (const ln of lines) {
       ctx.lineWidth = ln.width;
@@ -392,20 +496,26 @@ export default function DrawingCanvasWithFAB() {
       }
     }
 
-    // Draw snap indicator
+    // Draw snap indicator (scale size appropriately)
     if (drawingState.snapTarget) {
       ctx.beginPath();
-      ctx.arc(drawingState.snapTarget.point.x, drawingState.snapTarget.point.y, SNAP_INDICATOR_RADIUS, 0, Math.PI * 2);
+      ctx.arc(
+        drawingState.snapTarget.point.x,
+        drawingState.snapTarget.point.y,
+        SNAP_INDICATOR_RADIUS / viewportScale,
+        0,
+        Math.PI * 2
+      );
       ctx.fillStyle = SNAP_INDICATOR_FILL;
       ctx.fill();
       ctx.strokeStyle = SNAP_INDICATOR_COLOR;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2 / viewportScale;
       ctx.stroke();
     }
 
     // Draw rubber-band preview (click-click mode)
     if (isDrawActive && drawingState.phase === 'waiting-for-end' && drawingState.startPoint && drawingState.endPoint) {
-      ctx.setLineDash([8, 6]);
+      ctx.setLineDash([8 / viewportScale, 6 / viewportScale]);
       ctx.lineWidth = defaultWidth;
       ctx.strokeStyle = "#64748B";
       ctx.beginPath();
@@ -414,7 +524,22 @@ export default function DrawingCanvasWithFAB() {
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  }, [lines, selectedId, isDrawActive, drawingState, defaultWidth]);
+  }, [lines, selectedId, isDrawActive, drawingState, defaultWidth, viewportScale, viewportOffset]);
+
+  // Setup canvas and handle resize
+  useEffect(() => {
+    const c = canvasRef.current, container = containerRef.current;
+    if (!c || !container) return;
+    const transform = { scale: viewportScale, offset: viewportOffset };
+    setupHiDPICanvas(c, transform);
+    const ro = new ResizeObserver(() => {
+      const t = { scale: viewportScale, offset: viewportOffset };
+      setupHiDPICanvas(c, t);
+      render();
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [viewportScale, viewportOffset, render]);
 
   useEffect(() => { render(); }, [render]);
 
@@ -451,8 +576,12 @@ export default function DrawingCanvasWithFAB() {
     const canvasBounds = canvas.getBoundingClientRect();
 
     // Calculate line midpoint in canvas coordinates
-    const midX = (line.a.x + line.b.x) / 2;
-    const midY = (line.a.y + line.b.y) / 2;
+    const midCanvasX = (line.a.x + line.b.x) / 2;
+    const midCanvasY = (line.a.y + line.b.y) / 2;
+
+    // Transform to screen coordinates
+    const transform = { scale: viewportScale, offset: viewportOffset };
+    const midScreen = canvasToScreen(midCanvasX, midCanvasY, transform);
 
     // Get HUD dimensions (use fallback estimates if not yet rendered)
     const hudWidth = hud?.offsetWidth || 450; // Fallback estimate for new controls
@@ -461,11 +590,11 @@ export default function DrawingCanvasWithFAB() {
     // Constants (based on design system research)
     const VERTICAL_OFFSET = 16; // Space between line and HUD
     const EDGE_PADDING = 8; // Industry standard (Floating UI, MUI Base)
-    const LINE_CLEARANCE = line.width / 2; // Half of line width
+    const LINE_CLEARANCE = (line.width * viewportScale) / 2; // Scale line width
 
     // Calculate initial position (above line, centered horizontally)
-    let x = midX - hudWidth / 2;
-    let y = midY - LINE_CLEARANCE - VERTICAL_OFFSET - hudHeight;
+    let x = midScreen.x - hudWidth / 2;
+    let y = midScreen.y - LINE_CLEARANCE - VERTICAL_OFFSET - hudHeight;
 
     // Horizontal boundary checks
     if (x < EDGE_PADDING) {
@@ -475,18 +604,18 @@ export default function DrawingCanvasWithFAB() {
     }
 
     // Vertical boundary check - flip to below if too close to top
+    // Account for bottom bar (60px)
+    const maxY = canvasBounds.height - hudHeight - EDGE_PADDING - 60;
     if (y < EDGE_PADDING) {
       // Position below the line instead
-      y = midY + LINE_CLEARANCE + VERTICAL_OFFSET;
-
-      // If still doesn't fit, clamp to edge
-      if (y + hudHeight > canvasBounds.height - EDGE_PADDING) {
-        y = EDGE_PADDING; // Fallback: position at top edge
-      }
+      y = midScreen.y + LINE_CLEARANCE + VERTICAL_OFFSET;
     }
 
+    // Constrain vertically
+    y = Math.max(EDGE_PADDING, Math.min(y, maxY));
+
     return { x, y };
-  }, [lines]);
+  }, [lines, viewportScale, viewportOffset]);
 
   // Handle first click in drawing mode - set start point
   const handleDrawingFirstClick = useCallback((rawPos: Pt) => {
@@ -523,10 +652,29 @@ export default function DrawingCanvasWithFAB() {
     drawingState.reset();
   }, [drawingState, defaultWidth, defaultColor, calculateHudPosition]);
 
+  // Pan mode detection (right-click only)
+  const shouldEnterPanMode = useCallback((e: React.PointerEvent): boolean => {
+    return e.button === 2; // Right mouse button
+  }, []);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
+
+    const transform = { scale: viewportScale, offset: viewportOffset };
+
+    // Check for pan mode (right-click)
+    if (shouldEnterPanMode(e)) {
+      e.preventDefault();
+      setIsPanning(true);
+      const rect = c.getBoundingClientRect();
+      setPanStart({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      setPanOffsetStart({ ...viewportOffset });
+      c.style.cursor = 'grabbing';
+      return;
+    }
+
     c.setPointerCapture(e.pointerId);
-    const rawPos = getPointerPos(c, e.nativeEvent as any);
+    const rawPos = getPointerPos(c, e.nativeEvent as any, transform);
 
     if (isDrawActive) {
       // Click-click drawing logic
@@ -552,15 +700,42 @@ export default function DrawingCanvasWithFAB() {
 
       render();
     }
-  }, [isDrawActive, drawingState, handleDrawingFirstClick, handleDrawingSecondClick, hitTest, render, calculateHudPosition]);
+  }, [
+    isDrawActive,
+    drawingState,
+    handleDrawingFirstClick,
+    handleDrawingSecondClick,
+    hitTest,
+    render,
+    calculateHudPosition,
+    viewportScale,
+    viewportOffset,
+    shouldEnterPanMode
+  ]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
 
+    const rect = c.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+
+    // Handle panning (right-click drag)
+    if (isPanning && panStart && panOffsetStart) {
+      const deltaX = screenX - panStart.x;
+      const deltaY = screenY - panStart.y;
+      setViewportOffset({
+        x: panOffsetStart.x + deltaX,
+        y: panOffsetStart.y + deltaY
+      });
+      return;
+    }
+
     // Only process snapping when in draw mode
     if (!isDrawActive) return;
 
-    const cursorPos = getPointerPos(c, e.nativeEvent as any);
+    const transform = { scale: viewportScale, offset: viewportOffset };
+    const cursorPos = screenToCanvas(screenX, screenY, transform);
 
     // Find and update snap target for visual feedback
     const snap = findSnapTarget(cursorPos, lines);
@@ -572,14 +747,33 @@ export default function DrawingCanvasWithFAB() {
       const endPos = resolveSnapPoint(cursorPos, snap);
       drawingState.updateEndPoint(endPos, snap);
     }
-  }, [isDrawActive, drawingState, lines]);
+  }, [
+    isDrawActive,
+    drawingState,
+    lines,
+    isPanning,
+    panStart,
+    panOffsetStart,
+    viewportScale,
+    viewportOffset
+  ]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     const c = canvasRef.current; if (!c) return;
+
+    // Handle pan end
+    if (isPanning) {
+      setIsPanning(false);
+      setPanStart(null);
+      setPanOffsetStart(null);
+      c.style.cursor = isDrawActive ? 'crosshair' : 'default';
+      return;
+    }
+
     try { c.releasePointerCapture(e.pointerId); } catch {}
     // Note: Line creation now happens in onPointerDown (second click)
     // This handler just cleans up pointer capture
-  }, []);
+  }, [isPanning, isDrawActive]);
 
   const updateSelectedWidth = useCallback((fn: (w: number) => number) => {
     if (!selectedId) return;
@@ -685,17 +879,123 @@ export default function DrawingCanvasWithFAB() {
     return () => window.removeEventListener('resize', handleResize);
   }, [selectedId, calculateHudPosition]);
 
+  // Mouse wheel zoom handler
+  const onWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault(); // Prevent page scroll
+
+    const c = canvasRef.current;
+    if (!c) return;
+
+    const rect = c.getBoundingClientRect();
+    const mouseScreenX = e.clientX - rect.left;
+    const mouseScreenY = e.clientY - rect.top;
+
+    // Calculate zoom direction and factor
+    const delta = -e.deltaY;
+    const zoomFactor = delta > 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+
+    // Calculate new scale with constraints
+    const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewportScale * zoomFactor));
+
+    if (newScale === viewportScale) return; // At zoom limit
+
+    // Get mouse position in canvas space (before zoom)
+    const mouseCanvasX = (mouseScreenX - viewportOffset.x) / viewportScale;
+    const mouseCanvasY = (mouseScreenY - viewportOffset.y) / viewportScale;
+
+    // Calculate new offset to keep mouse position fixed
+    const newOffsetX = mouseScreenX - mouseCanvasX * newScale;
+    const newOffsetY = mouseScreenY - mouseCanvasY * newScale;
+
+    setViewportScale(newScale);
+    setViewportOffset({ x: newOffsetX, y: newOffsetY });
+  }, [viewportScale, viewportOffset]);
+
+  // Prevent context menu (right-click)
+  const onContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+  }, []);
+
+  // Touch gesture handlers
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+
+      setTouchStartDistance(distance);
+      setTouchStartScale(viewportScale);
+      setTouchStartOffset({ ...viewportOffset });
+    }
+  }, [viewportScale, viewportOffset]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartDistance !== null) {
+      e.preventDefault();
+
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      const currentDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+
+      const scaleFactor = currentDistance / touchStartDistance;
+      const newScale = Math.max(
+        MIN_ZOOM,
+        Math.min(MAX_ZOOM, touchStartScale * scaleFactor)
+      );
+
+      // Calculate midpoint between touches (zoom center)
+      const c = canvasRef.current;
+      if (!c) return;
+
+      const rect = c.getBoundingClientRect();
+      const midX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+      const midY = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
+
+      // Get midpoint in canvas space
+      const midCanvasX = (midX - touchStartOffset!.x) / touchStartScale;
+      const midCanvasY = (midY - touchStartOffset!.y) / touchStartScale;
+
+      // Calculate new offset to keep midpoint fixed
+      const newOffsetX = midX - midCanvasX * newScale;
+      const newOffsetY = midY - midCanvasY * newScale;
+
+      setViewportScale(newScale);
+      setViewportOffset({ x: newOffsetX, y: newOffsetY });
+    }
+  }, [touchStartDistance, touchStartScale, touchStartOffset]);
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      setTouchStartDistance(null);
+      setTouchStartScale(1.0);
+      setTouchStartOffset(null);
+    }
+  }, []);
+
   const sidebarWidth = sidebarCollapsed ? 0 : 320;
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden flex">
       <TechBlueTokens />
 
-      {/* Canvas Container */}
+      {/* Canvas Container - Adjusted for bottom bar */}
       <div
         ref={containerRef}
         className="flex-1 relative overflow-hidden"
-        style={{ width: `calc(100% - ${sidebarWidth}px)` }}
+        style={{
+          width: `calc(100% - ${sidebarWidth}px)`,
+          height: 'calc(100vh - 60px)' // Subtract bottom bar height
+        }}
       >
         <canvas
           ref={canvasRef}
@@ -704,6 +1004,12 @@ export default function DrawingCanvasWithFAB() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
+          onWheel={onWheel}
+          onContextMenu={onContextMenu}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{ touchAction: 'none' }}
           aria-label="Drawing canvas"
           role="img"
         />
@@ -850,6 +1156,63 @@ export default function DrawingCanvasWithFAB() {
           </div>
         </div>
       )}
+
+      {/* Bottom Bar - View Controls */}
+      <div className="fixed bottom-0 left-0 right-0 h-[60px] bg-white border-t border-neutral-200 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-10 flex items-center justify-center gap-4">
+        {/* Zoom Out Button */}
+        <button
+          type="button"
+          onClick={() => {
+            const newScale = Math.max(MIN_ZOOM, viewportScale / ZOOM_FACTOR);
+            setViewportScale(newScale);
+          }}
+          disabled={viewportScale <= MIN_ZOOM}
+          className="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)]"
+          aria-label="Zoom out"
+          title="Zoom out (or press -)"
+        >
+          <span className="text-2xl font-bold text-neutral-700">−</span>
+        </button>
+
+        {/* Zoom Indicator and Reset Button */}
+        <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-neutral-300 bg-neutral-50">
+          <span className="text-sm font-medium text-neutral-700 min-w-[70px] text-center tabular-nums">
+            Zoom: {Math.round(viewportScale * 100)}%
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setViewportScale(1.0);
+              setViewportOffset({ x: 0, y: 0 });
+            }}
+            className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--tech-blue-600)] hover:bg-[var(--tech-blue-700)] rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-300)]"
+            aria-label="Reset view to 100%"
+            title="Reset view (Ctrl+0)"
+          >
+            Reset View
+          </button>
+        </div>
+
+        {/* Zoom In Button */}
+        <button
+          type="button"
+          onClick={() => {
+            const newScale = Math.min(MAX_ZOOM, viewportScale * ZOOM_FACTOR);
+            setViewportScale(newScale);
+          }}
+          disabled={viewportScale >= MAX_ZOOM}
+          className="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)]"
+          aria-label="Zoom in"
+          title="Zoom in (or press +)"
+        >
+          <span className="text-2xl font-bold text-neutral-700">+</span>
+        </button>
+
+        {/* Pan Instruction */}
+        <div className="ml-8 text-xs text-neutral-500">
+          Right-click + drag to pan
+        </div>
+      </div>
     </div>
   );
 }
