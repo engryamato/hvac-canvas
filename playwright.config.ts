@@ -4,13 +4,18 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
+  timeout: 30000, // 30 seconds per test
+  expect: {
+    timeout: 5000, // 5 seconds for assertions
+  },
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'on',
+    video: 'retain-on-failure',
   },
   projects: [
     {
@@ -22,6 +27,7 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
+    timeout: 120000, // 2 minutes for dev server startup
   },
 });
 

@@ -1,5 +1,59 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { Pencil, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+
+// Type imports
+import type {
+  Pt,
+  ViewportTransform,
+  Line,
+  DrawingPhase,
+  SnapType,
+  SnapTarget,
+  Scale,
+  ScaleUnit,
+  LineSummaryRow,
+} from './types';
+
+// Constant imports
+import {
+  ZOOM_FACTOR,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  MIN_LINE_LENGTH,
+  SELECTION_HIGHLIGHT_WIDTH,
+  HIT_TEST_MIN_TOLERANCE,
+  HIT_TEST_WIDTH_FACTOR,
+  SNAP_INDICATOR_RADIUS,
+  SNAP_INDICATOR_COLOR,
+  SNAP_INDICATOR_FILL,
+  TECH_BLUE_CSS_VARS,
+} from './constants';
+
+// Utility imports
+import {
+  dist,
+  midpoint,
+  getClosestPointOnSegment,
+  getLineLength,
+  screenToCanvas,
+  canvasToScreen,
+  getPointerPos,
+  applyViewportTransform,
+  setupHiDPICanvas,
+  findSnapTarget,
+  resolveSnapPoint,
+  pixelsToInches,
+  formatLength,
+  uid,
+} from './utils';
+
+// Component imports
+import {
+  WidthHUD,
+  DrawButton,
+  Sidebar,
+  BottomBar,
+  CanvasRenderer,
+} from './components';
 
 /**
  * Drawing Canvas + FAB — Straight-Line (HVAC prep) Edition — FULL SCREEN
@@ -13,311 +67,8 @@ import { Pencil, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucid
 
 // --- Technical blue tokens (swap with your design tokens if needed) ---
 const TechBlueTokens = () => (
-  <style>{`
-    :root {
-      --tech-blue-300: #60A5FA;
-      --tech-blue-500: #3B82F6;
-      --tech-blue-600: #2563EB;
-      --tech-blue-700: #1D4ED8;
-    }
-  `}</style>
+  <style>{TECH_BLUE_CSS_VARS}</style>
 );
-
-// Geometry helpers
-type Pt = { x: number; y: number };
-const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
-
-// Viewport transform type
-type ViewportTransform = {
-  scale: number;
-  offset: Pt;
-};
-
-// Zoom/Pan constants
-const ZOOM_FACTOR = 1.1;           // 10% per wheel tick
-const MIN_ZOOM = 0.1;              // 10% minimum
-const MAX_ZOOM = 10.0;             // 1000% maximum
-
-/**
- * Convert screen coordinates to canvas coordinates
- * Accounts for viewport zoom and pan
- */
-function screenToCanvas(
-  screenX: number,
-  screenY: number,
-  transform: ViewportTransform
-): Pt {
-  return {
-    x: (screenX - transform.offset.x) / transform.scale,
-    y: (screenY - transform.offset.y) / transform.scale
-  };
-}
-
-/**
- * Convert canvas coordinates to screen coordinates
- * Accounts for viewport zoom and pan
- */
-function canvasToScreen(
-  canvasX: number,
-  canvasY: number,
-  transform: ViewportTransform
-): Pt {
-  return {
-    x: canvasX * transform.scale + transform.offset.x,
-    y: canvasY * transform.scale + transform.offset.y
-  };
-}
-
-/**
- * Apply viewport transform to canvas context
- * Must be called before any drawing operations
- */
-function applyViewportTransform(
-  ctx: CanvasRenderingContext2D,
-  transform: ViewportTransform,
-  dpr: number
-): void {
-  ctx.setTransform(
-    transform.scale * dpr,
-    0,
-    0,
-    transform.scale * dpr,
-    transform.offset.x * dpr,
-    transform.offset.y * dpr
-  );
-}
-
-function getPointerPos(
-  canvas: HTMLCanvasElement,
-  evt: PointerEvent | React.PointerEvent,
-  transform: ViewportTransform
-) {
-  const r = canvas.getBoundingClientRect();
-  const screenX = evt.clientX - r.left;
-  const screenY = evt.clientY - r.top;
-  return screenToCanvas(screenX, screenY, transform);
-}
-
-function setupHiDPICanvas(
-  canvas: HTMLCanvasElement,
-  transform: ViewportTransform
-) {
-  const dpr = window.devicePixelRatio || 1;
-  const { width: cssW, height: cssH } = canvas.getBoundingClientRect();
-  const w = Math.max(1, Math.floor(cssW));
-  const h = Math.max(1, Math.floor(cssH));
-  canvas.width = Math.floor(w * dpr);
-  canvas.height = Math.floor(h * dpr);
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    applyViewportTransform(ctx, transform, dpr);
-  }
-}
-
-// Model
-type Line = {
-  id: string;
-  a: Pt; // start
-  b: Pt; // end
-  width: number; // visual line width in px (duct centerline proxy)
-  color: string; // stroke color
-};
-
-// Snap system types
-type SnapType = 'endpoint' | 'midpoint' | 'line';
-
-type SnapTarget = {
-  lineId: string;      // Which line we're snapping to
-  point: Pt;           // Exact snap coordinates
-  type: SnapType;      // What kind of snap point
-  distance: number;    // Distance from cursor to snap point
-};
-
-// Drawing phase for click-click interaction
-type DrawingPhase = 'idle' | 'waiting-for-end';
-
-// Scale system types
-type ScaleUnit = 'imperial' | 'metric';
-type ScaleType = 'custom' | 'architectural' | 'engineering' | 'metric';
-
-type Scale = {
-  type: ScaleType;
-  pixelsPerInch: number;  // Conversion factor: realInches = pixels / pixelsPerInch
-  displayName: string;    // e.g., "1/4\" = 1'-0\"" or "1:50"
-  unit: ScaleUnit;
-};
-
-// Line summary types
-type LineSummaryRow = {
-  width: number;              // Width in pixels
-  widthDisplay: string;       // Formatted width (e.g., "8\"")
-  count: number;              // Number of lines with this width
-  totalLength: number;        // Total length in inches
-  totalLengthDisplay: string; // Formatted length (e.g., "28'-6\"")
-  lineIds: string[];          // Array of line IDs (stored, not displayed)
-};
-
-function uid() { return Math.random().toString(36).slice(2, 9); }
-
-// Predefined scales database
-const ARCHITECTURAL_SCALES: Scale[] = [
-  { type: 'architectural', pixelsPerInch: 1/192, displayName: '1/16" = 1\'-0"', unit: 'imperial' },
-  { type: 'architectural', pixelsPerInch: 1/96, displayName: '1/8" = 1\'-0"', unit: 'imperial' },
-  { type: 'architectural', pixelsPerInch: 1/48, displayName: '1/4" = 1\'-0"', unit: 'imperial' },
-  { type: 'architectural', pixelsPerInch: 1/24, displayName: '1/2" = 1\'-0"', unit: 'imperial' },
-  { type: 'architectural', pixelsPerInch: 1/16, displayName: '3/4" = 1\'-0"', unit: 'imperial' },
-  { type: 'architectural', pixelsPerInch: 1/12, displayName: '1" = 1\'-0"', unit: 'imperial' },
-];
-
-const ENGINEERING_SCALES: Scale[] = [
-  { type: 'engineering', pixelsPerInch: 1/120, displayName: '1" = 10\'', unit: 'imperial' },
-  { type: 'engineering', pixelsPerInch: 1/240, displayName: '1" = 20\'', unit: 'imperial' },
-  { type: 'engineering', pixelsPerInch: 1/360, displayName: '1" = 30\'', unit: 'imperial' },
-  { type: 'engineering', pixelsPerInch: 1/480, displayName: '1" = 40\'', unit: 'imperial' },
-  { type: 'engineering', pixelsPerInch: 1/600, displayName: '1" = 50\'', unit: 'imperial' },
-  { type: 'engineering', pixelsPerInch: 1/720, displayName: '1" = 60\'', unit: 'imperial' },
-];
-
-const METRIC_SCALES: Scale[] = [
-  { type: 'metric', pixelsPerInch: 1, displayName: '1:1', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/5, displayName: '1:5', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/10, displayName: '1:10', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/20, displayName: '1:20', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/50, displayName: '1:50', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/100, displayName: '1:100', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/200, displayName: '1:200', unit: 'metric' },
-  { type: 'metric', pixelsPerInch: 1/500, displayName: '1:500', unit: 'metric' },
-];
-
-// Scale conversion helpers
-function pixelsToInches(pixels: number, scale: Scale): number {
-  return pixels / scale.pixelsPerInch;
-}
-
-function formatLength(inches: number, unit: ScaleUnit): string {
-  if (unit === 'imperial') {
-    const feet = Math.floor(inches / 12);
-    const remainingInches = Math.round((inches % 12) * 10) / 10;
-    if (feet > 0) {
-      if (remainingInches > 0) {
-        return `${feet}'-${remainingInches}"`;
-      }
-      return `${feet}'-0"`;
-    }
-    return `${remainingInches}"`;
-  } else {
-    // Metric: convert inches to cm
-    const cm = inches * 2.54;
-    if (cm >= 100) {
-      return `${(cm / 100).toFixed(2)} m`;
-    }
-    return `${cm.toFixed(1)} cm`;
-  }
-}
-
-// Snap detection helpers
-function getClosestPointOnSegment(p: Pt, a: Pt, b: Pt): Pt {
-  const abx = b.x - a.x, aby = b.y - a.y;
-  const apx = p.x - a.x, apy = p.y - a.y;
-  const ab2 = abx * abx + aby * aby;
-  if (ab2 === 0) return a; // Segment is a point
-  let t = (apx * abx + apy * aby) / ab2;
-  t = Math.max(0, Math.min(1, t)); // Clamp to [0, 1]
-  return { x: a.x + t * abx, y: a.y + t * aby };
-}
-
-// Snap thresholds (pixels)
-const SNAP_THRESHOLD_ENDPOINT = 20;
-const SNAP_THRESHOLD_MIDPOINT = 18;
-const SNAP_THRESHOLD_LINE = 15;
-
-// Snap indicator visuals
-const SNAP_INDICATOR_RADIUS = 7;
-const SNAP_INDICATOR_COLOR = '#06B6D4'; // cyan
-const SNAP_INDICATOR_FILL = 'rgba(6, 182, 212, 0.3)';
-
-// Drawing interaction constants
-const MIN_LINE_LENGTH = 2;           // Minimum line length in pixels to create
-const SELECTION_HIGHLIGHT_WIDTH = 8;  // Additional width for selection highlight
-const HIT_TEST_MIN_TOLERANCE = 6;    // Minimum hit test tolerance in pixels
-const HIT_TEST_WIDTH_FACTOR = 1.5;   // Factor to calculate tolerance from line width
-
-/**
- * Resolves the final point to use, applying snap if available
- * @param rawPoint - The raw cursor position
- * @param snapTarget - The snap target (if any)
- * @returns The final point (snapped or raw)
- */
-function resolveSnapPoint(rawPoint: Pt, snapTarget: SnapTarget | null): Pt {
-  return snapTarget ? snapTarget.point : rawPoint;
-}
-
-function findSnapTarget(
-  cursor: Pt,
-  lines: Line[],
-  excludeLineId?: string
-): SnapTarget | null {
-  const candidates: SnapTarget[] = [];
-
-  for (const line of lines) {
-    if (line.id === excludeLineId) continue;
-
-    // Check endpoint A (20px threshold)
-    const distToA = dist(cursor, line.a);
-    if (distToA <= SNAP_THRESHOLD_ENDPOINT) {
-      candidates.push({
-        lineId: line.id,
-        point: line.a,
-        type: 'endpoint',
-        distance: distToA
-      });
-    }
-
-    // Check endpoint B (20px threshold)
-    const distToB = dist(cursor, line.b);
-    if (distToB <= SNAP_THRESHOLD_ENDPOINT) {
-      candidates.push({
-        lineId: line.id,
-        point: line.b,
-        type: 'endpoint',
-        distance: distToB
-      });
-    }
-
-    // Check midpoint (18px threshold)
-    const midpoint = {
-      x: (line.a.x + line.b.x) / 2,
-      y: (line.a.y + line.b.y) / 2
-    };
-    const distToMid = dist(cursor, midpoint);
-    if (distToMid <= SNAP_THRESHOLD_MIDPOINT) {
-      candidates.push({
-        lineId: line.id,
-        point: midpoint,
-        type: 'midpoint',
-        distance: distToMid
-      });
-    }
-
-    // Check any point on line (15px threshold)
-    const closestPoint = getClosestPointOnSegment(cursor, line.a, line.b);
-    const distToLine = dist(cursor, closestPoint);
-    if (distToLine <= SNAP_THRESHOLD_LINE) {
-      candidates.push({
-        lineId: line.id,
-        point: closestPoint,
-        type: 'line',
-        distance: distToLine
-      });
-    }
-  }
-
-  // Return closest candidate overall
-  if (candidates.length === 0) return null;
-  return candidates.reduce((closest, current) =>
-    current.distance < closest.distance ? current : closest
-  );
-}
 
 /**
  * Custom hook for managing drawing state
@@ -984,36 +735,67 @@ export default function DrawingCanvasWithFAB() {
 
   const sidebarWidth = sidebarCollapsed ? 0 : 320;
 
+  // Zoom control handlers for BottomBar
+  const handleZoomIn = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const newScale = Math.min(MAX_ZOOM, viewportScale * ZOOM_FACTOR);
+    const mouseCanvas = screenToCanvas(centerX, centerY, { scale: viewportScale, offset: viewportOffset });
+    const newOffset = {
+      x: centerX - mouseCanvas.x * newScale,
+      y: centerY - mouseCanvas.y * newScale,
+    };
+    setViewportScale(newScale);
+    setViewportOffset(newOffset);
+  }, [viewportScale, viewportOffset]);
+
+  const handleZoomOut = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const newScale = Math.max(MIN_ZOOM, viewportScale / ZOOM_FACTOR);
+    const mouseCanvas = screenToCanvas(centerX, centerY, { scale: viewportScale, offset: viewportOffset });
+    const newOffset = {
+      x: centerX - mouseCanvas.x * newScale,
+      y: centerY - mouseCanvas.y * newScale,
+    };
+    setViewportScale(newScale);
+    setViewportOffset(newOffset);
+  }, [viewportScale, viewportOffset]);
+
+  const handleResetZoom = useCallback(() => {
+    setViewportScale(1.0);
+    setViewportOffset({ x: 0, y: 0 });
+  }, []);
+
+  const canZoomIn = viewportScale < MAX_ZOOM;
+  const canZoomOut = viewportScale > MIN_ZOOM;
+
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden flex">
       <TechBlueTokens />
 
-      {/* Canvas Container - Adjusted for bottom bar */}
-      <div
-        ref={containerRef}
-        className="flex-1 relative overflow-hidden"
-        style={{
-          width: `calc(100% - ${sidebarWidth}px)`,
-          height: 'calc(100vh - 60px)' // Subtract bottom bar height
-        }}
+      {/* Canvas Container with Canvas Element */}
+      <CanvasRenderer
+        canvasRef={canvasRef}
+        containerRef={containerRef}
+        isDrawActive={isDrawActive}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onWheel={onWheel}
+        onContextMenu={onContextMenu}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        sidebarWidth={sidebarWidth}
       >
-        <canvas
-          ref={canvasRef}
-          className={`absolute inset-0 bg-white ${isDrawActive ? "cursor-crosshair" : "cursor-default"}`}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onWheel={onWheel}
-          onContextMenu={onContextMenu}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          style={{ touchAction: 'none' }}
-          aria-label="Drawing canvas"
-          role="img"
-        />
-
+        {/* Enhanced Width HUD - positioned inside canvas container */}
         {selectedId && hudPosition && (
           <div
             ref={hudRef}
@@ -1079,140 +861,32 @@ export default function DrawingCanvasWithFAB() {
           </div>
         )}
 
-        <button
-          type="button"
-          aria-label={isDrawActive ? "Disable Draw tool" : "Enable Draw tool"}
-          aria-pressed={isDrawActive}
-          title="Toggle Draw (D)"
-          onClick={() => setIsDrawActive(v => !v)}
-          className={[
-            "group select-none fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg focus:outline-none",
-            "ring-2",
-            isDrawActive
-              ? "bg-[var(--tech-blue-600)] ring-[var(--tech-blue-300)] hover:bg-[var(--tech-blue-700)]"
-              : "bg-white ring-neutral-200 hover:ring-neutral-300",
-            "flex items-center justify-center transition-colors"
-          ].join(" ")}
-          style={{ right: `${sidebarWidth + 24}px` }}
-        >
-          <Pencil className={[
-            "transition-transform",
-            isDrawActive ? "scale-110 text-white" : "text-neutral-700 group-hover:text-neutral-900"
-          ].join(" ")} />
-        </button>
-      </div>
+        {/* Draw Mode Toggle Button */}
+        <DrawButton
+          isActive={isDrawActive}
+          onToggle={() => setIsDrawActive(v => !v)}
+          sidebarWidth={sidebarWidth}
+        />
+      </CanvasRenderer>
 
-      {/* Sidebar Toggle Button */}
-      <button
-        type="button"
-        onClick={() => setSidebarCollapsed(v => !v)}
-        className="fixed top-0 bottom-0 w-6 bg-neutral-200 hover:bg-neutral-300 transition-colors flex items-center justify-center z-10"
-        style={{ right: `${sidebarWidth}px` }}
-        aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {sidebarCollapsed ? (
-          <ChevronLeft className="w-4 h-4 text-neutral-700" />
-        ) : (
-          <ChevronRight className="w-4 h-4 text-neutral-700" />
-        )}
-      </button>
+      {/* Sidebar with Toggle Button */}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(v => !v)}
+        lineSummary={lineSummary}
+        currentScale={currentScale}
+        width={320}
+      />
 
-      {/* Sidebar */}
-      {!sidebarCollapsed && (
-        <div
-          className="h-full bg-white border-l border-neutral-200 flex flex-col"
-          style={{ width: `${sidebarWidth}px` }}
-        >
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-neutral-200">
-            <h2 className="text-lg font-semibold text-neutral-800">Line Summary</h2>
-            <p className="text-xs text-neutral-500 mt-1">Scale: {currentScale.displayName}</p>
-          </div>
-
-          {/* Summary Table */}
-          <div className="flex-1 overflow-auto p-4">
-            {lineSummary.length === 0 ? (
-              <p className="text-sm text-neutral-500 text-center mt-8">No lines drawn yet</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-neutral-200">
-                    <th className="text-left py-2 px-2 text-neutral-700 font-medium">Count</th>
-                    <th className="text-left py-2 px-2 text-neutral-700 font-medium">Size</th>
-                    <th className="text-right py-2 px-2 text-neutral-700 font-medium">Total Length</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lineSummary.map((row) => (
-                    <tr key={row.width} className="border-b border-neutral-100 hover:bg-neutral-50">
-                      <td className="py-2 px-2 text-neutral-800">{row.count}</td>
-                      <td className="py-2 px-2 text-neutral-800">{row.widthDisplay}</td>
-                      <td className="py-2 px-2 text-right text-neutral-800 tabular-nums">{row.totalLengthDisplay}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Bar - View Controls */}
-      <div className="fixed bottom-0 left-0 right-0 h-[60px] bg-white border-t border-neutral-200 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-10 flex items-center justify-center gap-4">
-        {/* Zoom Out Button */}
-        <button
-          type="button"
-          onClick={() => {
-            const newScale = Math.max(MIN_ZOOM, viewportScale / ZOOM_FACTOR);
-            setViewportScale(newScale);
-          }}
-          disabled={viewportScale <= MIN_ZOOM}
-          className="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)]"
-          aria-label="Zoom out"
-          title="Zoom out (or press -)"
-        >
-          <span className="text-2xl font-bold text-neutral-700">−</span>
-        </button>
-
-        {/* Zoom Indicator and Reset Button */}
-        <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-neutral-300 bg-neutral-50">
-          <span className="text-sm font-medium text-neutral-700 min-w-[70px] text-center tabular-nums">
-            Zoom: {Math.round(viewportScale * 100)}%
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setViewportScale(1.0);
-              setViewportOffset({ x: 0, y: 0 });
-            }}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--tech-blue-600)] hover:bg-[var(--tech-blue-700)] rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-300)]"
-            aria-label="Reset view to 100%"
-            title="Reset view (Ctrl+0)"
-          >
-            Reset View
-          </button>
-        </div>
-
-        {/* Zoom In Button */}
-        <button
-          type="button"
-          onClick={() => {
-            const newScale = Math.min(MAX_ZOOM, viewportScale * ZOOM_FACTOR);
-            setViewportScale(newScale);
-          }}
-          disabled={viewportScale >= MAX_ZOOM}
-          className="w-12 h-12 flex items-center justify-center rounded-lg border-2 border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)]"
-          aria-label="Zoom in"
-          title="Zoom in (or press +)"
-        >
-          <span className="text-2xl font-bold text-neutral-700">+</span>
-        </button>
-
-        {/* Pan Instruction */}
-        <div className="ml-8 text-xs text-neutral-500">
-          Right-click + drag to pan
-        </div>
-      </div>
+      {/* Bottom Bar - Zoom Controls */}
+      <BottomBar
+        zoom={viewportScale}
+        canZoomIn={canZoomIn}
+        canZoomOut={canZoomOut}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onResetZoom={handleResetZoom}
+      />
     </div>
   );
 }

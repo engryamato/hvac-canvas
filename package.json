@@ -7,6 +7,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "playwright test",
+    "test:e2e": "./scripts/run-e2e-tests.sh",
+    "test:e2e:headed": "./scripts/run-e2e-tests.sh --headed",
+    "test:e2e:ui": "./scripts/run-e2e-tests.sh --ui",
+    "test:e2e:debug": "./scripts/run-e2e-tests.sh --debug",
+    "test:unit": "vitest",
+    "test:unit:ui": "vitest --ui",
+    "test:unit:coverage": "vitest --coverage",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "docker:dev": "./docker-scripts.sh dev-start",
@@ -20,16 +27,21 @@
     "docker:status": "./docker-scripts.sh status"
   },
   "dependencies": {
+    "lucide-react": "0.277.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "lucide-react": "0.277.0"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "vite": "^4.5.0",
-    "@vitejs/plugin-react": "4.0.0",
-    "typescript": "5.1.6",
+    "@playwright/test": "^1.40.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "18.2.28",
     "@types/react-dom": "18.2.11",
-    "@playwright/test": "^1.40.0"
+    "@vitejs/plugin-react": "4.0.0",
+    "@vitest/ui": "^3.2.4",
+    "jsdom": "^27.0.0",
+    "typescript": "5.1.6",
+    "vite": "^4.5.0",
+    "vitest": "^3.2.4"
   }
 }

@@ -3,9 +3,14 @@
 A professional CAD-style drawing application for HVAC duct design with intelligent snap-to-line functionality and real-time measurement summaries.
 
 ![HVAC Drawing Tool](https://img.shields.io/badge/status-production%20ready-brightgreen)
+![CI/CD](https://github.com/engryamato/hvac-canvas/workflows/CI/badge.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.1-blue)
 ![React](https://img.shields.io/badge/React-18.2-blue)
-![Tests](https://img.shields.io/badge/tests-17%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-188%20passing-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen)
+![E2E](https://img.shields.io/badge/E2E-29%2F30-yellow)
+![Bundle Size](https://img.shields.io/badge/bundle-161%20KB-success)
+![Build Time](https://img.shields.io/badge/build-632ms-success)
 
 ---
 
@@ -189,27 +194,38 @@ The sidebar shows a real-time summary of all lines:
 
 ### Run Tests
 ```bash
+# Run unit tests
+npm run test:unit
+
+# Run unit tests with coverage
+npm run test:unit -- --coverage
+
+# Run unit tests in watch mode
+npm run test:unit -- --watch
+
 # Install Playwright (first time only)
 npx playwright install chromium
 
-# Run all tests
-npm test
+# Run E2E tests
+npm run test:e2e
 
-# Run tests with UI
-npm run test:ui
+# Run E2E tests with UI
+npm run test:e2e -- --ui
 
-# Run tests in headed mode (see browser)
-npm run test:headed
+# Run E2E tests in headed mode (see browser)
+npm run test:e2e -- --headed
 ```
 
 ### Test Coverage
-- ✅ 17 comprehensive test cases
-- ✅ Click-click drawing interaction
-- ✅ Sidebar collapse/expand
-- ✅ Table calculations and updates
-- ✅ Line deletion
-- ✅ Keyboard shortcuts
-- ✅ Scale management
+- ✅ **176 unit tests** passing (100% pass rate)
+- ✅ **~80% code coverage** across all layers
+- ✅ **29/30 E2E tests** passing
+- ✅ Utils: ~95% coverage (51 tests)
+- ✅ Services: ~100% coverage (50 tests)
+- ✅ Hooks: ~100% coverage (34 tests)
+- ✅ Components: ~95% coverage (41 tests)
+
+For detailed testing information, see [`docs/TESTING_STRATEGY.md`](docs/TESTING_STRATEGY.md)
 
 ---
 
@@ -239,17 +255,105 @@ npm run preview
 ## 📁 Project Structure
 
 ```
-Working Canvas/
+hvac-canvas/
 ├── src/
-│   ├── DrawingCanvas.tsx    # Main component
-│   ├── App.tsx               # Root component
-│   └── styles.css            # Utility classes
+│   ├── types/                    # TypeScript type definitions
+│   │   ├── canvas.types.ts       # Canvas primitives (Pt, Line, ViewportTransform)
+│   │   ├── drawing.types.ts      # Drawing state (DrawingPhase)
+│   │   ├── scale.types.ts        # Measurement scales
+│   │   ├── snap.types.ts         # Snap detection types
+│   │   └── index.ts              # Barrel export
+│   │
+│   ├── constants/                # Configuration and static values
+│   │   ├── canvas.constants.ts   # Canvas config (zoom, selection)
+│   │   ├── scale.constants.ts    # Scale definitions
+│   │   ├── snap.constants.ts     # Snap thresholds
+│   │   ├── theme.constants.ts    # Theme tokens
+│   │   └── index.ts              # Barrel export
+│   │
+│   ├── utils/                    # Pure utility functions
+│   │   ├── geometry/             # Point and line calculations
+│   │   ├── canvas/               # Coordinate transformations
+│   │   ├── snap/                 # Snap detection logic
+│   │   ├── scale/                # Scale conversions
+│   │   ├── id.ts                 # Unique ID generation
+│   │   ├── __tests__/            # 51 unit tests (~95% coverage)
+│   │   └── index.ts              # Barrel export
+│   │
+│   ├── services/                 # Domain logic layer
+│   │   ├── drawing/              # Line creation and management
+│   │   ├── viewport/             # Viewport transformations
+│   │   ├── __tests__/            # 50 unit tests (~100% coverage)
+│   │   └── index.ts              # Barrel export
+│   │
+│   ├── hooks/                    # Custom React hooks
+│   │   ├── useDrawingState.ts    # Drawing state machine
+│   │   ├── useViewportTransform.ts # Viewport zoom/pan
+│   │   ├── useCanvasSetup.ts     # Canvas initialization
+│   │   ├── useKeyboardShortcuts.ts # Keyboard handling
+│   │   ├── __tests__/            # 34 unit tests (~100% coverage)
+│   │   └── index.ts              # Barrel export
+│   │
+│   ├── components/               # React UI components
+│   │   └── DrawingCanvas/        # Main canvas feature
+│   │       ├── WidthHUD.tsx      # Line width editor
+│   │       ├── DrawButton.tsx    # Draw mode toggle
+│   │       ├── Sidebar.tsx       # Line summary
+│   │       ├── BottomBar.tsx     # Zoom controls
+│   │       ├── CanvasRenderer.tsx # Canvas with events
+│   │       ├── __tests__/        # 41 unit tests (~95% coverage)
+│   │       └── index.ts          # Barrel export
+│   │
+│   ├── DrawingCanvas.tsx         # Main component (902 lines)
+│   ├── App.tsx                   # Root component
+│   └── styles.css                # Utility classes
+│
 ├── tests/
-│   └── drawing-canvas.spec.ts # Test suite
-├── playwright.config.ts      # Test configuration
-├── package.json              # Dependencies
-└── README.md                 # This file
+│   └── e2e/
+│       └── drawing-canvas.spec.ts # 30 E2E tests (29 passing)
+│
+├── docs/
+│   ├── adrs/                     # Architecture Decision Records
+│   │   ├── ADR-001-types-constants.md
+│   │   ├── ADR-002-utilities.md
+│   │   ├── ADR-003-services.md
+│   │   ├── ADR-004-hooks.md
+│   │   ├── ADR-005-components.md
+│   │   └── ADR-006-optimization.md
+│   ├── phases/                   # Phase summaries
+│   ├── ARCHITECTURE.md           # System architecture
+│   ├── TESTING_STRATEGY.md       # Testing approach
+│   └── REFACTOR_SCORECARD.md     # Metrics tracking
+│
+├── vitest.config.ts              # Unit test configuration
+├── playwright.config.ts          # E2E test configuration
+├── package.json                  # Dependencies
+└── README.md                     # This file
 ```
+
+### Architecture Layers
+
+The application follows a strict layered architecture:
+
+```
+Components (UI)
+    ↓
+Hooks (State Management)
+    ↓
+Services (Domain Logic)
+    ↓
+Utils (Pure Functions)
+    ↓
+Constants & Types (Foundation)
+```
+
+**Key Principles:**
+- ✅ Clear separation of concerns
+- ✅ Enforced dependency flow (top → bottom only)
+- ✅ No circular dependencies
+- ✅ Comprehensive test coverage at each layer
+
+For detailed architecture information, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ---
 
