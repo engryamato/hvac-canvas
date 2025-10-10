@@ -22,3 +22,5 @@ export type {
   LineSummaryRow
 } from './scale.types';
 
+// PDF types
+export type { PdfState } from './pdf.types';

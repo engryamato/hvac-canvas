@@ -33,9 +33,30 @@ export {
   METRIC_SCALES,
 } from './scale.constants';
 
-// Theme constants
+// Theme constants (legacy)
 export {
   TECH_BLUE_TOKENS,
   TECH_BLUE_CSS_VARS,
 } from './theme.constants';
 
+// Design tokens (new design system)
+export {
+  DESIGN_TOKENS,
+  SEMANTIC_COLORS,
+} from './design-tokens';
+
+export type {
+  ColorScale,
+  ColorShade,
+  FontSize,
+  Spacing,
+  Radius,
+  Shadow,
+  Transition,
+} from './design-tokens';
+
+// CSS tokens
+export {
+  CSSTokens,
+  generateCSSTokens,
+} from './css-tokens.tsx';

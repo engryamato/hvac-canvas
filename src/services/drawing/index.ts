@@ -17,6 +17,7 @@ export {
   removeLine,
   updateLineWidth as updateLineWidthInCollection,
   updateLineColor as updateLineColorInCollection,
+  updateLineLength,
   findLineById,
   getLinesByWidth,
   getUniqueWidths,

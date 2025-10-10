@@ -77,6 +77,20 @@ describe('DrawButton', () => {
     expect(button.style.right).toBe('24px'); // 0 + 24
   });
 
+  it('should position with proper spacing from bottom bar', () => {
+    render(
+      <DrawButton
+        isActive={false}
+        onToggle={vi.fn()}
+        sidebarWidth={320}
+      />
+    );
+
+    const button = screen.getByRole('button');
+    // Bottom position should be 60px (bottom bar) + 24px (spacing) = 84px
+    expect(button.style.bottom).toBe('84px');
+  });
+
   it('should have correct title attribute', () => {
     render(
       <DrawButton

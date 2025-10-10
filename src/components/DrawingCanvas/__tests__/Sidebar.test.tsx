@@ -156,10 +156,10 @@ describe('Sidebar', () => {
         width={320}
       />
     );
-    
+
     const toggleButton = screen.getByRole('button');
     expect(toggleButton.style.right).toBe('320px');
-    
+
     rerender(
       <Sidebar
         collapsed={true}
@@ -169,8 +169,27 @@ describe('Sidebar', () => {
         width={320}
       />
     );
-    
+
     expect(toggleButton.style.right).toBe('0px'); // Collapsed
+  });
+
+  it('should not overlap with bottom bar', () => {
+    const { container } = render(
+      <Sidebar
+        collapsed={false}
+        onToggle={vi.fn()}
+        lineSummary={[]}
+        currentScale={mockScale}
+        width={320}
+      />
+    );
+
+    const toggleButton = screen.getByRole('button');
+    const sidebarContent = container.querySelector('.fixed.top-0.right-0');
+
+    // Both toggle button and sidebar content should have height: calc(100vh - 60px)
+    expect(toggleButton.style.height).toBe('calc(100vh - 60px)');
+    expect(sidebarContent?.getAttribute('style')).toContain('calc(100vh - 60px)');
   });
 
   it('should render correct icon based on collapsed state', () => {

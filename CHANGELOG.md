@@ -5,6 +5,38 @@ All notable changes to the HVAC Drawing Tool project will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-10-09
+
+### Fixed - Critical Bug Fixes
+- **Canvas White Screen Issue** ([BUG-001](docs/bug-reports/BUG-001-CANVAS-WHITE-SCREEN-AND-HUD-ISSUES.md))
+  - Fixed double viewport transformation in render() function
+  - Canvas was applying transformation twice (once in setupHiDPICanvas, once in render)
+  - This caused canvas to turn white when clicking ducts after drawing
+  - Solution: Removed redundant applyViewportTransform() call from render()
+
+- **HUD Modal Not Showing** ([BUG-001](docs/bug-reports/BUG-001-CANVAS-WHITE-SCREEN-AND-HUD-ISSUES.md))
+  - Fixed race condition in HUD position calculation
+  - setTimeout wrapper was causing state updates to be delayed
+  - HUD wouldn't appear when selecting ducts after drawing
+  - Solution: Removed setTimeout and made state updates synchronous
+  - Applied fix to both onPointerDown and handleDrawingSecondClick functions
+
+### Added - Defensive Programming
+- **Canvas Rendering Validation**
+  - Added viewport scale validation (must be > 0)
+  - Added try-catch block for clearRect operations
+  - Added line data validation before rendering
+  - Invalid lines are now skipped with console warnings instead of crashing
+  - Improved error messages for debugging
+
+### Changed - Code Quality
+- **Improved Comments**
+  - Added explanatory comments for viewport transformation behavior
+  - Documented why setTimeout was removed
+  - Added notes about defensive checks
+
+---
+
 ## [1.0.0] - 2025-10-07
 
 ### Added - Phase A: Foundation

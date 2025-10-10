@@ -57,12 +57,15 @@ export function Sidebar(props: SidebarProps): JSX.Element {
 
   return (
     <>
-      {/* Sidebar Toggle Button */}
+      {/* Sidebar Toggle Button - Fixed to not overlap bottom bar */}
       <button
         type="button"
         onClick={onToggle}
-        className="fixed top-0 bottom-0 w-6 bg-neutral-200 hover:bg-neutral-300 transition-colors flex items-center justify-center z-10"
-        style={{ right: `${sidebarWidth}px` }}
+        className="fixed top-0 w-6 bg-neutral-200 hover:bg-neutral-300 transition-colors flex items-center justify-center z-10"
+        style={{
+          right: `${sidebarWidth}px`,
+          height: 'calc(100vh - 60px)' // Stop before bottom bar (60px)
+        }}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {collapsed ? (
@@ -72,14 +75,17 @@ export function Sidebar(props: SidebarProps): JSX.Element {
         )}
       </button>
 
-      {/* Sidebar Content */}
+      {/* Sidebar Content - Fixed to not overlap bottom bar */}
       {!collapsed && (
         <div
-          className="h-full bg-white border-l border-neutral-200 flex flex-col"
-          style={{ width: `${width}px` }}
+          className="fixed top-0 right-0 bg-white border-l border-neutral-200 flex flex-col"
+          style={{
+            width: `${width}px`,
+            height: 'calc(100vh - 60px)' // Stop before bottom bar (60px)
+          }}
         >
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-neutral-200">
+          <div className="p-4 border-b border-neutral-200 bg-neutral-50">
             <h2 className="text-lg font-semibold text-neutral-800">Line Summary</h2>
             <p className="text-xs text-neutral-500 mt-1">Scale: {currentScale.displayName}</p>
           </div>
@@ -103,8 +109,8 @@ export function Sidebar(props: SidebarProps): JSX.Element {
                   {lineSummary.map((row) => (
                     <tr key={row.width} className="border-b border-neutral-100 hover:bg-neutral-50">
                       <td className="py-2 px-2 text-neutral-800 font-medium">{row.widthDisplay}</td>
-                      <td className="py-2 px-2 text-right text-neutral-600 tabular-nums">{row.count}</td>
-                      <td className="py-2 px-2 text-right text-neutral-800 tabular-nums">{row.totalLengthDisplay}</td>
+                      <td className="py-2 px-2 text-right text-neutral-600 text-mono tabular-nums">{row.count}</td>
+                      <td className="py-2 px-2 text-right text-neutral-800 text-mono tabular-nums">{row.totalLengthDisplay}</td>
                     </tr>
                   ))}
                 </tbody>

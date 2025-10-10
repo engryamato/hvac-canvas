@@ -8,11 +8,13 @@ import {
   removeLine,
   updateLineWidth,
   updateLineColor,
+  updateLineLength,
   findLineById,
   getLinesByWidth,
   getUniqueWidths,
 } from '../drawing/LineManager';
 import type { Line } from '../../types';
+import { dist } from '../../utils/geometry';
 
 describe('LineManager', () => {
   const testLines: Line[] = [
@@ -151,6 +153,112 @@ describe('LineManager', () => {
       const singleWidthLines = [testLines[0]];
       const widths = getUniqueWidths(singleWidthLines);
       expect(widths).toEqual([8]);
+    });
+  });
+
+  describe('updateLineLength', () => {
+    it('should update line length while keeping endpoint a fixed', () => {
+      // Line from (0,0) to (100,0) - horizontal line, length 100
+      const lines: Line[] = [
+        { id: '1', a: { x: 0, y: 0 }, b: { x: 100, y: 0 }, width: 8, color: '#111827' }
+      ];
+
+      const result = updateLineLength(lines, '1', 200);
+      const updatedLine = result.find(l => l.id === '1');
+
+      // Endpoint a should remain the same
+      expect(updatedLine!.a).toEqual({ x: 0, y: 0 });
+
+      // Endpoint b should be at (200, 0) - same direction, new length
+      expect(updatedLine!.b.x).toBeCloseTo(200, 5);
+      expect(updatedLine!.b.y).toBeCloseTo(0, 5);
+
+      // Verify actual length
+      const actualLength = dist(updatedLine!.a, updatedLine!.b);
+      expect(actualLength).toBeCloseTo(200, 5);
+    });
+
+    it('should maintain line angle when updating length', () => {
+      // Diagonal line at 45 degrees
+      const lines: Line[] = [
+        { id: '1', a: { x: 0, y: 0 }, b: { x: 100, y: 100 }, width: 8, color: '#111827' }
+      ];
+
+      const newLength = 200;
+
+      const result = updateLineLength(lines, '1', newLength);
+      const updatedLine = result.find(l => l.id === '1');
+
+      // Endpoint a should remain the same
+      expect(updatedLine!.a).toEqual({ x: 0, y: 0 });
+
+      // Calculate expected endpoint b (45 degree angle, length 200)
+      const expectedX = newLength * Math.cos(Math.PI / 4); // ~141.42
+      const expectedY = newLength * Math.sin(Math.PI / 4); // ~141.42
+
+      expect(updatedLine!.b.x).toBeCloseTo(expectedX, 5);
+      expect(updatedLine!.b.y).toBeCloseTo(expectedY, 5);
+
+      // Verify actual length
+      const actualLength = dist(updatedLine!.a, updatedLine!.b);
+      expect(actualLength).toBeCloseTo(newLength, 5);
+    });
+
+    it('should enforce minimum length', () => {
+      const lines: Line[] = [
+        { id: '1', a: { x: 0, y: 0 }, b: { x: 100, y: 0 }, width: 8, color: '#111827' }
+      ];
+
+      // Try to set length to 1 pixel (below MIN_LINE_LENGTH of 2)
+      const result = updateLineLength(lines, '1', 1);
+      const updatedLine = result.find(l => l.id === '1');
+
+      const actualLength = dist(updatedLine!.a, updatedLine!.b);
+      expect(actualLength).toBeGreaterThanOrEqual(2); // MIN_LINE_LENGTH
+    });
+
+    it('should handle zero-length lines gracefully', () => {
+      const lines: Line[] = [
+        { id: '1', a: { x: 50, y: 50 }, b: { x: 50, y: 50 }, width: 8, color: '#111827' }
+      ];
+
+      // Should not crash, should keep line as-is
+      const result = updateLineLength(lines, '1', 100);
+      const updatedLine = result.find(l => l.id === '1');
+
+      // Line should remain unchanged since we can't determine direction
+      expect(updatedLine!.a).toEqual({ x: 50, y: 50 });
+      expect(updatedLine!.b).toEqual({ x: 50, y: 50 });
+    });
+
+    it('should not mutate original array', () => {
+      const lines: Line[] = [
+        { id: '1', a: { x: 0, y: 0 }, b: { x: 100, y: 0 }, width: 8, color: '#111827' }
+      ];
+
+      const originalB = { ...lines[0].b };
+      const result = updateLineLength(lines, '1', 200);
+
+      // Original should be unchanged
+      expect(lines[0].b).toEqual(originalB);
+      expect(result).not.toBe(lines);
+    });
+
+    it('should only update the specified line', () => {
+      const lines: Line[] = [
+        { id: '1', a: { x: 0, y: 0 }, b: { x: 100, y: 0 }, width: 8, color: '#111827' },
+        { id: '2', a: { x: 0, y: 0 }, b: { x: 0, y: 100 }, width: 12, color: '#111827' }
+      ];
+
+      const result = updateLineLength(lines, '1', 200);
+
+      // Line 1 should be updated
+      const line1 = result.find(l => l.id === '1');
+      expect(dist(line1!.a, line1!.b)).toBeCloseTo(200, 5);
+
+      // Line 2 should remain unchanged
+      const line2 = result.find(l => l.id === '2');
+      expect(dist(line2!.a, line2!.b)).toBeCloseTo(100, 5);
     });
   });
 });

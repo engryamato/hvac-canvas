@@ -43,6 +43,12 @@ export interface DrawButtonProps {
 export function DrawButton(props: DrawButtonProps): JSX.Element {
   const { isActive, onToggle, sidebarWidth } = props;
 
+  // Position FAB with proper spacing from bottom bar (60px) and sidebar
+  // Bottom spacing: 60px (bottom bar) + 24px (gap) = 84px from viewport bottom
+  const BOTTOM_BAR_HEIGHT = 60;
+  const SPACING_FROM_BOTTOM_BAR = 24;
+  const bottomPosition = BOTTOM_BAR_HEIGHT + SPACING_FROM_BOTTOM_BAR;
+
   return (
     <button
       type="button"
@@ -51,21 +57,22 @@ export function DrawButton(props: DrawButtonProps): JSX.Element {
       title="Toggle Draw (D)"
       onClick={onToggle}
       className={[
-        "group select-none fixed bottom-6 h-14 w-14 rounded-full shadow-lg focus:outline-none",
+        "group select-none fixed h-14 w-14 rounded-full shadow-lg focus:outline-none",
         "ring-2",
         isActive
-          ? "bg-[var(--tech-blue-600)] ring-[var(--tech-blue-300)] hover:bg-[var(--tech-blue-700)]"
-          : "bg-white ring-neutral-200 hover:ring-neutral-300",
+          ? "bg-[var(--color-primary-600)] ring-[var(--color-primary-300)] hover:bg-[var(--color-primary-700)]"
+          : "bg-white ring-neutral-300 hover:ring-neutral-300",
         "flex items-center justify-center transition-colors"
       ].join(" ")}
       style={{
-        right: `${sidebarWidth + 24}px`
+        right: `${sidebarWidth + 24}px`,
+        bottom: `${bottomPosition}px`
       }}
     >
       <Pencil
         className={[
           "transition-transform",
-          isActive ? "scale-110 text-white" : "text-neutral-700 group-hover:text-neutral-900"
+          isActive ? "scale-110 text-white" : "text-neutral-600 group-hover:text-neutral-900"
         ].join(" ")}
       />
     </button>

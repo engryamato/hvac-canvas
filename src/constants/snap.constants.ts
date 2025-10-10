@@ -33,13 +33,13 @@ export const SNAP_INDICATOR_RADIUS = 7;
 
 /**
  * Snap indicator stroke color
- * Cyan color for high visibility
+ * Primary blue color for high visibility (matches design system)
  */
-export const SNAP_INDICATOR_COLOR = '#06B6D4';
+export const SNAP_INDICATOR_COLOR = '#3B82F6'; // primary-500
 
 /**
  * Snap indicator fill color
- * Semi-transparent cyan for the circle fill
+ * Semi-transparent primary blue for the circle fill
  */
-export const SNAP_INDICATOR_FILL = 'rgba(6, 182, 212, 0.3)';
+export const SNAP_INDICATOR_FILL = 'rgba(59, 130, 246, 0.3)'; // primary-500 with 30% opacity
 

@@ -55,7 +55,7 @@ export function WidthHUD(props: WidthHUDProps): JSX.Element | null {
   return (
     <div
       ref={hudRef}
-      className="absolute rounded-2xl shadow-md border border-neutral-200 bg-white/95 backdrop-blur px-4 py-2 flex items-center gap-3"
+      className="absolute rounded-2xl shadow-md border border-neutral-200 bg-white/95 backdrop-blur px-4 py-3 flex items-center gap-3"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -63,17 +63,17 @@ export function WidthHUD(props: WidthHUDProps): JSX.Element | null {
       role="dialog"
       aria-label="Line width editor"
     >
-      <span className="text-sm text-neutral-700">Width</span>
+      <span className="text-sm text-neutral-600 font-medium">Width</span>
       <input
         type="range"
         min={1}
         max={60}
         value={selectedLine.width}
         onChange={(e) => onWidthChange(Number(e.target.value))}
-        className="accent-[var(--tech-blue-600)]"
+        className="accent-[var(--color-primary-600)]"
         aria-label="Selected line width"
       />
-      <span className="w-10 text-right tabular-nums text-sm text-neutral-800">
+      <span className="w-12 text-right text-mono tabular-nums text-base text-neutral-900 font-semibold">
         {selectedLine.width}px
       </span>
     </div>

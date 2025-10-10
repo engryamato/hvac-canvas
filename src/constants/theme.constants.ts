@@ -1,30 +1,35 @@
 /**
  * Theme constants
- * 
- * This file contains color tokens and theme-related constants.
+ *
+ * This file contains theme-related constants and utilities.
+ * Now uses the centralized design token system.
+ *
+ * @see src/constants/design-tokens.ts - Complete design token definitions
+ * @see src/constants/css-tokens.ts - CSS custom property generation
  */
 
+import { DESIGN_TOKENS } from './design-tokens';
+import { generateCSSTokens } from './css-tokens.tsx';
+
 /**
- * Technical blue color tokens
- * Used for primary UI elements like the draw button
+ * Technical blue color tokens (legacy - use DESIGN_TOKENS instead)
+ * @deprecated Use DESIGN_TOKENS.colors.primary instead
  */
 export const TECH_BLUE_TOKENS = {
-  300: '#60A5FA',
-  500: '#3B82F6',
-  600: '#2563EB',
-  700: '#1D4ED8',
+  300: DESIGN_TOKENS.colors.primary[300],
+  500: DESIGN_TOKENS.colors.primary[500],
+  600: DESIGN_TOKENS.colors.primary[600],
+  700: DESIGN_TOKENS.colors.primary[700],
 } as const;
 
 /**
- * CSS custom properties for tech blue colors
- * Can be injected into the document head for global use
+ * CSS custom properties for tech blue colors (legacy)
+ * @deprecated Use CSSTokens component or generateCSSTokens() instead
  */
-export const TECH_BLUE_CSS_VARS = `
-  :root {
-    --tech-blue-300: ${TECH_BLUE_TOKENS[300]};
-    --tech-blue-500: ${TECH_BLUE_TOKENS[500]};
-    --tech-blue-600: ${TECH_BLUE_TOKENS[600]};
-    --tech-blue-700: ${TECH_BLUE_TOKENS[700]};
-  }
-`;
+export const TECH_BLUE_CSS_VARS = generateCSSTokens();
+
+// Re-export for convenience
+export { DESIGN_TOKENS } from './design-tokens';
+export { SEMANTIC_COLORS } from './design-tokens';
+export { CSSTokens, generateCSSTokens } from './css-tokens.tsx';
 

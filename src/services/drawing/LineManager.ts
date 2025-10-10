@@ -1,11 +1,13 @@
 /**
  * Line Manager Service
- * 
+ *
  * Manages collections of lines with operations for adding, removing, and updating.
  * Provides immutable operations that return new arrays.
  */
 
 import type { Line } from '../../types';
+import { MIN_LINE_LENGTH } from '../../constants';
+import { dist } from '../../utils/geometry';
 
 /**
  * Add a line to a collection
@@ -125,10 +127,10 @@ export function getLinesByWidth(lines: Line[], width: number): Line[] {
 
 /**
  * Get all unique widths used in a line collection
- * 
+ *
  * @param lines - Line collection
  * @returns Sorted array of unique widths
- * 
+ *
  * @example
  * const widths = getUniqueWidths(lines);
  * // Returns: [4, 6, 8, 10, 12]
@@ -136,5 +138,54 @@ export function getLinesByWidth(lines: Line[], width: number): Line[] {
 export function getUniqueWidths(lines: Line[]): number[] {
   const widths = new Set(lines.map(line => line.width));
   return Array.from(widths).sort((a, b) => a - b);
+}
+
+/**
+ * Update a line's length in a collection
+ * Keeps endpoint 'a' fixed and adjusts endpoint 'b' to achieve the new length
+ * while maintaining the line's angle/direction
+ *
+ * @param lines - Current line collection
+ * @param lineId - ID of line to update
+ * @param newLengthPixels - New length in pixels
+ * @returns New array with line length updated
+ *
+ * @example
+ * // Set line length to 100 pixels
+ * const newLines = updateLineLength(currentLines, 'line-123', 100);
+ */
+export function updateLineLength(
+  lines: Line[],
+  lineId: string,
+  newLengthPixels: number
+): Line[] {
+  return lines.map(line => {
+    if (line.id !== lineId) return line;
+
+    // Enforce minimum length
+    const clampedLength = Math.max(MIN_LINE_LENGTH, newLengthPixels);
+
+    // Calculate current line length and angle
+    const currentLength = dist(line.a, line.b);
+
+    // If current length is zero, can't determine direction
+    // Keep the line as is
+    if (currentLength === 0) return line;
+
+    // Calculate angle from endpoint a to endpoint b
+    const angle = Math.atan2(line.b.y - line.a.y, line.b.x - line.a.x);
+
+    // Calculate new endpoint b position
+    // Keep endpoint a fixed, move endpoint b
+    const newB = {
+      x: line.a.x + clampedLength * Math.cos(angle),
+      y: line.a.y + clampedLength * Math.sin(angle)
+    };
+
+    return {
+      ...line,
+      b: newB
+    };
+  });
 }
 

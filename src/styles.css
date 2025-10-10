@@ -12,30 +12,43 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, '
 .overflow-auto{overflow:auto}
 .z-10{z-index:10}
 
-/* Colors */
+/* Colors - Using design tokens */
 .bg-white{background:#fff}
 .bg-white\/95{background:rgba(255,255,255,0.95)}
-.bg-neutral-50{background:#fafafa}
-.bg-neutral-100{background:#f5f5f5}
-.bg-neutral-200{background:#e5e5e5}
-.bg-neutral-300{background:#d4d4d4}
-.bg-red-100{background:#fee2e2}
-.bg-red-600{background:#dc2626}
-.bg-red-700{background:#b91c1c}
+.bg-neutral-50{background:var(--color-neutral-50)}
+.bg-neutral-100{background:var(--color-neutral-100)}
+.bg-neutral-200{background:var(--color-neutral-200)}
+.bg-neutral-300{background:var(--color-neutral-300)}
+.bg-primary-50{background:var(--color-primary-50)}
+.bg-primary-600{background:var(--color-primary-600)}
+.bg-primary-700{background:var(--color-primary-700)}
+.bg-error-50{background:var(--color-error-50)}
+.bg-error-600{background:var(--color-error-600)}
+.bg-error-700{background:var(--color-error-700)}
+.bg-success-50{background:var(--color-success-50)}
+.bg-success-600{background:var(--color-success-600)}
+.bg-warning-50{background:var(--color-warning-50)}
+.bg-warning-600{background:var(--color-warning-600)}
 .text-white{color:#fff}
-.text-neutral-500{color:#737373}
-.text-neutral-700{color:#404040}
-.text-neutral-800{color:#262626}
-.text-neutral-900{color:#171717}
-.text-red-600{color:#dc2626}
+.text-neutral-400{color:var(--color-neutral-400)}
+.text-neutral-500{color:var(--color-neutral-500)}
+.text-neutral-600{color:var(--color-neutral-600)}
+.text-neutral-700{color:var(--color-neutral-700)}
+.text-neutral-800{color:var(--color-neutral-800)}
+.text-neutral-900{color:var(--color-neutral-900)}
+.text-primary-600{color:var(--color-primary-600)}
+.text-error-600{color:var(--color-error-600)}
+.text-success-600{color:var(--color-success-600)}
+.text-warning-600{color:var(--color-warning-600)}
+.text-info-600{color:var(--color-info-600)}
 .border{border-width:1px}
 .border-2{border-width:2px}
 .border-b{border-bottom-width:1px}
 .border-l{border-left-width:1px}
 .border-t{border-top-width:1px}
-.border-neutral-100{border-color:#f5f5f5}
-.border-neutral-200{border-color:#e5e5e5}
-.border-neutral-300{border-color:#d4d4d4}
+.border-neutral-100{border-color:var(--color-neutral-100)}
+.border-neutral-200{border-color:var(--color-neutral-200)}
+.border-neutral-300{border-color:var(--color-neutral-300)}
 
 /* Cursor */
 .cursor-crosshair{cursor:crosshair}
@@ -88,19 +101,23 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, '
 .h-\[60px\]{height:60px}
 .min-w-\[70px\]{min-width:70px}
 
-/* Border radius */
-.rounded{border-radius:0.25rem}
-.rounded-lg{border-radius:0.5rem}
-.rounded-2xl{border-radius:1rem}
-.rounded-full{border-radius:9999px}
+/* Border radius - Using design tokens */
+.rounded{border-radius:var(--radius-sm)}
+.rounded-md{border-radius:var(--radius-md)}
+.rounded-lg{border-radius:var(--radius-lg)}
+.rounded-xl{border-radius:var(--radius-xl)}
+.rounded-2xl{border-radius:var(--radius-2xl)}
+.rounded-full{border-radius:var(--radius-full)}
 
-/* Shadows */
-.shadow-md{box-shadow:0 4px 6px rgba(0,0,0,0.1)}
-.shadow-lg{box-shadow:0 10px 15px rgba(0,0,0,0.1)}
-.shadow-\[0_-2px_10px_rgba\(0\,0\,0\,0\.1\)\]{box-shadow:0 -2px 10px rgba(0,0,0,0.1)}
+/* Shadows - Using design tokens */
+.shadow-sm{box-shadow:var(--shadow-sm)}
+.shadow-md{box-shadow:var(--shadow-md)}
+.shadow-lg{box-shadow:var(--shadow-lg)}
+.shadow-xl{box-shadow:var(--shadow-xl)}
+.shadow-\[0_-2px_10px_rgba\(0\,0\,0\,0\.1\)\]{box-shadow:0 -2px 10px rgba(15, 23, 42, 0.1)}
 .ring-2{box-shadow:0 0 0 2px currentColor}
-.ring-neutral-200{--tw-ring-color:#e5e5e5;box-shadow:0 0 0 2px var(--tw-ring-color)}
-.ring-neutral-300{--tw-ring-color:#d4d4d4;box-shadow:0 0 0 2px var(--tw-ring-color)}
+.ring-neutral-200{--tw-ring-color:var(--color-neutral-200);box-shadow:0 0 0 2px var(--tw-ring-color)}
+.ring-neutral-300{--tw-ring-color:var(--color-neutral-300);box-shadow:0 0 0 2px var(--tw-ring-color)}
 
 /* Effects */
 .backdrop-blur{-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
@@ -122,20 +139,24 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, '
 /* Interactions */
 .select-none{-webkit-user-select:none;user-select:none}
 .focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}
-.focus\:ring-2:focus{box-shadow:0 0 0 2px currentColor}
+.focus\:ring-2:focus{box-shadow:0 0 0 2px var(--color-primary-500)}
+.focus-visible\:ring-2:focus-visible{box-shadow:0 0 0 2px var(--color-primary-500);outline:none}
 
-/* Transitions */
-.transition-colors{transition:background-color .15s, color .15s}
-.transition-transform{transition:transform .15s}
+/* Transitions - Using design tokens */
+.transition-colors{transition:background-color var(--transition-base), color var(--transition-base)}
+.transition-transform{transition:transform var(--transition-base)}
+.transition-all{transition:all var(--transition-base)}
 .scale-110{transform:scale(1.1)}
 
 /* Group hover */
-.group:hover .group-hover\:text-neutral-900{color:#171717}
+.group:hover .group-hover\:text-neutral-900{color:var(--color-neutral-900)}
 
 /* Hover states */
-.hover\:bg-neutral-50:hover{background:#fafafa}
-.hover\:bg-neutral-300:hover{background:#d4d4d4}
-.hover\:bg-red-700:hover{background:#b91c1c}
+.hover\:bg-neutral-50:hover{background:var(--color-neutral-50)}
+.hover\:bg-neutral-100:hover{background:var(--color-neutral-100)}
+.hover\:bg-neutral-300:hover{background:var(--color-neutral-300)}
+.hover\:bg-primary-700:hover{background:var(--color-primary-700)}
+.hover\:bg-error-700:hover{background:var(--color-error-700)}
 
 /* Disabled states */
 .disabled\:opacity-40:disabled{opacity:0.4}

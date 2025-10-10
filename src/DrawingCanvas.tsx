@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // Type imports
 import type {
@@ -11,6 +12,7 @@ import type {
   Scale,
   ScaleUnit,
   LineSummaryRow,
+  PdfState,
 } from './types';
 
 // Constant imports
@@ -25,7 +27,10 @@ import {
   SNAP_INDICATOR_RADIUS,
   SNAP_INDICATOR_COLOR,
   SNAP_INDICATOR_FILL,
-  TECH_BLUE_CSS_VARS,
+  ARCHITECTURAL_SCALES,
+  ENGINEERING_SCALES,
+  METRIC_SCALES,
+  CSSTokens,
 } from './constants';
 
 // Utility imports
@@ -46,6 +51,19 @@ import {
   uid,
 } from './utils';
 
+// PDF utility imports
+import {
+  loadPdfFile,
+  renderPdfPage,
+  calculateCenteredPosition,
+  drawPdfOnCanvas,
+} from './utils/pdf/pdfLoader';
+
+// Service imports
+import {
+  updateLineLength,
+} from './services';
+
 // Component imports
 import {
   WidthHUD,
@@ -64,11 +82,6 @@ import {
  * - Drawn lines maintain their scale - only the canvas viewport adjusts
  * - All other functionality remains the same (straight segments, width editing, etc.)
  */
-
-// --- Technical blue tokens (swap with your design tokens if needed) ---
-const TechBlueTokens = () => (
-  <style>{TECH_BLUE_CSS_VARS}</style>
-);
 
 /**
  * Custom hook for managing drawing state
@@ -125,11 +138,18 @@ export default function DrawingCanvasWithFAB() {
   // Drawing state (consolidated via custom hook)
   const drawingState = useDrawingState();
 
-  // Scale management state
+  // Combined scale options for dropdown
+  const allScaleOptions = useMemo(() => [
+    ...ARCHITECTURAL_SCALES,
+    ...ENGINEERING_SCALES,
+    ...METRIC_SCALES,
+  ], []);
+
+  // Scale management state - Default: 64 pixels = 1 inch (custom conversion, not in dropdown)
   const [currentScale, setCurrentScale] = useState<Scale>({
     type: 'custom',
-    pixelsPerInch: 1,  // Default: 1 pixel = 1 inch
-    displayName: '1:1',
+    pixelsPerInch: 64,
+    displayName: 'Custom (64px = 1")',
     unit: 'imperial'
   });
 
@@ -148,10 +168,20 @@ export default function DrawingCanvasWithFAB() {
   const [panStart, setPanStart] = useState<Pt | null>(null);
   const [panOffsetStart, setPanOffsetStart] = useState<Pt | null>(null);
 
+  // Endpoint dragging state
+  const [draggingEndpoint, setDraggingEndpoint] = useState<{
+    lineId: string;
+    endpoint: 'a' | 'b';
+  } | null>(null);
+
   // Touch gesture state
   const [touchStartDistance, setTouchStartDistance] = useState<number | null>(null);
   const [touchStartScale, setTouchStartScale] = useState(1.0);
   const [touchStartOffset, setTouchStartOffset] = useState<Pt | null>(null);
+
+  // PDF state
+  const [pdfState, setPdfState] = useState<PdfState | null>(null);
+  const [pdfOpacity, setPdfOpacity] = useState(0.5);
 
   // Helper functions
   const deleteLine = useCallback((lineId: string) => {
@@ -213,21 +243,50 @@ export default function DrawingCanvasWithFAB() {
     const c = canvasRef.current; if (!c) return;
     const ctx = c.getContext("2d"); if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const transform = { scale: viewportScale, offset: viewportOffset };
+    // Defensive checks
+    if (viewportScale <= 0) {
+      console.warn('Invalid viewport scale:', viewportScale);
+      return;
+    }
 
-    // Apply viewport transform
-    applyViewportTransform(ctx, transform, dpr);
+    const dpr = window.devicePixelRatio || 1;
+
+    // Note: Viewport transform is already applied by setupHiDPICanvas()
+    // Do NOT call applyViewportTransform() here to avoid double transformation
 
     // Clear with transform applied
-    ctx.clearRect(
-      -viewportOffset.x / viewportScale,
-      -viewportOffset.y / viewportScale,
-      c.width / (viewportScale * dpr),
-      c.height / (viewportScale * dpr)
-    );
+    try {
+      ctx.clearRect(
+        -viewportOffset.x / viewportScale,
+        -viewportOffset.y / viewportScale,
+        c.width / (viewportScale * dpr),
+        c.height / (viewportScale * dpr)
+      );
+    } catch (error) {
+      console.error('Error clearing canvas:', error);
+      return;
+    }
+
+    // Draw PDF as background layer (if loaded)
+    if (pdfState && pdfState.imageData) {
+      drawPdfOnCanvas(
+        ctx,
+        pdfState.imageData,
+        pdfState.offset.x,
+        pdfState.offset.y,
+        pdfState.width,
+        pdfState.height,
+        pdfState.opacity
+      );
+    }
 
     for (const ln of lines) {
+      // Validate line data before rendering
+      if (!ln || !ln.a || !ln.b || typeof ln.width !== 'number' || !ln.color) {
+        console.warn('Invalid line data, skipping:', ln);
+        continue;
+      }
+
       ctx.lineWidth = ln.width;
       ctx.strokeStyle = ln.color;
       ctx.lineCap = "round";
@@ -239,10 +298,32 @@ export default function DrawingCanvasWithFAB() {
 
       if (ln.id === selectedId) {
         ctx.lineWidth = ln.width + SELECTION_HIGHLIGHT_WIDTH;
-        ctx.strokeStyle = "rgba(37, 99, 235, 0.15)";
+        ctx.strokeStyle = "rgba(59, 130, 246, 0.15)"; // primary-500 with 15% opacity
         ctx.beginPath();
         ctx.moveTo(ln.a.x, ln.a.y);
         ctx.lineTo(ln.b.x, ln.b.y);
+        ctx.stroke();
+
+        // Draw endpoint handles for selected line
+        const ENDPOINT_RADIUS = 6 / viewportScale;
+        const ENDPOINT_STROKE_WIDTH = 2 / viewportScale;
+
+        // Endpoint A
+        ctx.beginPath();
+        ctx.arc(ln.a.x, ln.a.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.strokeStyle = "#3b82f6"; // primary-500
+        ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
+        ctx.stroke();
+
+        // Endpoint B
+        ctx.beginPath();
+        ctx.arc(ln.b.x, ln.b.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.strokeStyle = "#3b82f6"; // primary-500
+        ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
         ctx.stroke();
       }
     }
@@ -268,14 +349,14 @@ export default function DrawingCanvasWithFAB() {
     if (isDrawActive && drawingState.phase === 'waiting-for-end' && drawingState.startPoint && drawingState.endPoint) {
       ctx.setLineDash([8 / viewportScale, 6 / viewportScale]);
       ctx.lineWidth = defaultWidth;
-      ctx.strokeStyle = "#64748B";
+      ctx.strokeStyle = "#64748B"; // neutral-500 for preview line
       ctx.beginPath();
       ctx.moveTo(drawingState.startPoint.x, drawingState.startPoint.y);
       ctx.lineTo(drawingState.endPoint.x, drawingState.endPoint.y);
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  }, [lines, selectedId, isDrawActive, drawingState, defaultWidth, viewportScale, viewportOffset]);
+  }, [lines, selectedId, isDrawActive, drawingState, defaultWidth, viewportScale, viewportOffset, pdfState]);
 
   // Setup canvas and handle resize
   useEffect(() => {
@@ -302,6 +383,20 @@ export default function DrawingCanvasWithFAB() {
       if (d <= tol && (!best || d < best.d)) best = { id: ln.id, d };
     }
     return best?.id ?? null;
+  }, [lines]);
+
+  // Check if cursor is near an endpoint of a line
+  const hitTestEndpoint = useCallback((p: Pt, lineId: string): 'a' | 'b' | null => {
+    const line = lines.find(ln => ln.id === lineId);
+    if (!line) return null;
+
+    const ENDPOINT_THRESHOLD = 15; // pixels
+    const distToA = dist(p, line.a);
+    const distToB = dist(p, line.b);
+
+    if (distToA <= ENDPOINT_THRESHOLD && distToA <= distToB) return 'a';
+    if (distToB <= ENDPOINT_THRESHOLD) return 'b';
+    return null;
   }, [lines]);
 
   /**
@@ -335,7 +430,7 @@ export default function DrawingCanvasWithFAB() {
     const midScreen = canvasToScreen(midCanvasX, midCanvasY, transform);
 
     // Get HUD dimensions (use fallback estimates if not yet rendered)
-    const hudWidth = hud?.offsetWidth || 450; // Fallback estimate for new controls
+    const hudWidth = hud?.offsetWidth || 700; // Fallback estimate for width + length controls
     const hudHeight = hud?.offsetHeight || 50; // Fallback estimate
 
     // Constants (based on design system research)
@@ -394,10 +489,9 @@ export default function DrawingCanvasWithFAB() {
       setSelectedId(newLine.id);
 
       // Calculate HUD position for newly created line
-      setTimeout(() => {
-        const position = calculateHudPosition(newLine.id);
-        setHudPosition(position);
-      }, 0);
+      // Note: Removed setTimeout to avoid race condition - state updates are now synchronous
+      const position = calculateHudPosition(newLine.id);
+      setHudPosition(position);
     }
 
     drawingState.reset();
@@ -435,17 +529,26 @@ export default function DrawingCanvasWithFAB() {
         handleDrawingSecondClick();
       }
     } else {
-      // Selection mode
+      // Selection mode - check for endpoint dragging first
       const id = hitTest(rawPos);
-      setSelectedId(id);
 
-      // Calculate HUD position when line is selected
       if (id) {
-        setTimeout(() => {
+        // Check if clicking near an endpoint
+        const endpoint = hitTestEndpoint(rawPos, id);
+
+        if (endpoint) {
+          // Start dragging endpoint
+          setDraggingEndpoint({ lineId: id, endpoint });
+          setSelectedId(id);
+          c.style.cursor = 'move';
+        } else {
+          // Regular selection
+          setSelectedId(id);
           const position = calculateHudPosition(id);
           setHudPosition(position);
-        }, 0);
+        }
       } else {
+        setSelectedId(null);
         setHudPosition(null);
       }
 
@@ -457,6 +560,7 @@ export default function DrawingCanvasWithFAB() {
     handleDrawingFirstClick,
     handleDrawingSecondClick,
     hitTest,
+    hitTestEndpoint,
     render,
     calculateHudPosition,
     viewportScale,
@@ -482,11 +586,31 @@ export default function DrawingCanvasWithFAB() {
       return;
     }
 
-    // Only process snapping when in draw mode
-    if (!isDrawActive) return;
-
     const transform = { scale: viewportScale, offset: viewportOffset };
     const cursorPos = screenToCanvas(screenX, screenY, transform);
+
+    // Handle endpoint dragging
+    if (draggingEndpoint) {
+      const { lineId, endpoint } = draggingEndpoint;
+
+      // Find snap target (excluding the line being edited)
+      const snap = findSnapTarget(cursorPos, lines, lineId);
+      const newPos = resolveSnapPoint(cursorPos, snap);
+
+      // Update the line's endpoint
+      setLines(prev => prev.map(line => {
+        if (line.id !== lineId) return line;
+        return {
+          ...line,
+          [endpoint]: newPos
+        };
+      }));
+
+      return;
+    }
+
+    // Only process snapping when in draw mode
+    if (!isDrawActive) return;
 
     // Find and update snap target for visual feedback
     const snap = findSnapTarget(cursorPos, lines);
@@ -505,6 +629,7 @@ export default function DrawingCanvasWithFAB() {
     isPanning,
     panStart,
     panOffsetStart,
+    draggingEndpoint,
     viewportScale,
     viewportOffset
   ]);
@@ -521,10 +646,23 @@ export default function DrawingCanvasWithFAB() {
       return;
     }
 
+    // Handle endpoint drag end
+    if (draggingEndpoint) {
+      const { lineId } = draggingEndpoint;
+      setDraggingEndpoint(null);
+      c.style.cursor = isDrawActive ? 'crosshair' : 'default';
+
+      // Update HUD position for the modified line
+      const position = calculateHudPosition(lineId);
+      setHudPosition(position);
+
+      return;
+    }
+
     try { c.releasePointerCapture(e.pointerId); } catch {}
     // Note: Line creation now happens in onPointerDown (second click)
     // This handler just cleans up pointer capture
-  }, [isPanning, isDrawActive]);
+  }, [isPanning, isDrawActive, draggingEndpoint, calculateHudPosition]);
 
   const updateSelectedWidth = useCallback((fn: (w: number) => number) => {
     if (!selectedId) return;
@@ -571,6 +709,102 @@ export default function DrawingCanvasWithFAB() {
       updateSelectedWidth(() => clampedValue);
     }
   }, [updateSelectedWidth, selectedId, lines]);
+
+  // Length input handlers
+  // Get current line length in scaled units
+  const getSelectedLineLength = useCallback((): number => {
+    if (!selectedId) return 0;
+    const line = lines.find(l => l.id === selectedId);
+    if (!line) return 0;
+
+    const pixelLength = getLineLength(line);
+    const inches = pixelsToInches(pixelLength, currentScale);
+
+    // Convert to appropriate units based on scale type
+    if (currentScale.unit === 'metric') {
+      // Convert inches to centimeters
+      return inches * 2.54;
+    } else {
+      // Keep as inches for imperial/architectural
+      return inches;
+    }
+  }, [selectedId, lines, currentScale]);
+
+  // Increment length by 1 inch or 1 cm based on scale
+  const incrementLength = useCallback(() => {
+    if (!selectedId) return;
+    const currentLengthScaled = getSelectedLineLength();
+    const newLengthScaled = currentLengthScaled + 1;
+
+    // Convert back to pixels
+    let newLengthInches: number;
+    if (currentScale.unit === 'metric') {
+      // Convert cm to inches
+      newLengthInches = newLengthScaled / 2.54;
+    } else {
+      newLengthInches = newLengthScaled;
+    }
+
+    const newLengthPixels = newLengthInches * currentScale.pixelsPerInch;
+    setLines(prev => updateLineLength(prev, selectedId, newLengthPixels));
+  }, [selectedId, getSelectedLineLength, currentScale]);
+
+  // Decrement length by 1 inch or 1 cm based on scale
+  const decrementLength = useCallback(() => {
+    if (!selectedId) return;
+    const currentLengthScaled = getSelectedLineLength();
+    const newLengthScaled = Math.max(0.1, currentLengthScaled - 1); // Minimum 0.1 units
+
+    // Convert back to pixels
+    let newLengthInches: number;
+    if (currentScale.unit === 'metric') {
+      // Convert cm to inches
+      newLengthInches = newLengthScaled / 2.54;
+    } else {
+      newLengthInches = newLengthScaled;
+    }
+
+    const newLengthPixels = newLengthInches * currentScale.pixelsPerInch;
+    setLines(prev => updateLineLength(prev, selectedId, newLengthPixels));
+  }, [selectedId, getSelectedLineLength, currentScale]);
+
+  const handleLengthInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Allow empty string for user to clear and retype
+    if (value === '') {
+      return;
+    }
+
+    // Parse as float (allow decimals)
+    const numValue = parseFloat(value);
+
+    // Validate: must be a number and positive
+    if (!isNaN(numValue) && numValue > 0) {
+      // Convert to pixels
+      let lengthInches: number;
+      if (currentScale.unit === 'metric') {
+        // Convert cm to inches
+        lengthInches = numValue / 2.54;
+      } else {
+        lengthInches = numValue;
+      }
+
+      const lengthPixels = lengthInches * currentScale.pixelsPerInch;
+      setLines(prev => updateLineLength(prev, selectedId!, lengthPixels));
+    }
+  }, [selectedId, currentScale]);
+
+  const handleLengthInputBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseFloat(value);
+
+    // If empty or invalid, reset to current length
+    if (value === '' || isNaN(numValue) || numValue <= 0) {
+      const currentLength = getSelectedLineLength();
+      e.target.value = currentLength.toFixed(1);
+    }
+  }, [getSelectedLineLength]);
 
   // Calculate line summary for sidebar table
   const lineSummary = useMemo((): LineSummaryRow[] => {
@@ -735,6 +969,57 @@ export default function DrawingCanvasWithFAB() {
 
   const sidebarWidth = sidebarCollapsed ? 0 : 320;
 
+  // PDF upload handler
+  const handlePdfUpload = useCallback(async (file: File) => {
+    try {
+      console.log('Loading PDF:', file.name);
+
+      // Load PDF file
+      const loadedPdf = await loadPdfFile(file);
+
+      // Render first page
+      const imageData = await renderPdfPage(loadedPdf, 1, 2.0);
+
+      // Calculate centered position in canvas coordinates
+      // PDF should be positioned at (0, 0) in canvas space and will be centered by default
+      const pdfWidth = imageData.width / 2.0; // Divide by render scale
+      const pdfHeight = imageData.height / 2.0;
+
+      // Update PDF state
+      setPdfState({
+        ...loadedPdf,
+        imageData,
+        offset: { x: 0, y: 0 }, // Position at origin in canvas space
+        opacity: pdfOpacity,
+        width: pdfWidth,
+        height: pdfHeight
+      });
+
+      // Trigger re-render
+      render();
+
+      console.log('PDF loaded successfully:', file.name);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      alert(`Failed to load PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [pdfOpacity, render]);
+
+  // PDF opacity change handler
+  const handlePdfOpacityChange = useCallback((opacity: number) => {
+    setPdfOpacity(opacity);
+    if (pdfState) {
+      setPdfState(prev => prev ? { ...prev, opacity } : null);
+      render();
+    }
+  }, [pdfState, render]);
+
+  // PDF remove handler
+  const handlePdfRemove = useCallback(() => {
+    setPdfState(null);
+    render();
+  }, [render]);
+
   // Zoom control handlers for BottomBar
   const handleZoomIn = useCallback(() => {
     const canvas = canvasRef.current;
@@ -768,17 +1053,12 @@ export default function DrawingCanvasWithFAB() {
     setViewportOffset(newOffset);
   }, [viewportScale, viewportOffset]);
 
-  const handleResetZoom = useCallback(() => {
-    setViewportScale(1.0);
-    setViewportOffset({ x: 0, y: 0 });
-  }, []);
-
   const canZoomIn = viewportScale < MAX_ZOOM;
   const canZoomOut = viewportScale > MIN_ZOOM;
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden flex">
-      <TechBlueTokens />
+      <CSSTokens />
 
       {/* Canvas Container with Canvas Element */}
       <CanvasRenderer
@@ -849,6 +1129,52 @@ export default function DrawingCanvasWithFAB() {
               {(lines.find(l => l.id === selectedId)?.width ?? 8)}px
             </span>
 
+            {/* Vertical Divider */}
+            <div className="h-6 w-px bg-neutral-300" />
+
+            {/* Length Controls */}
+            <span className="text-sm text-neutral-700">Length</span>
+
+            {/* Decrement Length Button */}
+            <button
+              type="button"
+              onClick={decrementLength}
+              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Decrease length"
+              title={`Decrease length by 1 ${currentScale.unit === 'metric' ? 'cm' : 'inch'}`}
+            >
+              <ChevronDown className="w-4 h-4 text-neutral-700" />
+            </button>
+
+            {/* Length Input Field */}
+            <input
+              type="number"
+              min={0.1}
+              step={0.1}
+              value={getSelectedLineLength().toFixed(1)}
+              onChange={handleLengthInputChange}
+              onBlur={handleLengthInputBlur}
+              className="w-20 px-2 py-1 text-center text-sm border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)] focus:border-transparent tabular-nums transition-shadow"
+              aria-label="Line length value"
+              title={`Enter length in ${currentScale.unit === 'metric' ? 'centimeters' : 'inches'}`}
+            />
+
+            {/* Increment Length Button */}
+            <button
+              type="button"
+              onClick={incrementLength}
+              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Increase length"
+              title={`Increase length by 1 ${currentScale.unit === 'metric' ? 'cm' : 'inch'}`}
+            >
+              <ChevronUp className="w-4 h-4 text-neutral-700" />
+            </button>
+
+            {/* Display length unit */}
+            <span className="w-12 text-right tabular-nums text-sm text-neutral-800">
+              {currentScale.unit === 'metric' ? 'cm' : 'in'}
+            </span>
+
             {/* Delete Button */}
             <button
               type="button"
@@ -878,14 +1204,21 @@ export default function DrawingCanvasWithFAB() {
         width={320}
       />
 
-      {/* Bottom Bar - Zoom Controls */}
+      {/* Bottom Bar - Zoom Controls, Scale Selector, and PDF Controls */}
       <BottomBar
         zoom={viewportScale}
         canZoomIn={canZoomIn}
         canZoomOut={canZoomOut}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
-        onResetZoom={handleResetZoom}
+        currentScale={currentScale}
+        scaleOptions={allScaleOptions}
+        onScaleChange={setCurrentScale}
+        onPdfUpload={handlePdfUpload}
+        hasPdf={pdfState !== null}
+        pdfOpacity={pdfOpacity}
+        onPdfOpacityChange={handlePdfOpacityChange}
+        onPdfRemove={handlePdfRemove}
       />
     </div>
   );
