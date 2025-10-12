@@ -37,3 +37,21 @@ export {
 // ID utility
 export { uid } from './id';
 
+// HVAC calculation utilities
+export {
+  calculateVelocity,
+  calculateFriction,
+  calculatePressure,
+  formatCalculationResult,
+  suggestOptimalWidth,
+  validateCalculationResults,
+} from './hvac';
+
+// Modal positioning utilities
+export {
+  calculateModalPosition,
+  checkBoundaryCollision,
+  adjustPositionForBoundaries,
+} from './modal';
+
+export type { CanvasBounds, ViewportInfo } from './modal';

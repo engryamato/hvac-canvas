@@ -1,6 +1,6 @@
 /**
  * Type definitions barrel export
- * 
+ *
  * This file re-exports all type definitions for convenient importing.
  * Usage: import { Pt, Line, Scale } from '@/types';
  */
@@ -9,7 +9,34 @@
 export type { Pt, ViewportTransform } from './canvas.types';
 
 // Drawing types
-export type { Line, DrawingPhase } from './drawing.types';
+export type {
+  Line,
+  DrawingPhase,
+  DuctType,
+  Material,
+  Gauge,
+  LineMetadata
+} from './drawing.types';
+
+// Duct types
+export type {
+  MaterialOption,
+  GaugeOption,
+  DuctTypeConfig,
+  LayerConfig
+} from './duct.types';
+
+// Modal types
+export type {
+  ModalTab,
+  ModalPosition,
+  CalculationResults,
+  ValidationResult,
+  MultiSelectState,
+  AggregateStats,
+  ModalState,
+  DropdownOption
+} from './modal.types';
 
 // Snap types
 export type { SnapType, SnapTarget } from './snap.types';

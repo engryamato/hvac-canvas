@@ -1,16 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // Type imports
 import type {
   Pt,
-  ViewportTransform,
   Line,
   DrawingPhase,
-  SnapType,
   SnapTarget,
   Scale,
-  ScaleUnit,
   LineSummaryRow,
   PdfState,
 } from './types';
@@ -36,13 +32,9 @@ import {
 // Utility imports
 import {
   dist,
-  midpoint,
-  getClosestPointOnSegment,
   getLineLength,
   screenToCanvas,
-  canvasToScreen,
   getPointerPos,
-  applyViewportTransform,
   setupHiDPICanvas,
   findSnapTarget,
   resolveSnapPoint,
@@ -55,7 +47,6 @@ import {
 import {
   loadPdfFile,
   renderPdfPage,
-  calculateCenteredPosition,
   drawPdfOnCanvas,
 } from './utils/pdf/pdfLoader';
 
@@ -66,12 +57,12 @@ import {
 
 // Component imports
 import {
-  WidthHUD,
   DrawButton,
   Sidebar,
   BottomBar,
   CanvasRenderer,
 } from './components';
+import { LinePropertiesModal } from './components/LinePropertiesModal';
 
 /**
  * Drawing Canvas + FAB — Straight-Line (HVAC prep) Edition — FULL SCREEN
@@ -127,13 +118,54 @@ function useDrawingState() {
 export default function DrawingCanvasWithFAB() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const hudRef = useRef<HTMLDivElement | null>(null);
 
   // Tool/UI state
   const [isDrawActive, setIsDrawActive] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [hudPosition, setHudPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // Selection state - supports both single and multi-select
+  const [selectedLineIds, setSelectedLineIds] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const modalTriggerRef = useRef<HTMLElement | null>(null);
+
+  // E2E Testing Support: Expose helper functions for tests
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Get all line IDs
+      (window as any).__test__getLineIds = () => lines.map(l => l.id);
+
+      // Select a line (with optional multi-select)
+      (window as any).__test__selectLine = (lineId: string, multiSelect: boolean) => {
+        // Directly manipulate state for testing
+        if (multiSelect) {
+          setSelectedLineIds(prev => {
+            if (prev.includes(lineId)) {
+              const newSelection = prev.filter(id => id !== lineId);
+              if (newSelection.length === 0) {
+                setIsModalOpen(false);
+              }
+              return newSelection;
+            } else {
+              return [...prev, lineId];
+            }
+          });
+          setIsModalOpen(true);
+        } else {
+          setSelectedLineIds([lineId]);
+          setIsModalOpen(true);
+        }
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).__test__getLineIds;
+        delete (window as any).__test__selectLine;
+      }
+    };
+  }, [lines]);
+
+  // Legacy selectedId for backward compatibility during transition
+  const selectedId = selectedLineIds.length === 1 ? selectedLineIds[0] : null;
 
   // Drawing state (consolidated via custom hook)
   const drawingState = useDrawingState();
@@ -183,12 +215,7 @@ export default function DrawingCanvasWithFAB() {
   const [pdfState, setPdfState] = useState<PdfState | null>(null);
   const [pdfOpacity, setPdfOpacity] = useState(0.5);
 
-  // Helper functions
-  const deleteLine = useCallback((lineId: string) => {
-    setLines(prev => prev.filter(line => line.id !== lineId));
-    setSelectedId(null);
-    setHudPosition(null);
-  }, []);
+  // Helper functions (deleteLine removed - now handled by handleLineDelete)
 
   // Clear snap target when exiting draw mode
   useEffect(() => {
@@ -197,47 +224,7 @@ export default function DrawingCanvasWithFAB() {
     }
   }, [isDrawActive, drawingState]);
 
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "d") setIsDrawActive(v => !v);
-
-      // Escape key: Cancel current drawing operation
-      if (e.key === "Escape" && drawingState.phase === 'waiting-for-end') {
-        drawingState.reset();
-      }
-
-      // Delete/Backspace key: Delete selected line
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
-        e.preventDefault(); // Prevent browser back navigation on Backspace
-        deleteLine(selectedId);
-      }
-
-      if (selectedId) {
-        if (e.key === "[") updateSelectedWidth(w => Math.max(1, w - 1));
-        if (e.key === "]") updateSelectedWidth(w => Math.min(60, w + 1));
-      } else if (isDrawActive) {
-        if (e.key === "[") setDefaultWidth(w => Math.max(1, w - 1));
-        if (e.key === "]") setDefaultWidth(w => Math.min(60, w + 1));
-      }
-
-      // Zoom shortcuts
-      if (e.key === '+' || e.key === '=') {
-        e.preventDefault();
-        setViewportScale(s => Math.min(MAX_ZOOM, s * ZOOM_FACTOR));
-      }
-      if (e.key === '-' || e.key === '_') {
-        e.preventDefault();
-        setViewportScale(s => Math.max(MIN_ZOOM, s / ZOOM_FACTOR));
-      }
-      if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        setViewportScale(1.0);
-        setViewportOffset({ x: 0, y: 0 });
-      }
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [isDrawActive, selectedId, drawingState, deleteLine]);
+  // Old keyboard handler removed - now using handleKeyDown below with modal support
 
   const render = useCallback(() => {
     const c = canvasRef.current; if (!c) return;
@@ -296,35 +283,42 @@ export default function DrawingCanvasWithFAB() {
       ctx.lineTo(ln.b.x, ln.b.y);
       ctx.stroke();
 
-      if (ln.id === selectedId) {
+      // Check if line is selected (single or multi-select)
+      const isSelected = selectedLineIds.includes(ln.id);
+
+      if (isSelected) {
+        // Selection outline - use duct type color
+        const selectionColor = ln.type === 'supply' ? '#2563eb' : '#dc2626';
         ctx.lineWidth = ln.width + SELECTION_HIGHLIGHT_WIDTH;
-        ctx.strokeStyle = "rgba(59, 130, 246, 0.15)"; // primary-500 with 15% opacity
+        ctx.strokeStyle = `${selectionColor}40`; // 25% opacity
         ctx.beginPath();
         ctx.moveTo(ln.a.x, ln.a.y);
         ctx.lineTo(ln.b.x, ln.b.y);
         ctx.stroke();
 
-        // Draw endpoint handles for selected line
-        const ENDPOINT_RADIUS = 6 / viewportScale;
-        const ENDPOINT_STROKE_WIDTH = 2 / viewportScale;
+        // Draw endpoint handles for selected line (only for single selection)
+        if (selectedLineIds.length === 1) {
+          const ENDPOINT_RADIUS = 6 / viewportScale;
+          const ENDPOINT_STROKE_WIDTH = 2 / viewportScale;
 
-        // Endpoint A
-        ctx.beginPath();
-        ctx.arc(ln.a.x, ln.a.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.strokeStyle = "#3b82f6"; // primary-500
-        ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
-        ctx.stroke();
+          // Endpoint A
+          ctx.beginPath();
+          ctx.arc(ln.a.x, ln.a.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
+          ctx.fillStyle = "white";
+          ctx.fill();
+          ctx.strokeStyle = selectionColor;
+          ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
+          ctx.stroke();
 
-        // Endpoint B
-        ctx.beginPath();
-        ctx.arc(ln.b.x, ln.b.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.strokeStyle = "#3b82f6"; // primary-500
-        ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
-        ctx.stroke();
+          // Endpoint B
+          ctx.beginPath();
+          ctx.arc(ln.b.x, ln.b.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
+          ctx.fillStyle = "white";
+          ctx.fill();
+          ctx.strokeStyle = selectionColor;
+          ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
+          ctx.stroke();
+        }
       }
     }
 
@@ -399,103 +393,237 @@ export default function DrawingCanvasWithFAB() {
     return null;
   }, [lines]);
 
+  // calculateHudPosition removed - now using useModalPosition hook in LinePropertiesModal
+
   /**
-   * Calculate optimal position for Width HUD based on selected line
-   * Strategy: Position above line midpoint, flip to below if near top edge
+   * Get selected lines as Line objects
    *
-   * Edge Padding Research:
-   * - Floating UI default: 5px (shift middleware)
-   * - MUI Base: 8px margin for popovers
-   * - Industry standard: 8px for floating UI elements
-   * Using 8px as it represents the modern design system standard
+   * @returns Array of selected Line objects
    */
-  const calculateHudPosition = useCallback((lineId: string): { x: number; y: number } | null => {
-    const line = lines.find(l => l.id === lineId);
-    if (!line) return null;
+  const getSelectedLines = useCallback((): Line[] => {
+    return selectedLineIds
+      .map(id => lines.find(l => l.id === id))
+      .filter((line): line is Line => line !== undefined);
+  }, [selectedLineIds, lines]);
 
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
+  /**
+   * Handle line selection (single or multi-select)
+   *
+   * @param lineId - ID of the line to select
+   * @param isShiftClick - Whether Shift key was pressed (for multi-select)
+   */
+  const handleLineSelection = useCallback((lineId: string, isShiftClick: boolean) => {
+    if (isShiftClick) {
+      // Multi-select: toggle line in selection
+      setSelectedLineIds(prev => {
+        if (prev.includes(lineId)) {
+          // Remove from selection
+          const newSelection = prev.filter(id => id !== lineId);
+          if (newSelection.length === 0) {
+            setIsModalOpen(false);
+          }
+          return newSelection;
+        } else {
+          // Add to selection
+          return [...prev, lineId];
+        }
+      });
+      setIsModalOpen(true);
+    } else {
+      // Single select: replace selection
+      setSelectedLineIds([lineId]);
+      setIsModalOpen(true);
+    }
+  }, []);
 
-    const hud = hudRef.current;
+  /**
+   * Clear line selection and close modal
+   */
+  const handleClearSelection = useCallback(() => {
+    setSelectedLineIds([]);
+    setIsModalOpen(false);
+  }, []);
 
-    // Get canvas bounds (accounts for sidebar)
-    const canvasBounds = canvas.getBoundingClientRect();
+  /**
+   * Handle modal close
+   */
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    // Keep selection but close modal
+  }, []);
 
-    // Calculate line midpoint in canvas coordinates
-    const midCanvasX = (line.a.x + line.b.x) / 2;
-    const midCanvasY = (line.a.y + line.b.y) / 2;
+  /**
+   * Handle line property update from modal
+   *
+   * @param lineId - ID of the line to update
+   * @param updates - Partial line properties to update
+   */
+  const handleLineUpdate = useCallback((lineId: string, updates: Partial<Line>) => {
+    setLines(prev => prev.map(line => {
+      if (line.id === lineId) {
+        return {
+          ...line,
+          ...updates,
+          metadata: {
+            ...line.metadata,
+            updatedAt: Date.now(),
+          },
+        };
+      }
+      return line;
+    }));
+  }, []);
 
-    // Transform to screen coordinates
-    const transform = { scale: viewportScale, offset: viewportOffset };
-    const midScreen = canvasToScreen(midCanvasX, midCanvasY, transform);
+  /**
+   * Handle batch update for multi-select
+   *
+   * @param lineIds - Array of line IDs to update
+   * @param updates - Partial line properties to apply to all lines
+   */
+  const handleBatchUpdate = useCallback((lineIds: string[], updates: Partial<Line>) => {
+    setLines(prev => prev.map(line => {
+      if (lineIds.includes(line.id)) {
+        return {
+          ...line,
+          ...updates,
+          metadata: {
+            ...line.metadata,
+            updatedAt: Date.now(),
+          },
+        };
+      }
+      return line;
+    }));
+  }, []);
 
-    // Get HUD dimensions (use fallback estimates if not yet rendered)
-    const hudWidth = hud?.offsetWidth || 700; // Fallback estimate for width + length controls
-    const hudHeight = hud?.offsetHeight || 50; // Fallback estimate
+  /**
+   * Handle line deletion from modal
+   */
+  const handleLineDelete = useCallback(() => {
+    setLines(prev => prev.filter(line => !selectedLineIds.includes(line.id)));
+    handleClearSelection();
+  }, [selectedLineIds, handleClearSelection]);
 
-    // Constants (based on design system research)
-    const VERTICAL_OFFSET = 16; // Space between line and HUD
-    const EDGE_PADDING = 8; // Industry standard (Floating UI, MUI Base)
-    const LINE_CLEARANCE = (line.width * viewportScale) / 2; // Scale line width
+  /**
+   * Handle line duplication from modal
+   */
+  const handleLineDuplicate = useCallback(() => {
+    const now = Date.now();
+    const newLines: Line[] = [];
 
-    // Calculate initial position (above line, centered horizontally)
-    let x = midScreen.x - hudWidth / 2;
-    let y = midScreen.y - LINE_CLEARANCE - VERTICAL_OFFSET - hudHeight;
+    selectedLineIds.forEach(lineId => {
+      const line = lines.find(l => l.id === lineId);
+      if (line) {
+        // Offset the duplicated line by 20px down and right
+        const offset = 20;
+        const newLine: Line = {
+          ...line,
+          id: uid(),
+          a: { x: line.a.x + offset, y: line.a.y + offset },
+          b: { x: line.b.x + offset, y: line.b.y + offset },
+          metadata: {
+            createdAt: now,
+            updatedAt: now,
+          },
+        };
+        newLines.push(newLine);
+      }
+    });
 
-    // Horizontal boundary checks
-    if (x < EDGE_PADDING) {
-      x = EDGE_PADDING; // Too far left, align to left edge
-    } else if (x + hudWidth > canvasBounds.width - EDGE_PADDING) {
-      x = canvasBounds.width - hudWidth - EDGE_PADDING; // Too far right
+    if (newLines.length > 0) {
+      setLines(prev => [...prev, ...newLines]);
+      // Select the duplicated lines
+      setSelectedLineIds(newLines.map(l => l.id));
+    }
+  }, [selectedLineIds, lines]);
+
+  /**
+   * Handle keyboard shortcuts
+   *
+   * @param e - Keyboard event
+   */
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Delete key - delete selected lines
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (selectedLineIds.length > 0 && !isModalOpen) {
+        e.preventDefault();
+        handleLineDelete();
+      }
     }
 
-    // Vertical boundary check - flip to below if too close to top
-    // Account for bottom bar (60px)
-    const maxY = canvasBounds.height - hudHeight - EDGE_PADDING - 60;
-    if (y < EDGE_PADDING) {
-      // Position below the line instead
-      y = midScreen.y + LINE_CLEARANCE + VERTICAL_OFFSET;
+    // Escape key - close modal and clear selection
+    if (e.key === 'Escape') {
+      if (isModalOpen) {
+        e.preventDefault();
+        handleModalClose();
+      } else if (selectedLineIds.length > 0) {
+        e.preventDefault();
+        handleClearSelection();
+      }
     }
 
-    // Constrain vertically
-    y = Math.max(EDGE_PADDING, Math.min(y, maxY));
+    // Cmd/Ctrl+D - duplicate selected lines
+    if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+      if (selectedLineIds.length > 0) {
+        e.preventDefault();
+        handleLineDuplicate();
+      }
+    }
+  }, [selectedLineIds, isModalOpen, handleLineDelete, handleModalClose, handleClearSelection, handleLineDuplicate]);
 
-    return { x, y };
-  }, [lines, viewportScale, viewportOffset]);
+  // Add keyboard event listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   // Handle first click in drawing mode - set start point
   const handleDrawingFirstClick = useCallback((rawPos: Pt) => {
     const snap = findSnapTarget(rawPos, lines);
     const startPos = resolveSnapPoint(rawPos, snap);
 
-    setSelectedId(null);
-    setHudPosition(null);
+    handleClearSelection();
     drawingState.startDrawing(startPos, snap);
-  }, [lines, drawingState]);
+  }, [lines, drawingState, handleClearSelection]);
 
   // Handle second click in drawing mode - create line
   const handleDrawingSecondClick = useCallback(() => {
     if (!drawingState.startPoint || !drawingState.endPoint) return;
 
     if (dist(drawingState.startPoint, drawingState.endPoint) > MIN_LINE_LENGTH) {
+      const now = Date.now();
       const newLine: Line = {
         id: uid(),
         a: drawingState.startPoint,
         b: drawingState.endPoint,
         width: defaultWidth,
-        color: defaultColor
+        color: defaultColor,
+        type: defaultColor === '#2563eb' ? 'supply' : 'return',
+        layer: 'Default',
+        material: 'Galvanized Steel',
+        gauge: '26ga',
+        airflow: 0,
+        notes: '',
+        tags: [],
+        customProperties: {},
+        metadata: {
+          createdAt: now,
+          updatedAt: now,
+        },
       };
       setLines(prev => [...prev, newLine]);
-      setSelectedId(newLine.id);
 
-      // Calculate HUD position for newly created line
-      // Note: Removed setTimeout to avoid race condition - state updates are now synchronous
-      const position = calculateHudPosition(newLine.id);
-      setHudPosition(position);
+      // Only auto-select and open modal if not in draw mode
+      // This prevents modal from interrupting multi-line drawing workflow
+      if (!isDrawActive) {
+        handleLineSelection(newLine.id, false);
+      }
     }
 
     drawingState.reset();
-  }, [drawingState, defaultWidth, defaultColor, calculateHudPosition]);
+  }, [drawingState, defaultWidth, defaultColor, handleLineSelection, isDrawActive]);
 
   // Pan mode detection (right-click only)
   const shouldEnterPanMode = useCallback((e: React.PointerEvent): boolean => {
@@ -539,17 +667,15 @@ export default function DrawingCanvasWithFAB() {
         if (endpoint) {
           // Start dragging endpoint
           setDraggingEndpoint({ lineId: id, endpoint });
-          setSelectedId(id);
+          handleLineSelection(id, false);
           c.style.cursor = 'move';
         } else {
-          // Regular selection
-          setSelectedId(id);
-          const position = calculateHudPosition(id);
-          setHudPosition(position);
+          // Regular selection - check for Shift key for multi-select
+          handleLineSelection(id, e.shiftKey);
         }
       } else {
-        setSelectedId(null);
-        setHudPosition(null);
+        // Clicked on empty canvas - clear selection
+        handleClearSelection();
       }
 
       render();
@@ -562,7 +688,6 @@ export default function DrawingCanvasWithFAB() {
     hitTest,
     hitTestEndpoint,
     render,
-    calculateHudPosition,
     viewportScale,
     viewportOffset,
     shouldEnterPanMode
@@ -648,21 +773,15 @@ export default function DrawingCanvasWithFAB() {
 
     // Handle endpoint drag end
     if (draggingEndpoint) {
-      const { lineId } = draggingEndpoint;
       setDraggingEndpoint(null);
       c.style.cursor = isDrawActive ? 'crosshair' : 'default';
-
-      // Update HUD position for the modified line
-      const position = calculateHudPosition(lineId);
-      setHudPosition(position);
-
       return;
     }
 
     try { c.releasePointerCapture(e.pointerId); } catch {}
     // Note: Line creation now happens in onPointerDown (second click)
     // This handler just cleans up pointer capture
-  }, [isPanning, isDrawActive, draggingEndpoint, calculateHudPosition]);
+  }, [isPanning, isDrawActive, draggingEndpoint]);
 
   const updateSelectedWidth = useCallback((fn: (w: number) => number) => {
     if (!selectedId) return;
@@ -843,26 +962,6 @@ export default function DrawingCanvasWithFAB() {
   }, [lines, currentScale]);
 
   useEffect(() => { render(); }, [lines, drawingState, selectedId, render]);
-
-  // Recalculate HUD position when lines change (e.g., width updated)
-  useEffect(() => {
-    if (!selectedId) return;
-    const position = calculateHudPosition(selectedId);
-    setHudPosition(position);
-  }, [selectedId, lines, calculateHudPosition]);
-
-  // Recalculate HUD position on window resize
-  useEffect(() => {
-    if (!selectedId) return;
-
-    const handleResize = () => {
-      const position = calculateHudPosition(selectedId);
-      setHudPosition(position);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [selectedId, calculateHudPosition]);
 
   // Mouse wheel zoom handler
   const onWheel = useCallback((e: React.WheelEvent) => {
@@ -1075,116 +1174,25 @@ export default function DrawingCanvasWithFAB() {
         onTouchEnd={onTouchEnd}
         sidebarWidth={sidebarWidth}
       >
-        {/* Enhanced Width HUD - positioned inside canvas container */}
-        {selectedId && hudPosition && (
-          <div
-            ref={hudRef}
-            className="absolute rounded-2xl shadow-md border border-neutral-200 bg-white/95 backdrop-blur px-4 py-2 flex items-center gap-3 transition-all duration-200 ease-out"
-            style={{
-              left: `${hudPosition.x}px`,
-              top: `${hudPosition.y}px`,
+        {/* Line Properties Modal - replaces old Width HUD */}
+        {isModalOpen && selectedLineIds.length > 0 && (
+          <LinePropertiesModal
+            selectedLines={selectedLineIds.map(id => lines.find(l => l.id === id)!).filter(Boolean)}
+            onUpdate={handleLineUpdate}
+            onBatchUpdate={handleBatchUpdate}
+            onClose={handleModalClose}
+            onDuplicate={handleLineDuplicate}
+            onDelete={handleLineDelete}
+            onDeleteAll={handleLineDelete}
+            viewportBounds={{
+              width: containerRef.current?.clientWidth || window.innerWidth,
+              height: containerRef.current?.clientHeight || window.innerHeight,
+              scrollX: 0,
+              scrollY: 0,
             }}
-          >
-            <span className="text-sm text-neutral-700">Width</span>
-
-            {/* Decrement Button */}
-            <button
-              type="button"
-              onClick={decrementWidth}
-              disabled={lines.find(l => l.id === selectedId)?.width === 1}
-              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Decrease width"
-              title="Decrease width (or press [)"
-            >
-              <ChevronDown className="w-4 h-4 text-neutral-700" />
-            </button>
-
-            {/* Number Input Field */}
-            <input
-              type="number"
-              min={1}
-              max={60}
-              value={lines.find(l => l.id === selectedId)?.width ?? 8}
-              onChange={handleWidthInputChange}
-              onBlur={handleWidthInputBlur}
-              className="w-16 px-2 py-1 text-center text-sm border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)] focus:border-transparent tabular-nums transition-shadow"
-              aria-label="Line width value"
-              title="Enter width (1-60)"
-            />
-
-            {/* Increment Button */}
-            <button
-              type="button"
-              onClick={incrementWidth}
-              disabled={lines.find(l => l.id === selectedId)?.width === 60}
-              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Increase width"
-              title="Increase width (or press ])"
-            >
-              <ChevronUp className="w-4 h-4 text-neutral-700" />
-            </button>
-
-            {/* Display unit */}
-            <span className="w-10 text-right tabular-nums text-sm text-neutral-800">
-              {(lines.find(l => l.id === selectedId)?.width ?? 8)}px
-            </span>
-
-            {/* Vertical Divider */}
-            <div className="h-6 w-px bg-neutral-300" />
-
-            {/* Length Controls */}
-            <span className="text-sm text-neutral-700">Length</span>
-
-            {/* Decrement Length Button */}
-            <button
-              type="button"
-              onClick={decrementLength}
-              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Decrease length"
-              title={`Decrease length by 1 ${currentScale.unit === 'metric' ? 'cm' : 'inch'}`}
-            >
-              <ChevronDown className="w-4 h-4 text-neutral-700" />
-            </button>
-
-            {/* Length Input Field */}
-            <input
-              type="number"
-              min={0.1}
-              step={0.1}
-              value={getSelectedLineLength().toFixed(1)}
-              onChange={handleLengthInputChange}
-              onBlur={handleLengthInputBlur}
-              className="w-20 px-2 py-1 text-center text-sm border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--tech-blue-600)] focus:border-transparent tabular-nums transition-shadow"
-              aria-label="Line length value"
-              title={`Enter length in ${currentScale.unit === 'metric' ? 'centimeters' : 'inches'}`}
-            />
-
-            {/* Increment Length Button */}
-            <button
-              type="button"
-              onClick={incrementLength}
-              className="w-7 h-7 flex items-center justify-center rounded border border-neutral-300 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              aria-label="Increase length"
-              title={`Increase length by 1 ${currentScale.unit === 'metric' ? 'cm' : 'inch'}`}
-            >
-              <ChevronUp className="w-4 h-4 text-neutral-700" />
-            </button>
-
-            {/* Display length unit */}
-            <span className="w-12 text-right tabular-nums text-sm text-neutral-800">
-              {currentScale.unit === 'metric' ? 'cm' : 'in'}
-            </span>
-
-            {/* Delete Button */}
-            <button
-              type="button"
-              onClick={() => deleteLine(selectedId)}
-              className="ml-2 px-2 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
-              aria-label="Delete selected line"
-            >
-              Delete
-            </button>
-          </div>
+            canvasBounds={containerRef.current?.getBoundingClientRect()}
+            isOpen={isModalOpen}
+          />
         )}
 
         {/* Draw Mode Toggle Button */}

@@ -1,14 +1,14 @@
 # HVAC Drawing Tool
 
-A professional CAD-style drawing application for HVAC duct design with intelligent snap-to-line functionality and real-time measurement summaries.
+A professional CAD-style drawing application for HVAC duct design with comprehensive line properties editor, intelligent snap-to-line functionality, and real-time HVAC calculations.
 
 ![HVAC Drawing Tool](https://img.shields.io/badge/status-production%20ready-brightgreen)
 ![CI/CD](https://github.com/engryamato/hvac-canvas/workflows/CI/badge.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.1-blue)
 ![React](https://img.shields.io/badge/React-18.2-blue)
-![Tests](https://img.shields.io/badge/tests-188%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-325%20passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen)
-![E2E](https://img.shields.io/badge/E2E-29%2F30-yellow)
+![E2E](https://img.shields.io/badge/E2E-13%2F34-yellow)
 ![Bundle Size](https://img.shields.io/badge/bundle-161%20KB-success)
 ![Build Time](https://img.shields.io/badge/build-632ms-success)
 
@@ -22,6 +22,15 @@ A professional CAD-style drawing application for HVAC duct design with intellige
 - **Snap-to-Line** - Automatically snap to endpoints, midpoints, and line segments
 - **Visual Feedback** - Cyan dot shows snap points
 - **Escape to Cancel** - Cancel drawing anytime
+
+### 🏗️ Line Properties Modal (NEW)
+- **Comprehensive Duct Editor** - Full-featured property editor for HVAC ducts
+- **Three-Tab Interface** - Properties, Calculations, and Advanced tabs
+- **Duct Properties** - Type (Supply/Return), width, material, gauge, layer
+- **HVAC Calculations** - Real-time velocity, friction, and pressure calculations
+- **Multi-Select Mode** - Batch edit multiple ducts simultaneously
+- **Smart Positioning** - Floats near selected line with automatic boundary detection
+- **Full Accessibility** - ARIA labels, keyboard navigation, screen reader support
 
 ### 📏 Measurements
 - **Automatic Scaling** - Default 1:1 (1 pixel = 1 inch)
@@ -38,8 +47,8 @@ A professional CAD-style drawing application for HVAC duct design with intellige
 ### 🎛️ Interface
 - **Collapsible Sidebar** - 320px sidebar with toggle
 - **Responsive Canvas** - Auto-adjusts to sidebar state
-- **Width Adjustment** - Slider or keyboard shortcuts
-- **Line Selection** - Click to select, delete with button or key
+- **Width Adjustment** - Quick-select chips or dropdown
+- **Line Selection** - Click to select, Shift+click for multi-select
 
 ---
 
@@ -77,21 +86,38 @@ Open your browser to `http://localhost:5174/`
 3. **Cancel Drawing**
    - Press **Escape** key
 
-### Adjusting Line Width
+### Editing Line Properties
 
-**Before Drawing:**
-- Press **[** to decrease width
-- Press **]** to increase width
+**Single Line:**
+1. Click a line to select it
+2. The Line Properties Modal opens automatically
+3. Edit properties in three tabs:
+   - **Properties:** Type, width, material, gauge, layer
+   - **Calculations:** Airflow (CFM), velocity, friction, pressure
+   - **Advanced:** Notes, tags, custom properties, metadata
 
-**After Drawing:**
-- Click a line to select it
-- Use the slider or **[** / **]** keys
+**Multiple Lines (Batch Edit):**
+1. Click first line to select it
+2. Hold **Shift** and click additional lines
+3. Modal shows "X Lines Selected" header
+4. Edit properties - changes apply to all selected lines
+5. Click **Apply** to save changes
+
+**Quick Width Adjustment:**
+- Use quick-select chips (6", 8", 10", 12", 14")
+- Or select from dropdown (4"-40" standard widths)
 
 ### Deleting Lines
 
+**Single Line:**
 1. Click a line to select it
-2. Click the **Delete** button
+2. Click **Delete** button in modal footer
 3. Or press **Delete** or **Backspace** key
+
+**Multiple Lines:**
+1. Select multiple lines with **Shift+click**
+2. Click **Delete All** button in modal footer
+3. Confirm deletion
 
 ### Using the Sidebar
 
@@ -110,11 +136,14 @@ Open your browser to `http://localhost:5174/`
 | Key | Action |
 |-----|--------|
 | **D** | Toggle draw mode on/off |
-| **Escape** | Cancel current drawing |
-| **[** | Decrease line width |
-| **]** | Increase line width |
-| **Delete** | Delete selected line |
-| **Backspace** | Delete selected line |
+| **Escape** | Cancel current drawing / Close modal |
+| **Delete** | Delete selected line(s) |
+| **Backspace** | Delete selected line(s) |
+| **Shift+Click** | Add line to selection (multi-select) |
+| **Cmd/Ctrl+D** | Duplicate selected line(s) |
+| **Tab** | Navigate through modal fields |
+| **Enter** | Activate button / Select dropdown option |
+| **Arrow Up/Down** | Navigate dropdown options |
 
 ---
 

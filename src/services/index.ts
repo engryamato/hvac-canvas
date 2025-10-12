@@ -39,3 +39,13 @@ export {
   transformCanvasToScreen,
 } from './viewport';
 
+// Line property services
+export {
+  initializeLineDefaults,
+  updateLineProperties,
+  validateLineProperties,
+  batchUpdateLines,
+  getMixedValue,
+  duplicateLine,
+  calculateAggregateStats,
+} from './line';

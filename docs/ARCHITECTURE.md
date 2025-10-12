@@ -61,18 +61,27 @@ The application follows a strict layered architecture with enforced dependency f
 **Purpose:** Define all TypeScript interfaces and type aliases
 
 **Files:**
-- `canvas.types.ts` - Canvas primitives (Pt, Line, ViewportTransform)
-- `drawing.types.ts` - Drawing state (DrawingPhase)
+- `canvas.types.ts` - Canvas primitives (Pt, ViewportTransform)
+- `drawing.types.ts` - Line model with duct properties (Line, DuctType, Material, Gauge)
+- `duct.types.ts` - Duct-specific types (MaterialOption, GaugeOption, DuctTypeConfig)
+- `modal.types.ts` - Modal state types (ModalTab, ModalPosition, CalculationResults)
 - `scale.types.ts` - Measurement scales (Scale, LineSummaryRow)
 - `snap.types.ts` - Snap detection (SnapType, SnapTarget)
+- `pdf.types.ts` - PDF state (PdfState)
 
 **Dependencies:** None (foundation layer)
 
 **Key Types:**
 ```typescript
 interface Pt { x: number; y: number; }
-interface Line { id: string; start: Pt; end: Pt; width: number; color: string; }
-type DrawingPhase = 'idle' | 'waiting-for-end' | 'selected';
+interface Line {
+  id: string; a: Pt; b: Pt; width: number; color: string;
+  type: DuctType; material: Material; gauge: Gauge; airflow: number;
+  notes: string; tags: string[]; customProperties: Record<string, string>;
+  metadata: LineMetadata;
+}
+type DrawingPhase = 'idle' | 'waiting-for-end';
+type ModalTab = 'properties' | 'calculations' | 'advanced';
 ```
 
 ### 2. Constants Layer (`src/constants/`)
@@ -81,9 +90,13 @@ type DrawingPhase = 'idle' | 'waiting-for-end' | 'selected';
 
 **Files:**
 - `canvas.constants.ts` - Canvas config (zoom, selection, hit test)
+- `duct.constants.ts` - Duct properties (DUCT_TYPES, MATERIALS, GAUGES, STANDARD_WIDTHS)
+- `modal.constants.ts` - Modal dimensions and animations
+- `calculations.constants.ts` - HVAC calculation formulas (Wright equation, velocity pressure)
 - `scale.constants.ts` - Scale definitions (architectural, engineering, metric)
 - `snap.constants.ts` - Snap thresholds and indicators
 - `theme.constants.ts` - Theme tokens (TechBlueTokens)
+- `design-tokens.ts` - Design system tokens
 
 **Dependencies:** Types
 
@@ -93,6 +106,9 @@ ZOOM_FACTOR = 1.2
 MIN_LINE_LENGTH = 5
 SNAP_THRESHOLD_ENDPOINT = 15
 ARCHITECTURAL_SCALES = [...]
+DUCT_TYPES = { supply: {...}, return: {...} }
+MODAL_WIDTH = 220
+MAX_RECOMMENDED_VELOCITY = 1500
 ```
 
 ### 3. Utils Layer (`src/utils/`)
@@ -339,6 +355,60 @@ tests/
 
 ---
 
+## Feature Modules
+
+### Line Properties Modal (In Development)
+
+**Status:** 🚧 Phase 1 Complete (Foundation Layer)
+**Documentation:** [LINE_PROPERTIES_MODAL.md](./LINE_PROPERTIES_MODAL.md)
+
+A comprehensive duct property editor that replaces the simple WidthHUD with full HVAC functionality:
+
+**Architecture:**
+```
+Components/LinePropertiesModal/
+├── LinePropertiesModal.tsx (main)
+├── ModalHeader.tsx, TabBar.tsx, ModalFooter.tsx
+├── PropertiesTab/ (type, width, material, gauge, layer)
+├── CalculationsTab/ (airflow, velocity, friction, pressure)
+├── AdvancedTab/ (notes, tags, custom properties, metadata)
+├── MultiSelect/ (batch editing, mixed values, aggregate stats)
+└── shared/ (Dropdown, Button, Input, Chip, etc.)
+
+Hooks/
+├── useModalPosition.ts (smart positioning with boundary detection)
+├── useModalAnimation.ts (200ms open, 150ms close animations)
+└── useModalKeyboard.ts (keyboard navigation, focus trap)
+
+Services/line/
+└── LinePropertiesService.ts (CRUD, validation, batch operations)
+
+Utils/
+├── hvac/calculations.ts (velocity, friction, pressure formulas)
+└── modal/positioning.ts (modal placement logic)
+
+Constants/
+├── duct.constants.ts (DUCT_TYPES, MATERIALS, GAUGES, WIDTHS)
+├── modal.constants.ts (dimensions, animations, limits)
+└── calculations.constants.ts (HVAC formulas, precision)
+
+Types/
+├── drawing.types.ts (extended Line with duct properties)
+├── duct.types.ts (MaterialOption, GaugeOption, etc.)
+└── modal.types.ts (ModalTab, ModalPosition, CalculationResults)
+```
+
+**Key Features:**
+- 220px compact width, three-tab interface
+- Real-time HVAC calculations (velocity, friction, pressure)
+- Multi-select mode with batch operations
+- Smart positioning with 16px viewport clearance
+- Full accessibility (ARIA, keyboard nav, screen readers)
+
+**Implementation Progress:** 14/103 tasks (13.6%)
+
+---
+
 ## Future Enhancements
 
 ### Potential Improvements
@@ -365,4 +435,5 @@ tests/
 - **Testing Strategy:** `docs/TESTING_STRATEGY.md` - Testing approach
 - **Refactor Scorecard:** `docs/REFACTOR_SCORECARD.md` - Metrics tracking
 - **Directory READMEs:** `src/*/README.md` - Layer-specific documentation
+- **Line Properties Modal:** `docs/LINE_PROPERTIES_MODAL.md` - Feature documentation
 
