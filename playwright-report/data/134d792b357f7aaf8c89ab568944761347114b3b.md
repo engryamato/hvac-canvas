@@ -1,0 +1,63 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "Drawing canvas" [ref=e5]
+    - button "Enable Draw tool" [ref=e6]:
+      - img [ref=e7]
+  - button "Collapse sidebar" [ref=e10]:
+    - img [ref=e11]
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - heading "Line Summary" [level=2] [ref=e15]
+      - paragraph [ref=e16]: "Scale: Custom (64px = 1\")"
+    - table [ref=e18]:
+      - rowgroup [ref=e19]:
+        - row "Width Count Total Length" [ref=e20]:
+          - cell "Width" [ref=e21]
+          - cell "Count" [ref=e22]
+          - cell "Total Length" [ref=e23]
+      - rowgroup [ref=e24]:
+        - row "8\" 3 1'-2\"" [ref=e25]:
+          - cell "8\"" [ref=e26]
+          - cell "3" [ref=e27]
+          - cell "1'-2\"" [ref=e28]
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - button "Upload PDF file" [ref=e31]
+      - button "Upload PDF" [ref=e32]:
+        - img [ref=e33]
+        - generic [ref=e36]: Upload PDF
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - button "Zoom out" [ref=e39]:
+          - img [ref=e40]
+        - generic [ref=e43]: 100%
+        - button "Zoom in" [ref=e44]:
+          - img [ref=e45]
+      - generic [ref=e48]:
+        - generic [ref=e49]: "Scale:"
+        - combobox "Select drawing scale" [ref=e50]:
+          - option "1/16\" = 1'-0\"" [selected]
+          - option "1/8\" = 1'-0\""
+          - option "1/4\" = 1'-0\""
+          - option "1/2\" = 1'-0\""
+          - option "3/4\" = 1'-0\""
+          - option "1\" = 1'-0\""
+          - option "1\" = 10'"
+          - option "1\" = 20'"
+          - option "1\" = 30'"
+          - option "1\" = 40'"
+          - option "1\" = 50'"
+          - option "1\" = 60'"
+          - option "1:1"
+          - option "1:5"
+          - option "1:10"
+          - option "1:20"
+          - option "1:50"
+          - option "1:100"
+          - option "1:200"
+          - option "1:500"
+    - generic [ref=e52]: Right-click + drag to pan
+```
