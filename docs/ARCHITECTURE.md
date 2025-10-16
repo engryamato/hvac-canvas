@@ -378,7 +378,8 @@ Components/LinePropertiesModal/
 Hooks/
 ├── useModalPosition.ts (smart positioning with boundary detection)
 ├── useModalAnimation.ts (200ms open, 150ms close animations)
-└── useModalKeyboard.ts (keyboard navigation, focus trap)
+├── useModalKeyboard.ts (keyboard navigation, focus trap)
+└── useModalDrag.ts (drag and drop with viewport constraints)
 
 Services/line/
 └── LinePropertiesService.ts (CRUD, validation, batch operations)

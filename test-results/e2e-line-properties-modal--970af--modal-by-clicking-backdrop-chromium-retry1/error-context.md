@@ -4,7 +4,7 @@
 - generic [ref=e3]:
   - generic [ref=e4]:
     - img "Drawing canvas" [ref=e5]
-    - button "Enable Draw tool" [ref=e6]:
+    - button "Disable Draw tool" [pressed] [ref=e6]:
       - img [ref=e7]
   - button "Collapse sidebar" [ref=e10]:
     - img [ref=e11]
@@ -19,10 +19,10 @@
           - cell "Count" [ref=e22]
           - cell "Total Length" [ref=e23]
       - rowgroup [ref=e24]:
-        - row "8\" 3 1'-2\"" [ref=e25]:
+        - row "8\" 1 3.1\"" [ref=e25]:
           - cell "8\"" [ref=e26]
-          - cell "3" [ref=e27]
-          - cell "1'-2\"" [ref=e28]
+          - cell "1" [ref=e27]
+          - cell "3.1\"" [ref=e28]
   - generic [ref=e29]:
     - generic [ref=e30]:
       - button "Upload PDF file" [ref=e31]

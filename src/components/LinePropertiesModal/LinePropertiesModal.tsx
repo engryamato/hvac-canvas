@@ -22,6 +22,7 @@ import {
 import { useModalPosition, type ViewportBounds } from '../../hooks/useModalPosition';
 import { useModalAnimation } from '../../hooks/useModalAnimation';
 import { useModalKeyboard } from '../../hooks/useModalKeyboard';
+import { useModalDrag } from '../../hooks/useModalDrag';
 import {
   MODAL_WIDTH,
   PROPERTIES_TAB_HEIGHT_COLLAPSED,
@@ -137,7 +138,7 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
   }, [activeTab, isPropertiesExpanded]);
 
   // Use custom hooks
-  const position = useModalPosition({
+  const initialPosition = useModalPosition({
     selectedLineId: firstLine?.id || null,
     lines: selectedLines,
     modalHeight,
@@ -146,6 +147,16 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
   });
 
   const animation = useModalAnimation({ isOpen });
+
+  const { position, isDragging, dragHandleProps } = useModalDrag({
+    initialPosition,
+    isOpen,
+    viewportBounds,
+    modalDimensions: {
+      width: MODAL_WIDTH,
+      height: modalHeight,
+    },
+  });
 
   useModalKeyboard({
     isOpen: isOpen && animation.shouldRender,
@@ -172,37 +183,67 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
   const modalTitleId = 'modal-title';
   const modalDescId = 'modal-description';
 
+  /**
+   * Handle backdrop click to close modal
+   */
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if clicking the backdrop itself, not the modal content
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div
-      ref={modalRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={modalTitleId}
-      aria-describedby={isMultiSelect ? modalDescId : undefined}
-      className={[
-        'fixed bg-white rounded-lg shadow-lg p-4',
-        animation.animationClass,
-      ].join(' ')}
-      style={{
-        width: `${MODAL_WIDTH}px`,
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transition: 'left 200ms ease-in-out, top 200ms ease-in-out',
-        zIndex: 1000,
-      }}
-    >
-      {/* Header */}
-      {isMultiSelect ? (
-        <>
-          <MultiSelectHeader selectedCount={selectedLines.length} onClose={onClose} />
-          {/* Hidden description for screen readers */}
-          <span id={modalDescId} className="sr-only">
-            Editing {selectedLines.length} lines simultaneously. Changes will apply to all selected lines.
-          </span>
-        </>
-      ) : (
-        <ModalHeader onClose={onClose} titleId={modalTitleId} />
-      )}
+    <>
+      {/* Backdrop */}
+      <div
+        className={[
+          'fixed inset-0 bg-black/20',
+          animation.animationClass,
+        ].join(' ')}
+        style={{ zIndex: 999 }}
+        onClick={handleBackdropClick}
+        aria-hidden="true"
+      />
+
+      {/* Modal */}
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={modalTitleId}
+        aria-describedby={isMultiSelect ? modalDescId : undefined}
+        className={[
+          'fixed bg-white rounded-lg shadow-lg p-4',
+          animation.animationClass,
+        ].join(' ')}
+        style={{
+          width: `${MODAL_WIDTH}px`,
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          // Disable transition during drag for immediate feedback
+          transition: isDragging ? 'none' : 'left 200ms ease-in-out, top 200ms ease-in-out',
+          zIndex: 1000,
+        }}
+      >
+        {/* Header */}
+        {isMultiSelect ? (
+          <>
+            <MultiSelectHeader
+              selectedCount={selectedLines.length}
+              dragHandleProps={dragHandleProps}
+            />
+            {/* Hidden description for screen readers */}
+            <span id={modalDescId} className="sr-only">
+              Editing {selectedLines.length} lines simultaneously. Changes will apply to all selected lines.
+            </span>
+          </>
+        ) : (
+          <ModalHeader
+            titleId={modalTitleId}
+            dragHandleProps={dragHandleProps}
+          />
+        )}
 
       <Separator className="my-2" aria-hidden="true" />
 
@@ -252,7 +293,8 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
       ) : (
         <ModalFooter onDuplicate={onDuplicate} onDelete={onDelete} />
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

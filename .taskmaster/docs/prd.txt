@@ -1,0 +1,365 @@
+# Product Requirements Document (PRD)
+# HVAC Canvas - Line Properties Modal Feature
+
+## Document Information
+- **Project:** HVAC Canvas
+- **Feature:** Line Properties Modal
+- **Version:** 1.0
+- **Date:** 2025-10-16
+- **Status:** In Development (Phase 1 Complete - 14/103 tasks)
+- **Priority:** High
+- **Target Release:** Q1 2026
+
+---
+
+## Executive Summary
+
+The Line Properties Modal is a comprehensive floating panel that replaces the simple WidthHUD component with a full-featured duct property editor for HVAC professionals. This feature enables users to edit duct properties, calculate airflow metrics, manage metadata, and perform batch operations on multiple ducts simultaneously.
+
+### Business Value
+- **Increased Productivity:** Reduce time spent editing duct properties by 60%
+- **Improved Accuracy:** Real-time HVAC calculations prevent design errors
+- **Professional Workflow:** Match industry-standard CAD software capabilities
+- **User Satisfaction:** Comprehensive property management in a compact, intuitive interface
+
+---
+
+## Problem Statement
+
+### Current Limitations
+1. **Limited Property Editing:** Only duct width can be edited via WidthHUD
+2. **No Calculations:** Users must manually calculate velocity, friction, and pressure
+3. **Missing Metadata:** No way to add notes, tags, or custom properties
+4. **No Batch Operations:** Must edit each duct individually
+5. **Poor UX:** Simple HUD doesn't match professional CAD software expectations
+
+### User Pain Points
+- HVAC designers waste time switching between the app and external calculators
+- No way to organize ducts by layer, material, or custom categories
+- Difficult to maintain consistency across multiple ducts
+- Cannot track when ducts were created or modified
+- No validation warnings for high-velocity ducts
+
+---
+
+## Goals & Success Metrics
+
+### Primary Goals
+1. **Replace WidthHUD** with comprehensive property editor
+2. **Add HVAC Calculations** for velocity, friction, and pressure
+3. **Enable Batch Editing** for multiple selected ducts
+4. **Improve UX** with professional, accessible interface
+
+### Success Metrics
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Property Edit Time | <5 seconds | Time from click to save |
+| Calculation Accuracy | 100% | Match ASHRAE standards |
+| User Satisfaction | ≥4.5/5 | Post-release survey |
+| Batch Edit Usage | ≥30% | % of edits using multi-select |
+| Accessibility Score | 100% | Lighthouse audit |
+
+---
+
+## User Stories
+
+### Epic 1: Basic Property Editing
+**As an** HVAC designer  
+**I want to** edit duct properties (type, width, material, gauge, layer)  
+**So that** I can accurately specify duct characteristics
+
+**Acceptance Criteria:**
+- Click any line to open modal
+- Edit duct type (Supply/Return) with color update
+- Select width from dropdown or quick-select chips
+- Choose material from 5 options
+- Select gauge from 5 options
+- Assign to layer
+- Changes save immediately
+- Modal closes on backdrop click or Escape key
+
+### Epic 2: HVAC Calculations
+**As an** HVAC designer  
+**I want to** see real-time airflow calculations  
+**So that** I can validate duct sizing without external tools
+
+**Acceptance Criteria:**
+- Enter CFM (airflow) value
+- See calculated velocity (fpm)
+- See calculated friction loss (in.wc/100ft)
+- See calculated velocity pressure (in)
+- Warning displayed if velocity > 1500 fpm
+- Suggested optimal width shown when warning appears
+- All calculations follow ASHRAE standards
+
+### Epic 3: Metadata Management
+**As an** HVAC designer  
+**I want to** add notes, tags, and custom properties  
+**So that** I can organize and document my design
+
+**Acceptance Criteria:**
+- Add notes up to 120 characters
+- Create and assign tags
+- Add custom key-value properties
+- See creation and modification timestamps
+- All metadata persists with the duct
+
+### Epic 4: Batch Operations
+**As an** HVAC designer  
+**I want to** edit multiple ducts simultaneously  
+**So that** I can maintain consistency efficiently
+
+**Acceptance Criteria:**
+- Select multiple ducts (Shift+Click or Ctrl+Click)
+- Modal shows aggregate stats (count, total length)
+- Mixed values indicated with "Mixed" placeholder
+- Changes apply to all selected ducts
+- Unchanged properties remain as-is
+- Clear visual feedback for multi-select mode
+
+---
+
+## Functional Requirements
+
+### FR-1: Modal Behavior
+- **FR-1.1:** Modal opens when user clicks any line
+- **FR-1.2:** Modal positions near selected line with 16px viewport clearance
+- **FR-1.3:** Modal can be dragged by header to any position
+- **FR-1.4:** Modal closes on backdrop click or Escape key
+- **FR-1.5:** Modal width fixed at 220px
+- **FR-1.6:** Modal height adjusts based on active tab and content
+
+### FR-2: Properties Tab
+- **FR-2.1:** Duct type selector (Supply/Return) with color indicators
+- **FR-2.2:** Width dropdown with all standard sizes (4"-40")
+- **FR-2.3:** Quick-select width chips (6", 8", 10", 12", 14")
+- **FR-2.4:** Material dropdown (5 options)
+- **FR-2.5:** Gauge dropdown (5 options)
+- **FR-2.6:** Layer dropdown (5 default layers + custom)
+- **FR-2.7:** Expand/collapse section for advanced properties
+
+### FR-3: Calculations Tab
+- **FR-3.1:** CFM input field with validation
+- **FR-3.2:** Velocity display (calculated, read-only)
+- **FR-3.3:** Friction loss display (calculated, read-only)
+- **FR-3.4:** Velocity pressure display (calculated, read-only)
+- **FR-3.5:** Warning indicator for velocity > 1500 fpm
+- **FR-3.6:** Suggested optimal width when warning shown
+- **FR-3.7:** All calculations use Wright Equation and ASHRAE standards
+
+### FR-4: Advanced Tab
+- **FR-4.1:** Notes textarea (max 120 characters)
+- **FR-4.2:** Tag input with chip display
+- **FR-4.3:** Custom properties key-value editor
+- **FR-4.4:** Creation timestamp (read-only)
+- **FR-4.5:** Last modified timestamp (read-only)
+
+### FR-5: Multi-Select Mode
+- **FR-5.1:** Aggregate stats display (count, total length)
+- **FR-5.2:** Mixed value indicators
+- **FR-5.3:** Batch update all selected ducts
+- **FR-5.4:** Clear visual distinction from single-select mode
+
+---
+
+## Non-Functional Requirements
+
+### NFR-1: Performance
+- Modal opens in <200ms
+- Calculations update in <50ms
+- Smooth 60fps animations
+- No jank during drag operations
+
+### NFR-2: Accessibility
+- WCAG 2.1 Level AA compliance
+- Full keyboard navigation support
+- Screen reader compatible
+- Focus management (trap, return)
+- Minimum 44px touch targets
+
+### NFR-3: Usability
+- Intuitive interface requiring no training
+- Clear visual hierarchy
+- Consistent with design system
+- Responsive to user actions
+- Helpful error messages
+
+### NFR-4: Reliability
+- 100% calculation accuracy
+- Data persistence guaranteed
+- Graceful error handling
+- No data loss on modal close
+
+### NFR-5: Maintainability
+- Follows layered architecture
+- Comprehensive test coverage (≥80%)
+- Clear documentation
+- No circular dependencies
+
+---
+
+## Technical Architecture
+
+### Component Structure
+```
+LinePropertiesModal/
+├── LinePropertiesModal.tsx (main)
+├── ModalHeader.tsx
+├── TabBar.tsx
+├── ModalFooter.tsx
+├── PropertiesTab/
+│   ├── DuctTypeSelector.tsx
+│   ├── WidthSelector.tsx
+│   ├── MaterialSelector.tsx
+│   ├── GaugeSelector.tsx
+│   └── LayerSelector.tsx
+├── CalculationsTab/
+│   ├── CFMInput.tsx
+│   ├── CalculationResults.tsx
+│   └── VelocityWarning.tsx
+├── AdvancedTab/
+│   ├── NotesInput.tsx
+│   ├── TagsInput.tsx
+│   ├── CustomProperties.tsx
+│   └── Timestamps.tsx
+├── MultiSelect/
+│   ├── AggregateStats.tsx
+│   └── MixedValueIndicator.tsx
+└── shared/
+    ├── Dropdown.tsx
+    ├── Input.tsx
+    ├── Button.tsx
+    ├── Chip.tsx
+    └── Label.tsx
+```
+
+### Data Flow
+1. User clicks line → DrawingCanvas sets selectedLineId
+2. LinePropertiesModal receives line data via props
+3. User edits properties → Local state updates
+4. On blur/change → Service validates and updates line
+5. DrawingCanvas re-renders with updated line
+
+### State Management
+- **Local State:** Modal position, active tab, form values
+- **Props:** Selected line data, update callbacks
+- **Services:** CRUD operations, validation, calculations
+
+---
+
+## Implementation Phases
+
+### Phase 1: Foundation Layer ✅ COMPLETE (14/14 tasks)
+- Extended Line type with duct properties
+- Created type definitions (duct.types.ts, modal.types.ts)
+- Created constants (duct.constants.ts, modal.constants.ts, calculations.constants.ts)
+- Updated barrel exports
+
+### Phase 2: Utility Layer 🚧 PENDING (10 tasks)
+- HVAC calculation functions
+- Modal positioning logic
+- Calculation formatting
+- Optimal width suggestions
+
+### Phase 3: Service Layer 🚧 PENDING (8 tasks)
+- LinePropertiesService (CRUD operations)
+- Validation logic
+- Batch update operations
+- Mixed value detection
+
+### Phase 4-13: Remaining Phases 🚧 PENDING (71 tasks)
+- Shared UI components
+- Tab components
+- Multi-select mode
+- Main modal assembly
+- Styling & design tokens
+- Accessibility features
+- Integration with DrawingCanvas
+- Testing & documentation
+
+**Total:** 103 tasks (14 complete, 89 pending)
+
+---
+
+## Dependencies & Constraints
+
+### Dependencies
+- React 18.2.0
+- TypeScript 5.1.6
+- Existing DrawingCanvas component
+- Design system tokens
+
+### Constraints
+- Must maintain <200 line file limit per module
+- Must achieve ≥80% test coverage
+- Must follow layered architecture
+- Must not introduce circular dependencies
+- Must maintain bundle size <176 KB
+
+---
+
+## Risks & Mitigation
+
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| Calculation accuracy issues | High | Low | Use ASHRAE standards, comprehensive testing |
+| Performance degradation | Medium | Low | Optimize calculations, use React.memo |
+| Accessibility gaps | Medium | Medium | Follow WCAG 2.1, use automated testing |
+| Complex state management | Medium | Medium | Use custom hooks, clear data flow |
+| Integration issues | Low | Low | Incremental integration, E2E tests |
+
+---
+
+## Timeline & Milestones
+
+### Milestone 1: Utility & Service Layers (Week 1-2)
+- Complete Phase 2: Utility Layer
+- Complete Phase 3: Service Layer
+- **Deliverable:** Calculation and business logic complete
+
+### Milestone 2: UI Components (Week 3-4)
+- Complete Phase 4: Shared Components
+- Complete Phase 5-7: Tab Components
+- **Deliverable:** All UI components built and tested
+
+### Milestone 3: Integration & Polish (Week 5-6)
+- Complete Phase 8-9: Multi-select and Assembly
+- Complete Phase 10-11: Styling and Accessibility
+- **Deliverable:** Fully functional modal
+
+### Milestone 4: Testing & Launch (Week 7-8)
+- Complete Phase 12: Integration
+- Complete Phase 13: Testing & Documentation
+- **Deliverable:** Production-ready feature
+
+**Total Duration:** 8 weeks
+
+---
+
+## Appendix
+
+### HVAC Calculation Formulas
+
+**Velocity (fpm):**
+```
+V = (CFM × 144) / (W² × π/4)
+```
+
+**Friction Loss (in.wc/100ft) - Wright Equation:**
+```
+F = (0.109136 × Q^1.9) / (D^5.02)
+D = 1.30 × ((W × W)^0.625) / ((W + W)^0.25)
+```
+
+**Velocity Pressure (in):**
+```
+VP = (V / 4005)²
+```
+
+### References
+- ASHRAE Fundamentals Handbook
+- SMACNA HVAC Duct Design Manual
+- Notion Wireframes: https://www.notion.so/Line-Properties-Modal-Wireframes-cad8bca63e5a413793a0dd2bb698f85f
+- Project Architecture: docs/ARCHITECTURE.md
+- Current Status: docs/LINE_PROPERTIES_MODAL.md
+

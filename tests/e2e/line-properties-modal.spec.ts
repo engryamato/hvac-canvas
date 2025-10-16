@@ -98,7 +98,7 @@ test.describe('Line Properties Modal - E2E Tests', () => {
       await expect(modal.getByText('Length')).toBeVisible();
     });
 
-    test('should close modal with close button', async ({ page }) => {
+    test('should close modal by clicking backdrop', async ({ page }) => {
       // Draw a line and open modal
       await page.getByRole('button', { name: 'Enable Draw tool' }).click();
       await drawLineAndOpenModal(page, 100, 100, 300, 100);
@@ -106,8 +106,9 @@ test.describe('Line Properties Modal - E2E Tests', () => {
       // Modal should be visible
       await expect(page.getByRole('dialog', { name: /line properties/i })).toBeVisible();
 
-      // Click close button
-      await page.getByRole('button', { name: /close/i }).click();
+      // Click on backdrop (outside the modal) to close it
+      // Click at a position that's definitely outside the modal (top-left corner)
+      await page.mouse.click(10, 10);
 
       // Modal should be hidden
       await expect(page.getByRole('dialog', { name: /line properties/i })).not.toBeVisible();

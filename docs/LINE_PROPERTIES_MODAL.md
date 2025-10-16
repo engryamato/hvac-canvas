@@ -36,6 +36,8 @@ The Line Properties Modal is a comprehensive floating panel that replaces the si
 - **220px compact width** - Minimal canvas obstruction
 - **Three-tab interface** - Properties, Calculations, Advanced
 - **Smart positioning** - Floats near selected line with 16px viewport clearance
+- **Draggable modal** - Click and drag header to reposition anywhere on screen
+- **Backdrop dismissal** - Click outside modal to close (no close button)
 - **Real-time calculations** - HVAC formulas with validation and warnings
 - **Multi-select support** - Batch operations with mixed value handling
 - **Full accessibility** - ARIA labels, keyboard navigation, screen reader support
@@ -47,6 +49,31 @@ The Line Properties Modal is a comprehensive floating panel that replaces the si
 - **Colors:** Supply Blue (#2563eb), Return Red (#dc2626)
 - **Animations:** 200ms open, 150ms close, 300ms expand/collapse
 - **Positioning:** Below-center (preferred), above-center, right, left with 16px clearance
+- **Drag Constraints:** Modal kept within viewport bounds (minimum 100px width, 50px height visible)
+
+### User Interaction
+
+**Opening the Modal:**
+- Click any line on the canvas to select it
+- Modal automatically appears near the selected line
+- Smart positioning ensures modal stays within viewport with 16px clearance
+
+**Repositioning the Modal:**
+- Hover over the modal header - cursor changes to "grab" hand
+- Click and drag the header to move the modal anywhere on screen
+- Cursor changes to "grabbing" while dragging
+- Modal cannot be dragged completely off-screen (boundary constraints)
+- Position resets when modal closes and reopens for a different line
+
+**Closing the Modal:**
+- Click anywhere outside the modal (on the backdrop/overlay)
+- Press the Escape key
+- No close button in header for cleaner design
+
+**Navigation:**
+- Use Tab key to navigate between form fields
+- Use Arrow keys within dropdowns and chip selectors
+- All interactions fully keyboard accessible
 
 ---
 
@@ -67,6 +94,7 @@ The Line Properties Modal follows the application's strict layered architecture:
 │  - useModalPosition.ts (positioning logic)                  │
 │  - useModalAnimation.ts (open/close animations)             │
 │  - useModalKeyboard.ts (keyboard navigation)                │
+│  - useModalDrag.ts (drag and drop functionality)            │
 ├─────────────────────────────────────────────────────────────┤
 │  Services (Business Logic)                                  │
 │  - LinePropertiesService.ts (CRUD operations)               │

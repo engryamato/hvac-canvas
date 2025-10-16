@@ -30,6 +30,8 @@ A professional CAD-style drawing application for HVAC duct design with comprehen
 - **HVAC Calculations** - Real-time velocity, friction, and pressure calculations
 - **Multi-Select Mode** - Batch edit multiple ducts simultaneously
 - **Smart Positioning** - Floats near selected line with automatic boundary detection
+- **Draggable Modal** - Click and drag header to reposition anywhere on screen
+- **Backdrop Dismissal** - Click outside modal to close (no close button)
 - **Full Accessibility** - ARIA labels, keyboard navigation, screen reader support
 
 ### 📏 Measurements
@@ -90,11 +92,13 @@ Open your browser to `http://localhost:5174/`
 
 **Single Line:**
 1. Click a line to select it
-2. The Line Properties Modal opens automatically
+2. The Line Properties Modal opens automatically near the selected line
 3. Edit properties in three tabs:
    - **Properties:** Type, width, material, gauge, layer
    - **Calculations:** Airflow (CFM), velocity, friction, pressure
    - **Advanced:** Notes, tags, custom properties, metadata
+4. **Reposition Modal:** Click and drag the header to move it anywhere on screen
+5. **Close Modal:** Click outside the modal or press **Escape** key
 
 **Multiple Lines (Batch Edit):**
 1. Click first line to select it

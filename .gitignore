@@ -5,6 +5,7 @@ build/
 .env
 /.idea
 .vscode
+.cursor/
 package-lock.json
 npm-debug.log
 yarn.lock
