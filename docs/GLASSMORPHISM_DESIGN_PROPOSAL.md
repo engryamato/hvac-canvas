@@ -427,6 +427,8 @@ box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 - **Header Text**: #0F172A for maximum contrast
 - **Tab Text**: Active tabs use white on blue (14:1 contrast)
 - **Inactive Tabs**: #6B7280 on light background (4.6:1 contrast)
+
+
 - **Form Labels**: Maintain #475569 (neutral-600)
 
 #### States to Handle

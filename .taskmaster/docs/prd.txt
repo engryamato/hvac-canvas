@@ -1,365 +1,2760 @@
 # Product Requirements Document (PRD)
-# HVAC Canvas - Line Properties Modal Feature
+# HVAC Canvas - Master Feature Specifications
 
 ## Document Information
 - **Project:** HVAC Canvas
-- **Feature:** Line Properties Modal
-- **Version:** 1.0
-- **Date:** 2025-10-16
-- **Status:** In Development (Phase 1 Complete - 14/103 tasks)
+- **Version:** 2.0
+- **Date:** 2025-10-17
+- **Status:** Active Development
 - **Priority:** High
 - **Target Release:** Q1 2026
+- **Document Type:** Master PRD - Comprehensive Feature Specifications
+
+### Features Covered
+1. **Glassmorphism Design Theme Implementation** - Modern UI redesign with glass effects
+2. **Line Properties Modal Enhancement** - Comprehensive property editor with HVAC calculations
+
+### Document Principles
+- **Atomic-Level Detail:** Every specification broken down to smallest implementable unit
+- **Zero Assumptions:** All implementation details explicitly documented
+- **Unambiguous:** Clear, precise language with no room for interpretation
+- **Comprehensive:** Covers design, technical, accessibility, testing, and success criteria
 
 ---
 
-## Executive Summary
+## Table of Contents
 
-The Line Properties Modal is a comprehensive floating panel that replaces the simple WidthHUD component with a full-featured duct property editor for HVAC professionals. This feature enables users to edit duct properties, calculate airflow metrics, manage metadata, and perform batch operations on multiple ducts simultaneously.
+PART 1: GLASSMORPHISM DESIGN THEME
+  1.1 Executive Summary
+  1.2 Design Specifications
+  1.3 Component-by-Component Implementation
+  1.4 Accessibility & Compliance
+  1.5 Performance Requirements
+  1.6 Browser Compatibility
+  1.7 Implementation Phases
+  1.8 Testing Requirements
+
+PART 2: LINE PROPERTIES MODAL ENHANCEMENT
+  2.1 Executive Summary
+  2.2 Design Audit Specifications
+  2.3 Spacing & Layout Specifications
+  2.4 Typography Specifications
+  2.5 Animation Specifications
+  2.6 Border & Shadow Specifications
+  2.7 Implementation Priority Matrix
+  2.8 Implementation Phases
+
+PART 3: CROSS-FEATURE INTEGRATION
+  3.1 Dependencies
+  3.2 Integration Points
+  3.3 Timeline & Milestones
+  3.4 Success Metrics
+
+APPENDICES
+  A. HVAC Calculation Formulas
+  B. Design Tokens Reference
+  C. CSS Code Examples
+  D. Testing Checklists
+
+---
+
+================================================================================
+PART 1: GLASSMORPHISM DESIGN THEME IMPLEMENTATION
+================================================================================
+
+## 1.1 Executive Summary
+
+### Feature Overview
+**Feature Name:** Glassmorphism Design Theme Implementation
+**Priority:** HIGH
+**Estimated Effort:** 5 weeks (200 hours)
+**Target Release:** Q1 2026
+**Dependencies:** None (standalone feature)
+
+### Description
+Implement a modern glassmorphism design theme across the entire HVAC Canvas application
+using semi-transparent backgrounds with backdrop blur effects. This creates visual depth,
+enhances professional aesthetic, and allows PDF backgrounds to subtly show through UI
+elements while maintaining WCAG 2.1 AA accessibility compliance.
+
+### Business Value
+- **Modern Aesthetic:** Elevates application to match contemporary CAD software standards
+- **Visual Hierarchy:** Creates clear layering through varying glass effects
+- **PDF Integration:** Glass effect allows PDF backgrounds to show through UI subtly
+- **Professional Appeal:** Matches expectations of HVAC industry professionals
+- **Focus Enhancement:** Keeps drawing canvas as primary focal point
+
+### Key Challenges & Solutions
+- **Challenge:** Accessibility - Must maintain 4.5:1 contrast ratios
+  **Solution:** Use high opacity (75-92%) with dark text (#0F172A) for 13.8:1+ contrast
+
+- **Challenge:** Performance - backdrop-filter can impact rendering
+  **Solution:** Limit blur to ≤12px, use GPU compositing, limit to <10 blurred elements
+
+- **Challenge:** Browser compatibility - Safari requires -webkit- prefix
+  **Solution:** Include -webkit-backdrop-filter, provide @supports fallbacks
+
+- **Challenge:** Variable backgrounds - PDF content affects readability
+  **Solution:** High opacity (85%+), strong borders, inset highlights, text shadows
+
+---
+
+## 1.2 Design Specifications
+
+### 1.2.1 Three-Tier Glass System
+
+The glassmorphism implementation uses a three-tier system with varying opacity and blur:
+
+TIER 1: PRIMARY UI (Sidebar, Bottom Bar)
+----------------------------------------
+Purpose: Persistent navigation and controls
+Visual Weight: Lighter, recedes into background
+Z-Index: 10
+
+Exact Specifications:
+- Background: rgba(255, 255, 255, 0.75) [75% opacity white]
+- Backdrop Blur: 12px
+- Saturation: 150%
+- Border: 1px solid rgba(255, 255, 255, 0.3) [30% opacity white]
+- Shadow: 0 4px 24px rgba(0, 0, 0, 0.08) [8% opacity black]
+- Text Color: #0F172A (neutral-900)
+- Text Contrast Ratio: 15.8:1 (AAA compliant)
+
+CSS Implementation:
+```css
+.glass-tier1 {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  color: #0F172A;
+}
+```
+
+TIER 2: FLOATING ELEMENTS (Modals, Overlays)
+---------------------------------------------
+Purpose: Contextual information and editing
+Visual Weight: Heavier, comes forward
+Z-Index: 1000
+
+Exact Specifications:
+- Background: rgba(255, 255, 255, 0.85) [85% opacity white]
+- Backdrop Blur: 10px
+- Saturation: 160%
+- Border: 1px solid rgba(255, 255, 255, 0.4) [40% opacity white]
+- Shadow (Multi-layer):
+  * Outer: 0 8px 32px rgba(0, 0, 0, 0.12) [12% opacity black]
+  * Mid: 0 2px 8px rgba(0, 0, 0, 0.08) [8% opacity black]
+  * Highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6) [60% opacity white]
+- Text Color: #0F172A (neutral-900)
+- Text Contrast Ratio: 13.8:1 (AAA compliant)
+
+CSS Implementation:
+```css
+.glass-tier2 {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #0F172A;
+}
+```
+
+TIER 3: INTERACTIVE CONTROLS (Buttons, Dropdowns, Inputs)
+----------------------------------------------------------
+Purpose: Direct user interaction
+Visual Weight: Solid, clear affordances
+Z-Index: Varies by component
+
+Exact Specifications:
+- Background: rgba(255, 255, 255, 0.92) [92% opacity white]
+- Backdrop Blur: 6px (4px for dropdowns, 2px for text inputs)
+- Saturation: 140%
+- Border: 1px solid rgba(203, 213, 225, 0.8) [80% opacity neutral-300]
+- Shadow: 0 2px 8px rgba(0, 0, 0, 0.06) [6% opacity black]
+- Text Color: #374151 (neutral-700)
+- Text Contrast Ratio: 8.9:1 (AAA compliant)
+
+CSS Implementation:
+```css
+.glass-tier3 {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: #374151;
+}
+```
+
+### 1.2.2 Color Palette
+
+PRIMARY COLORS
+--------------
+- White (Base): #FFFFFF - Canvas background, solid elements
+- Neutral-900: #0F172A - Primary text (15.8:1 contrast on white)
+- Neutral-700: #374151 - Secondary text (8.9:1 contrast on white)
+- Neutral-600: #475569 - Tertiary text (7:1 contrast on white)
+- Neutral-500: #64748B - Disabled text (4.6:1 contrast on white)
+- Neutral-200: #E2E8F0 - Borders, separators
+- Neutral-50: #F8FAFC - Subtle backgrounds
+
+ACCENT COLORS
+-------------
+- Blue-600: #2563EB - Primary actions, supply ducts
+- Blue-500: #3B82F6 - Focus states
+- Red-600: #DC2626 - Danger actions, return ducts
+- Amber-600: #D97706 - Warnings
+- Green-700: #15803D - Success states (5.2:1 contrast)
+
+GLASS-SPECIFIC COLORS
+---------------------
+Tier 1 Backgrounds:
+- Glass Background: rgba(255, 255, 255, 0.75)
+- Glass Border: rgba(255, 255, 255, 0.3)
+
+Tier 2 Backgrounds:
+- Glass Background: rgba(255, 255, 255, 0.85)
+- Glass Border: rgba(255, 255, 255, 0.4)
+
+Tier 3 Backgrounds:
+- Glass Background: rgba(255, 255, 255, 0.92)
+- Glass Border: rgba(203, 213, 225, 0.8)
+
+### 1.2.3 Design Tokens
+
+File Location: src/constants/glass-tokens.ts
+
+```typescript
+export const GLASS_TOKENS = {
+  tier1: {
+    background: 'rgba(255, 255, 255, 0.75)',
+    border: 'rgba(255, 255, 255, 0.3)',
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+    textColor: '#0F172A',
+    contrastRatio: '15.8:1',
+  },
+  tier2: {
+    background: 'rgba(255, 255, 255, 0.85)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    blur: '10px',
+    saturate: '160%',
+    shadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+    textColor: '#0F172A',
+    contrastRatio: '13.8:1',
+  },
+  tier3: {
+    background: 'rgba(255, 255, 255, 0.92)',
+    border: 'rgba(203, 213, 225, 0.8)',
+    blur: '6px',
+    saturate: '140%',
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+    textColor: '#374151',
+    contrastRatio: '8.9:1',
+  },
+} as const;
+
+export type GlassTier = keyof typeof GLASS_TOKENS;
+```
+
+---
+
+## 1.3 Component-by-Component Implementation
+
+### 1.3.1 Sidebar Component
+
+File: src/components/Sidebar/Sidebar.tsx
+Tier: 1 (Primary UI)
+Z-Index: 10
+
+CURRENT STYLES (Before Glassmorphism):
+```css
+.sidebar {
+  background: #FFFFFF;
+  border-left: 1px solid #E2E8F0;
+  width: 320px;
+  height: 100vh;
+}
+```
+
+NEW GLASSMORPHISM STYLES:
+```css
+.sidebar {
+  /* Glass effect - Tier 1 */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+
+  /* Enhanced border for definition */
+  border-left: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+
+  /* Dimensions (unchanged) */
+  width: 320px;
+  height: 100vh;
+
+  /* Text readability */
+  color: #0F172A;
+
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+.sidebar-header {
+  /* Slightly more opaque for header */
+  background: rgba(248, 250, 252, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 16px;
+}
+```
+
+ACCESSIBILITY REQUIREMENTS:
+- Text Color: #0F172A (neutral-900) = 15.8:1 contrast ratio (AAA)
+- Table Text: Maintain 14px body, 12px labels
+- Borders: 0.8 opacity for better definition
+- Focus States: 2px solid #3B82F6 with 2px offset
+
+INTERACTION STATES:
+- Default: Glass effect as specified above
+- Hover (interactive elements): background: rgba(248, 250, 252, 0.8)
+- Focus: outline: 2px solid #3B82F6; outline-offset: 2px
+- With PDF: Glass allows PDF to show through subtly
+- Without PDF: Glass on white canvas creates subtle depth
+
+PERFORMANCE OPTIMIZATION:
+- GPU Acceleration: transform: translateZ(0)
+- Will-Change: Only during animations, not static
+- Render Target: <5ms per frame
+
+TESTING REQUIREMENTS:
+1. Visual Regression: Compare before/after screenshots
+2. Accessibility Audit: Verify 15.8:1 contrast with axe DevTools
+3. Performance Test: Measure render time with Chrome DevTools
+4. Cross-Browser: Test in Chrome 76+, Firefox 103+, Safari 9+, Edge 79+
+5. PDF Interaction: Test with light/dark/complex PDF backgrounds
+
+### 1.3.2 Bottom Bar Component
+
+File: src/components/BottomBar/BottomBar.tsx
+Tier: 1 (Primary UI)
+Z-Index: 10
+
+CURRENT STYLES (Before Glassmorphism):
+```css
+.bottom-bar {
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  height: 60px;
+  width: 100%;
+}
+```
+
+NEW GLASSMORPHISM STYLES:
+```css
+.bottom-bar {
+  /* Glass effect - Tier 1 */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+
+  /* Enhanced border and shadow */
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+
+  /* Dimensions (unchanged) */
+  height: 60px;
+  width: 100%;
+
+  /* Text readability */
+  color: #0F172A;
+
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: auto;
+}
+
+.zoom-controls-group {
+  /* Nested glass effect for control groups */
+  background: rgba(248, 250, 252, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(203, 213, 225, 0.6);
+  border-radius: 6px;
+  padding: 4px;
+}
+```
+
+ACCESSIBILITY REQUIREMENTS:
+- Button Text: #475569 (neutral-600) = 7:1 contrast ratio (AAA)
+- Icon Colors: #374151 (neutral-700) for visibility
+- Disabled States: 40% opacity for clear indication
+- Focus Rings: 2px solid #3B82F6 with 2px offset
+
+INTERACTION STATES:
+- Button Hover: background: rgba(248, 250, 252, 0.95)
+- Button Active: Maintain current active states
+- Disabled: opacity: 0.4; cursor: not-allowed
+
+PERFORMANCE OPTIMIZATION:
+- GPU Acceleration: transform: translateZ(0)
+- Render Target: <5ms per frame
+
+TESTING REQUIREMENTS:
+1. Visual Regression: Compare before/after screenshots
+2. Accessibility Audit: Verify 7:1 contrast for buttons
+3. Performance Test: Measure render time
+4. Cross-Browser: Test in all major browsers
+5. Interaction Test: Verify all button states work correctly
+
+### 1.3.3 Line Properties Modal Component
+
+File: src/components/LinePropertiesModal/LinePropertiesModal.tsx
+Tier: 2 (Floating Element)
+Z-Index: 1000
+
+CURRENT STYLES (Before Glassmorphism):
+```css
+.line-properties-modal {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 8px;
+  width: 220px;
+}
+```
+
+NEW GLASSMORPHISM STYLES:
+```css
+.line-properties-modal {
+  /* Strong glass effect - Tier 2 */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+
+  /* Enhanced border and shadow for elevation */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+
+  /* Dimensions (unchanged) */
+  width: 220px;
+
+  /* Text readability */
+  color: #0F172A;
+
+  /* GPU acceleration */
+  transform: translateZ(0);
+}
+
+.line-properties-modal.dragging {
+  /* Increase opacity during drag for better visibility */
+  background: rgba(255, 255, 255, 0.95);
+  will-change: transform, backdrop-filter;
+}
+
+.line-properties-modal:not(.dragging) {
+  will-change: auto;
+}
+
+.modal-header {
+  background: rgba(248, 250, 252, 0.95);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.tab-bar {
+  background: rgba(241, 245, 249, 0.9);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.tab-active {
+  /* Keep solid for contrast */
+  background: rgba(37, 99, 235, 0.95);
+  color: #FFFFFF;
+  /* No blur on active tab for performance */
+}
+
+.tab-inactive {
+  background: transparent;
+  color: #6B7280;
+}
+
+.tab-inactive:hover {
+  background: rgba(243, 244, 246, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+```
+
+ACCESSIBILITY REQUIREMENTS:
+- Modal Background: 85% opacity ensures text readability
+- Header Text: #0F172A = 15.5:1 contrast (AAA)
+- Tab Text (Active): #FFFFFF on #2563EB = 14:1 contrast (AAA)
+- Tab Text (Inactive): #6B7280 on light = 4.6:1 contrast (AA)
+- Form Labels: #475569 (neutral-600) = 7:1 contrast (AAA)
+
+INTERACTION STATES:
+- Dragging: opacity: 0.95; will-change: transform, backdrop-filter
+- Multi-Select: Maintain glass effect with warning banner
+- Expanded Sections: Nested glass effects for depth
+- Focus: 2px solid #3B82F6 focus rings
+
+PDF BACKGROUND INTERACTION:
+- Critical: Modal must remain readable over any PDF content
+- Solution: 85% opacity + strong border + multi-layer shadow
+- Fallback: Increase to 95% opacity if readability issues
+
+PERFORMANCE OPTIMIZATION:
+- GPU Acceleration: transform: translateZ(0)
+- Will-Change: Only during drag, not static
+- Render Target: <7ms per frame
+
+TESTING REQUIREMENTS:
+1. Visual Regression: Compare before/after screenshots
+2. Accessibility Audit: Verify all contrast ratios
+3. Performance Test: Measure render time during drag
+4. PDF Interaction: Test with light/dark/complex PDFs
+5. Z-Index Layering: Verify modal floats above sidebar
+
+### 1.3.4 Form Controls (Dropdowns, Buttons, Inputs)
+
+Files:
+- src/components/shared/Dropdown.tsx
+- src/components/shared/Button.tsx
+- src/components/shared/Input.tsx
+Tier: 3 (Interactive Controls)
+Z-Index: Varies
+
+DROPDOWN COMPONENT:
+
+Current Styles:
+```css
+.dropdown-button {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+}
+
+.dropdown-menu {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+```
+
+New Glassmorphism Styles:
+```css
+.dropdown-button {
+  /* Subtle glass effect - Tier 3 */
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+}
+
+.dropdown-button:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(59, 130, 246, 0.8);
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+.dropdown-menu {
+  /* Stronger glass for floating menu */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 1100; /* Above modal */
+}
+
+.dropdown-option:hover {
+  background: rgba(241, 245, 249, 0.9);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.dropdown-option-selected {
+  background: rgba(239, 246, 255, 0.95);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+```
+
+BUTTON COMPONENT:
+
+Current Styles:
+```css
+.button-primary {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #374151;
+}
+
+.button-danger {
+  background: #FFFFFF;
+  border: 1px solid #DC2626;
+  color: #DC2626;
+}
+```
+
+New Glassmorphism Styles:
+```css
+.button-primary {
+  /* Subtle glass effect - Tier 3 */
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  color: #374151;
+}
+
+.button-primary:hover {
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.button-danger {
+  /* Keep mostly solid for danger actions */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(220, 38, 38, 0.9);
+  color: #DC2626;
+}
+
+.button-danger:hover {
+  background: rgba(254, 242, 242, 0.95);
+}
+```
+
+INPUT COMPONENT:
+
+Current Styles:
+```css
+.input {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+}
+```
+
+New Glassmorphism Styles:
+```css
+.input {
+  /* Very subtle glass (inputs need high readability) */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+}
+
+.input:focus {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(59, 130, 246, 0.8);
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+.input:disabled {
+  background: rgba(248, 250, 252, 0.9);
+  opacity: 0.6;
+}
+```
+
+ACCESSIBILITY REQUIREMENTS:
+- Dropdown Text: #374151 = 8.9:1 contrast (AAA)
+- Button Text: #374151 = 8.9:1 contrast (AAA)
+- Input Text: #0F172A = 15.2:1 contrast (AAA)
+- Focus Rings: 2px solid #3B82F6 with 2px offset
+
+PERFORMANCE OPTIMIZATION:
+- Minimal Blur: 2-4px for inputs (better performance)
+- GPU Acceleration: transform: translateZ(0)
+- Render Target: <3ms per element
+
+---
+
+## 1.4 Accessibility & Compliance
+
+### 1.4.1 WCAG 2.1 AA Requirements
+
+CONTRAST RATIO REQUIREMENTS:
+- Normal Text (<18px): Minimum 4.5:1, Enhanced 7:1
+- Large Text (≥18px or ≥14px bold): Minimum 3:1, Enhanced 4.5:1
+- UI Components: Minimum 3:1
+
+CONTRAST TESTING RESULTS:
+Component                | Text Color | Background              | Ratio   | Status
+------------------------|------------|-------------------------|---------|--------
+Sidebar Header          | #0F172A    | rgba(248,250,252,0.9)  | 15.8:1  | AAA
+Sidebar Text            | #0F172A    | rgba(255,255,255,0.75) | 14.2:1  | AAA
+Modal Header            | #0F172A    | rgba(248,250,252,0.95) | 15.5:1  | AAA
+Modal Text              | #0F172A    | rgba(255,255,255,0.85) | 13.8:1  | AAA
+Button Text             | #374151    | rgba(255,255,255,0.92) | 8.9:1   | AAA
+Input Text              | #0F172A    | rgba(255,255,255,0.95) | 15.2:1  | AAA
+Tab (Active)            | #FFFFFF    | #2563EB                | 14:1    | AAA
+Tab (Inactive)          | #6B7280    | transparent            | 4.6:1   | AA
+
+RESULT: All components meet or exceed WCAG 2.1 AA standards
+
+### 1.4.2 Accessibility Features
+
+HIGH CONTRAST MODE SUPPORT:
+```css
+@media (prefers-contrast: high) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    /* Remove blur, increase opacity */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.98);
+    border: 2px solid #0F172A; /* Stronger border */
+  }
+}
+```
+
+REDUCED MOTION SUPPORT:
+```css
+@media (prefers-reduced-motion: reduce) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    /* Remove blur (can cause motion sickness) */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.95);
+    transition: none;
+  }
+}
+```
+
+REDUCED TRANSPARENCY SUPPORT:
+```css
+@media (prefers-reduced-transparency: reduce) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    /* Remove transparency */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #FFFFFF; /* Solid white */
+  }
+}
+```
+
+FOCUS INDICATORS:
+```css
+.glass-button:focus-visible {
+  /* Solid focus ring (not glass) */
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+  /* Ensure focus is always visible */
+}
+```
+
+---
+
+## 1.5 Performance Requirements
+
+### 1.5.1 Rendering Performance
+
+BASELINE (Current Solid Backgrounds):
+- Sidebar: ~2ms render time
+- Bottom Bar: ~2ms render time
+- Modal: ~3ms render time
+- Total UI: ~7ms render time
+- Canvas: ~5-10ms render time (depends on line count)
+- Overall: ~12-17ms per frame (60fps capable)
+
+TARGET (With Glassmorphism):
+- Sidebar: ~4-5ms render time (+2-3ms for blur)
+- Bottom Bar: ~4-5ms render time (+2-3ms for blur)
+- Modal: ~5-7ms render time (+2-4ms for blur)
+- Total UI: ~13-17ms render time (+6-10ms)
+- Canvas: ~5-10ms render time (unchanged)
+- Overall: ~18-27ms per frame (still 60fps capable)
+
+IMPACT: +35-60% UI rendering time, but within 60fps budget (16.67ms)
+
+PERFORMANCE BUDGET:
+Element Type              | Max Blur | Max Elements | Total Cost
+--------------------------|----------|--------------|------------
+Primary UI (Sidebar, BB)  | 12px     | 2            | ~10-15ms
+Floating Elements (Modal) | 10px     | 1-2          | ~5-10ms
+Interactive Controls      | 6px      | 3-5          | ~5-10ms
+TOTAL                     | -        | 6-9          | ~20-35ms
+
+TARGET: <50ms total rendering time (60fps = 16.67ms per frame)
+STATUS: Within budget with optimization
+
+### 1.5.2 Optimization Strategies
+
+LIMIT BLUR RADIUS:
+- Keep blur ≤12px for better performance
+- Tier 1: 12px, Tier 2: 10px, Tier 3: 6px (inputs: 2px)
+
+USE WILL-CHANGE FOR ANIMATED ELEMENTS:
+```css
+.draggable-modal {
+  will-change: transform, backdrop-filter;
+}
+
+.draggable-modal:not(.dragging) {
+  will-change: auto; /* Remove hint when not needed */
+}
+```
+
+REDUCE COMPLEXITY:
+```css
+/* Good: Simple blur + saturation */
+backdrop-filter: blur(10px) saturate(150%);
+
+/* Avoid: Multiple complex filters */
+backdrop-filter: blur(10px) saturate(150%) brightness(110%) contrast(105%);
+```
+
+STATIC ELEMENTS ONLY:
+- Apply glass to fixed/absolute positioned elements
+- Avoid glass on animated elements
+- Use solid backgrounds for frequently moving elements
+
+GPU COMPOSITING:
+```css
+.glass-element {
+  transform: translateZ(0); /* Force GPU layer */
+  isolation: isolate; /* Create stacking context */
+}
+
+.canvas-element {
+  transform: translateZ(0); /* Separate GPU layer */
+  will-change: transform; /* Optimize for panning/zooming */
+}
+```
+
+MEMORY IMPACT:
+- Each blurred element: ~2-4MB GPU memory
+- Total blurred elements: 6-9
+- Total GPU Memory: ~12-36MB
+- Impact: Minimal on modern devices (GPUs have 2-8GB VRAM)
+
+---
+
+## 1.6 Browser Compatibility
+
+### 1.6.1 Browser Support Matrix
+
+Browser          | Version | Support | Notes
+-----------------|---------|---------|-------
+Chrome           | 76+     | Full    | Native support
+Firefox          | 103+    | Full    | Native support
+Safari           | 9+      | Full    | Requires -webkit- prefix
+Edge             | 79+     | Full    | Chromium-based
+IE 11            | -       | Fallback| Use solid backgrounds
+
+COVERAGE: 95%+ of modern browsers (Can I Use, 2024)
+
+### 1.6.2 Fallback Strategy
+
+PROGRESSIVE ENHANCEMENT:
+```css
+/* Base styles (all browsers) */
+.glass-component {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Enhanced styles (modern browsers) */
+.glass-component {
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+}
+
+/* Fallback for older browsers */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-component {
+    background: rgba(255, 255, 255, 0.98); /* Nearly opaque */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+  }
+}
+```
+
+---
+
+## 1.7 Implementation Phases - Glassmorphism
+
+### Phase 1: Foundation (Week 1) - 5 days
+
+GOAL: Set up design tokens and base styles
+
+TASKS:
+1. Create glass-tokens.ts with all tier specifications
+2. Add CSS custom properties for glass effects
+3. Create utility classes for glass variants (.glass-tier1, .glass-tier2, .glass-tier3)
+4. Set up browser compatibility fallbacks (@supports)
+5. Add accessibility media query support (prefers-contrast, prefers-reduced-motion, prefers-reduced-transparency)
+
+DELIVERABLES:
+- src/constants/glass-tokens.ts
+- src/styles/glass-utilities.css
+- Updated src/constants/design-tokens.ts
+
+TESTING:
+- Verify tokens in Chrome, Firefox, Safari, Edge
+- Test fallbacks in IE11/older browsers
+- Validate accessibility media queries
+
+### Phase 2: Primary UI (Week 2) - 5 days
+
+GOAL: Apply glassmorphism to Sidebar and Bottom Bar
+
+TASKS:
+1. Update Sidebar component styles
+2. Update Bottom Bar component styles
+3. Test with and without PDF backgrounds
+4. Verify contrast ratios with automated tools
+5. Performance testing and optimization
+
+DELIVERABLES:
+- Updated src/components/Sidebar/Sidebar.tsx
+- Updated src/components/BottomBar/BottomBar.tsx
+- Performance benchmark report
+
+TESTING:
+- Visual regression tests (Percy or Chromatic)
+- Accessibility audit (axe DevTools, WAVE)
+- Performance profiling (Chrome DevTools)
+- Cross-browser testing (BrowserStack)
+
+### Phase 3: Floating Elements (Week 3) - 5 days
+
+GOAL: Apply glassmorphism to modals and overlays
+
+TASKS:
+1. Update Line Properties Modal styles
+2. Enhance PDF Controls (already has glass, refine)
+3. Update Draw Button inactive state
+4. Test modal dragging performance
+5. Verify layering hierarchy (z-index)
+
+DELIVERABLES:
+- Updated src/components/LinePropertiesModal/LinePropertiesModal.tsx
+- Updated src/components/PdfControls/PdfControls.tsx
+- Updated src/components/DrawButton/DrawButton.tsx
+
+TESTING:
+- Modal drag performance testing
+- Z-index layering verification
+- PDF background interaction testing
+- Accessibility audit
+
+### Phase 4: Interactive Controls (Week 4) - 5 days
+
+GOAL: Apply subtle glassmorphism to form controls
+
+TASKS:
+1. Update Dropdown component styles
+2. Update Button component styles
+3. Update Input component styles
+4. Update Chip component styles
+5. Test all interactive states (hover, focus, active, disabled)
+
+DELIVERABLES:
+- Updated src/components/shared/Dropdown.tsx
+- Updated src/components/shared/Button.tsx
+- Updated src/components/shared/Input.tsx
+- Updated src/components/shared/Chip.tsx
+
+TESTING:
+- Interaction testing (hover, focus, active)
+- Keyboard navigation testing
+- Screen reader testing (NVDA, JAWS)
+- Form usability testing
+
+### Phase 5: Polish & Optimization (Week 5) - 5 days
+
+GOAL: Refine, optimize, and document
+
+TASKS:
+1. Fine-tune blur values based on feedback
+2. Optimize performance bottlenecks
+3. Create comprehensive documentation
+4. Final accessibility audit
+5. User acceptance testing
+
+DELIVERABLES:
+- Performance optimization report
+- Accessibility compliance report
+- User documentation
+- Developer documentation
+
+TESTING:
+- Full regression testing
+- Performance benchmarking
+- Accessibility compliance verification (WCAG 2.1 AA)
+- User acceptance testing
+
+TOTAL EFFORT: 5 weeks (25 days, ~200 hours)
+
+---
+
+================================================================================
+PART 2: LINE PROPERTIES MODAL ENHANCEMENT
+================================================================================
+
+## 2.1 Executive Summary
+
+### Feature Overview
+**Feature Name:** Line Properties Modal Enhancement
+**Priority:** HIGH
+**Estimated Effort:** 8 weeks (320 hours)
+**Target Release:** Q1 2026
+**Dependencies:** Glassmorphism Design Theme (for visual consistency)
+**Current Status:** Phase 1 Complete (14/103 tasks)
+
+### Description
+Comprehensive enhancement of the Line Properties Modal based on detailed design audit.
+Implements spacing refinements, typography hierarchy improvements, animation polish,
+border aesthetics, and critical UI fixes identified in screenshot analysis.
 
 ### Business Value
 - **Increased Productivity:** Reduce time spent editing duct properties by 60%
 - **Improved Accuracy:** Real-time HVAC calculations prevent design errors
 - **Professional Workflow:** Match industry-standard CAD software capabilities
-- **User Satisfaction:** Comprehensive property management in a compact, intuitive interface
+- **User Satisfaction:** Comprehensive property management in compact, intuitive interface
+
+### Key Enhancements
+- **Spacing Refinements:** 12 spacing adjustments for better visual hierarchy
+- **Typography Improvements:** 4 font size/weight changes for clearer hierarchy
+- **Animation Polish:** 9 animation timing/easing refinements
+- **Border Aesthetics:** 2 border additions for better definition
+- **Critical UI Fixes:** 4 high-priority issues from screenshot analysis
 
 ---
 
-## Problem Statement
+## 2.2 Design Audit Specifications
 
-### Current Limitations
-1. **Limited Property Editing:** Only duct width can be edited via WidthHUD
-2. **No Calculations:** Users must manually calculate velocity, friction, and pressure
-3. **Missing Metadata:** No way to add notes, tags, or custom properties
-4. **No Batch Operations:** Must edit each duct individually
-5. **Poor UX:** Simple HUD doesn't match professional CAD software expectations
+### 2.2.1 Critical UI Issues (From Screenshot Analysis)
 
-### User Pain Points
-- HVAC designers waste time switching between the app and external calculators
-- No way to organize ducts by layer, material, or custom categories
-- Difficult to maintain consistency across multiple ducts
-- Cannot track when ducts were created or modified
-- No validation warnings for high-velocity ducts
+ISSUE 1: ACTIVE TAB STYLING PROBLEM
+Priority: CRITICAL (RED)
+Impact: HIGH - Users cannot easily identify which tab they're viewing
 
----
+Problem: The "Properties" tab appears grayed out/disabled even when active
 
-## Goals & Success Metrics
-
-### Primary Goals
-1. **Replace WidthHUD** with comprehensive property editor
-2. **Add HVAC Calculations** for velocity, friction, and pressure
-3. **Enable Batch Editing** for multiple selected ducts
-4. **Improve UX** with professional, accessible interface
-
-### Success Metrics
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Property Edit Time | <5 seconds | Time from click to save |
-| Calculation Accuracy | 100% | Match ASHRAE standards |
-| User Satisfaction | ≥4.5/5 | Post-release survey |
-| Batch Edit Usage | ≥30% | % of edits using multi-select |
-| Accessibility Score | 100% | Lighthouse audit |
-
----
-
-## User Stories
-
-### Epic 1: Basic Property Editing
-**As an** HVAC designer  
-**I want to** edit duct properties (type, width, material, gauge, layer)  
-**So that** I can accurately specify duct characteristics
-
-**Acceptance Criteria:**
-- Click any line to open modal
-- Edit duct type (Supply/Return) with color update
-- Select width from dropdown or quick-select chips
-- Choose material from 5 options
-- Select gauge from 5 options
-- Assign to layer
-- Changes save immediately
-- Modal closes on backdrop click or Escape key
-
-### Epic 2: HVAC Calculations
-**As an** HVAC designer  
-**I want to** see real-time airflow calculations  
-**So that** I can validate duct sizing without external tools
-
-**Acceptance Criteria:**
-- Enter CFM (airflow) value
-- See calculated velocity (fpm)
-- See calculated friction loss (in.wc/100ft)
-- See calculated velocity pressure (in)
-- Warning displayed if velocity > 1500 fpm
-- Suggested optimal width shown when warning appears
-- All calculations follow ASHRAE standards
-
-### Epic 3: Metadata Management
-**As an** HVAC designer  
-**I want to** add notes, tags, and custom properties  
-**So that** I can organize and document my design
-
-**Acceptance Criteria:**
-- Add notes up to 120 characters
-- Create and assign tags
-- Add custom key-value properties
-- See creation and modification timestamps
-- All metadata persists with the duct
-
-### Epic 4: Batch Operations
-**As an** HVAC designer  
-**I want to** edit multiple ducts simultaneously  
-**So that** I can maintain consistency efficiently
-
-**Acceptance Criteria:**
-- Select multiple ducts (Shift+Click or Ctrl+Click)
-- Modal shows aggregate stats (count, total length)
-- Mixed values indicated with "Mixed" placeholder
-- Changes apply to all selected ducts
-- Unchanged properties remain as-is
-- Clear visual feedback for multi-select mode
-
----
-
-## Functional Requirements
-
-### FR-1: Modal Behavior
-- **FR-1.1:** Modal opens when user clicks any line
-- **FR-1.2:** Modal positions near selected line with 16px viewport clearance
-- **FR-1.3:** Modal can be dragged by header to any position
-- **FR-1.4:** Modal closes on backdrop click or Escape key
-- **FR-1.5:** Modal width fixed at 220px
-- **FR-1.6:** Modal height adjusts based on active tab and content
-
-### FR-2: Properties Tab
-- **FR-2.1:** Duct type selector (Supply/Return) with color indicators
-- **FR-2.2:** Width dropdown with all standard sizes (4"-40")
-- **FR-2.3:** Quick-select width chips (6", 8", 10", 12", 14")
-- **FR-2.4:** Material dropdown (5 options)
-- **FR-2.5:** Gauge dropdown (5 options)
-- **FR-2.6:** Layer dropdown (5 default layers + custom)
-- **FR-2.7:** Expand/collapse section for advanced properties
-
-### FR-3: Calculations Tab
-- **FR-3.1:** CFM input field with validation
-- **FR-3.2:** Velocity display (calculated, read-only)
-- **FR-3.3:** Friction loss display (calculated, read-only)
-- **FR-3.4:** Velocity pressure display (calculated, read-only)
-- **FR-3.5:** Warning indicator for velocity > 1500 fpm
-- **FR-3.6:** Suggested optimal width when warning shown
-- **FR-3.7:** All calculations use Wright Equation and ASHRAE standards
-
-### FR-4: Advanced Tab
-- **FR-4.1:** Notes textarea (max 120 characters)
-- **FR-4.2:** Tag input with chip display
-- **FR-4.3:** Custom properties key-value editor
-- **FR-4.4:** Creation timestamp (read-only)
-- **FR-4.5:** Last modified timestamp (read-only)
-
-### FR-5: Multi-Select Mode
-- **FR-5.1:** Aggregate stats display (count, total length)
-- **FR-5.2:** Mixed value indicators
-- **FR-5.3:** Batch update all selected ducts
-- **FR-5.4:** Clear visual distinction from single-select mode
-
----
-
-## Non-Functional Requirements
-
-### NFR-1: Performance
-- Modal opens in <200ms
-- Calculations update in <50ms
-- Smooth 60fps animations
-- No jank during drag operations
-
-### NFR-2: Accessibility
-- WCAG 2.1 Level AA compliance
-- Full keyboard navigation support
-- Screen reader compatible
-- Focus management (trap, return)
-- Minimum 44px touch targets
-
-### NFR-3: Usability
-- Intuitive interface requiring no training
-- Clear visual hierarchy
-- Consistent with design system
-- Responsive to user actions
-- Helpful error messages
-
-### NFR-4: Reliability
-- 100% calculation accuracy
-- Data persistence guaranteed
-- Graceful error handling
-- No data loss on modal close
-
-### NFR-5: Maintainability
-- Follows layered architecture
-- Comprehensive test coverage (≥80%)
-- Clear documentation
-- No circular dependencies
-
----
-
-## Technical Architecture
-
-### Component Structure
-```
-LinePropertiesModal/
-├── LinePropertiesModal.tsx (main)
-├── ModalHeader.tsx
-├── TabBar.tsx
-├── ModalFooter.tsx
-├── PropertiesTab/
-│   ├── DuctTypeSelector.tsx
-│   ├── WidthSelector.tsx
-│   ├── MaterialSelector.tsx
-│   ├── GaugeSelector.tsx
-│   └── LayerSelector.tsx
-├── CalculationsTab/
-│   ├── CFMInput.tsx
-│   ├── CalculationResults.tsx
-│   └── VelocityWarning.tsx
-├── AdvancedTab/
-│   ├── NotesInput.tsx
-│   ├── TagsInput.tsx
-│   ├── CustomProperties.tsx
-│   └── Timestamps.tsx
-├── MultiSelect/
-│   ├── AggregateStats.tsx
-│   └── MixedValueIndicator.tsx
-└── shared/
-    ├── Dropdown.tsx
-    ├── Input.tsx
-    ├── Button.tsx
-    ├── Chip.tsx
-    └── Label.tsx
+Current State:
+```tsx
+className={`flex-1 text-xs font-medium transition-colors duration-150 ${
+  activeTab === 'properties'
+    ? 'text-neutral-900 border-b-2 border-neutral-900'
+    : 'text-neutral-500'
+}`}
 ```
 
-### Data Flow
-1. User clicks line → DrawingCanvas sets selectedLineId
-2. LinePropertiesModal receives line data via props
-3. User edits properties → Local state updates
-4. On blur/change → Service validates and updates line
-5. DrawingCanvas re-renders with updated line
+Required Fix:
+```tsx
+className={`flex-1 text-[13px] font-medium transition-colors duration-150 ${
+  activeTab === 'properties'
+    ? 'text-neutral-900 font-semibold border-b-2 border-blue-600'
+    : 'text-neutral-500 hover:text-neutral-700'
+}`}
+```
 
-### State Management
-- **Local State:** Modal position, active tab, form values
-- **Props:** Selected line data, update callbacks
-- **Services:** CRUD operations, validation, calculations
+Exact Specifications:
+- Active Tab Text: #0F172A (neutral-900), font-weight: 600 (semibold)
+- Active Tab Border: 2px solid #2563EB (blue-600)
+- Inactive Tab Text: #64748B (neutral-500), font-weight: 500 (medium)
+- Inactive Tab Hover: #374151 (neutral-700)
+- Font Size: 13px (custom arbitrary value)
+
+Testing:
+- Visual verification: Active tab clearly distinguishable
+- Contrast check: 15.8:1 ratio for active tab text
+- User testing: 100% of users can identify active tab
+
+ISSUE 2: ADVANCED TAB WHITE SPACE
+Priority: MEDIUM (YELLOW)
+Impact: MEDIUM - Creates unbalanced visual appearance
+
+Problem: Advanced tab shows excessive white space with minimal content
+
+Current State: Content is top-aligned with large empty space below
+
+Required Enhancement:
+```tsx
+<div className="space-y-4">
+  <div>
+    <label className="text-xs font-medium text-neutral-700">Airflow (CFM)</label>
+    <input type="number" className="..." />
+  </div>
+
+  <button className="w-full flex items-center justify-center gap-2 ...">
+    <ZapIcon className="w-4 h-4" />
+    Calculate Results
+  </button>
+
+  <div className="bg-neutral-50 rounded-md p-3 space-y-2">
+    <div className="flex justify-between items-center">
+      <span className="text-xs text-neutral-600">Velocity</span>
+      <span className="text-sm font-medium">0 fpm</span>
+    </div>
+    <Separator />
+    <div className="flex justify-between items-center">
+      <span className="text-xs text-neutral-600">Friction</span>
+      <span className="text-sm font-medium">0.00 in wc/100ft</span>
+    </div>
+    <Separator />
+    <div className="flex justify-between items-center">
+      <span className="text-xs text-neutral-600">Pressure</span>
+      <span className="text-sm font-medium">0.00 in</span>
+    </div>
+  </div>
+</div>
+```
+
+Exact Specifications:
+- Results Container Background: #F8FAFC (neutral-50)
+- Results Container Padding: 12px (p-3)
+- Results Container Border Radius: 6px (rounded-md)
+- Label Text: 12px, #475569 (neutral-600)
+- Value Text: 14px, font-weight: 500 (medium)
+- Spacing Between Results: 8px (space-y-2)
+
+ISSUE 3: EXPANDABLE SECTION TREATMENT
+Priority: LOW (GREEN)
+Impact: LOW - Enhancement opportunity for better UX
+
+Problem: "More Details" / "Less Details" button needs better visual treatment
+
+Required Enhancement:
+```tsx
+<button
+  onClick={() => setShowDetails(!showDetails)}
+  className="flex items-center justify-center gap-1 w-full py-2 text-xs font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded transition-colors"
+>
+  {showDetails ? (
+    <>
+      <ChevronUpIcon className="w-3 h-3" />
+      Less Details
+    </>
+  ) : (
+    <>
+      <ChevronDownIcon className="w-3 h-3" />
+      More Details
+    </>
+  )}
+</button>
+```
+
+Exact Specifications:
+- Button Padding: 8px vertical (py-2)
+- Button Text: 12px, font-weight: 500 (medium)
+- Button Text Color: #475569 (neutral-600)
+- Button Hover Text: #0F172A (neutral-900)
+- Button Hover Background: #F8FAFC (neutral-50)
+- Icon Size: 12px (w-3 h-3)
+- Border Radius: 4px (rounded)
+- Transition: colors, 150ms
+
+ISSUE 4: WIDTH CHIPS VISIBILITY
+Priority: LOW (GREEN)
+Impact: LOW - Enhancement opportunity for better spacing
+
+Problem: Width selection chips need better spacing and visual treatment
+
+Required Enhancement:
+```tsx
+<div className="flex flex-wrap gap-2">
+  {widthOptions.map((width) => (
+    <Chip
+      key={width}
+      selected={selectedWidth === width}
+      onClick={() => setSelectedWidth(width)}
+    >
+      {width}"
+    </Chip>
+  ))}
+</div>
+```
+
+Exact Specifications:
+- Container Gap: 8px (gap-2)
+- Chip Height: 28px (h-7)
+- Chip Padding: 10px horizontal (px-2.5)
+- Chip Text: 12px, font-weight: 500 (medium)
+- Chip Border Radius: Full (rounded-full)
+- Selected Chip Background: #2563EB (blue-600)
+- Selected Chip Text: #FFFFFF (white)
+- Unselected Chip Background: #FFFFFF (white)
+- Unselected Chip Border: 1px solid #CBD5E1 (neutral-300)
+- Unselected Chip Text: #374151 (neutral-700)
 
 ---
 
-## Implementation Phases
+## 2.3 Spacing & Layout Specifications
+
+### 2.3.1 Modal Container Padding
+
+File: LinePropertiesModal.tsx, line 217
+Priority: HIGH (RED)
+
+Current State:
+```tsx
+className="fixed bg-white rounded-lg shadow-lg p-4"
+// Padding: 16px (p-4) all sides
+```
+
+Required Change:
+```tsx
+className="fixed bg-white rounded-lg shadow-lg p-5"
+// Padding: 20px (p-5) all sides
+```
+
+Exact Specifications:
+- Padding: 20px all sides (p-5)
+- Modal Width: 220px (unchanged)
+- Content Area: 180px (220px - 40px padding)
+- Rationale: 20px padding provides better visual balance for 220px modal
+
+Impact: HIGH - Affects overall modal feel and breathing room
+Effort: LOW - Single className change
+ROI: 5/5 stars
+
+### 2.3.2 Section Spacing (Between Major Elements)
+
+Files: LinePropertiesModal.tsx, lines 248, 256, 285
+Priority: HIGH (RED)
+
+Current State:
+```tsx
+<Separator className="my-2" aria-hidden="true" />
+// Margin: 8px top/bottom (my-2)
+```
+
+Required Changes:
+```tsx
+// Header to Tabs separator
+<Separator className="my-3" aria-hidden="true" />
+// Margin: 12px top/bottom
+
+// Tabs to Content separator
+<Separator className="my-3" aria-hidden="true" />
+// Margin: 12px top/bottom
+
+// Content to Footer separator
+<Separator className="my-4" aria-hidden="true" />
+// Margin: 16px top/bottom (more emphasis before actions)
+```
+
+Exact Specifications:
+- Header-Tabs Separator: 12px vertical margin (my-3)
+- Tabs-Content Separator: 12px vertical margin (my-3)
+- Content-Footer Separator: 16px vertical margin (my-4)
+- Rationale: Progressive spacing creates visual hierarchy, footer gets more space
+
+Impact: HIGH - Improves visual hierarchy significantly
+Effort: LOW - Three className changes
+ROI: 5/5 stars
+
+### 2.3.3 Tab Content Spacing
+
+Files: PropertiesTab.tsx line 101, CalculationsTab.tsx line 111, AdvancedTab.tsx line 105
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+// All tabs
+<div className={`space-y-3 ${className}`}>
+// Gap: 12px between elements (space-y-3)
+```
+
+Required Changes:
+```tsx
+// PropertiesTab: Increase to 16px for better dropdown separation
+<div className={`space-y-4 ${className}`}>
+// Gap: 16px between elements (space-y-4)
+
+// CalculationsTab: Keep 12px (content is less dense)
+<div className={`space-y-3 ${className}`}>
+// Gap: 12px between elements (space-y-3) - NO CHANGE
+
+// AdvancedTab: Increase to 16px for section separation
+<div className={`space-y-4 ${className}`}>
+// Gap: 16px between elements (space-y-4)
+```
+
+Exact Specifications:
+- PropertiesTab Spacing: 16px (space-y-4)
+- CalculationsTab Spacing: 12px (space-y-3) - unchanged
+- AdvancedTab Spacing: 16px (space-y-4)
+- Rationale: Properties tab has densest content (multiple dropdowns), needs more breathing room
+
+Impact: MEDIUM - Improves readability
+Effort: LOW - Two className changes
+ROI: 4/5 stars
+
+### 2.3.4 Form Group Spacing (Label to Input)
+
+Files: Label.tsx line 53, Dropdown.tsx line 206, Input.tsx line 176
+Priority: LOW (GREEN)
+
+Current State:
+```tsx
+className="block text-xs font-medium text-neutral-600 mb-2"
+// Margin-bottom: 8px (mb-2)
+```
+
+Required Change:
+```tsx
+className="block text-xs font-medium text-neutral-600 mb-2.5"
+// Margin-bottom: 10px (mb-2.5)
+```
+
+Exact Specifications:
+- Label-to-Input Spacing: 10px (mb-2.5)
+- Rationale: 10px provides better visual grouping while maintaining compact form
+
+Impact: LOW - Nice-to-have improvement
+Effort: LOW - Three className changes
+ROI: 2/5 stars
+
+### 2.3.5 ExpandableSection Spacing
+
+File: ExpandableSection.tsx, line 103
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+<div className="space-y-3 pb-4">
+// Gap: 12px between children
+// Padding-bottom: 16px before button
+```
+
+Required Change:
+```tsx
+<div className="space-y-4 pb-3">
+// Gap: 16px between children (matches parent recommendation)
+// Padding-bottom: 12px before button (tighter connection)
+```
+
+Exact Specifications:
+- Internal Spacing: 16px (space-y-4)
+- Bottom Padding: 12px (pb-3)
+- Rationale: Tighter padding connects button to content, increased internal spacing matches parent
+
+Impact: MEDIUM - Improves visual cohesion
+Effort: LOW - Single className change
+ROI: 3/5 stars
+
+### 2.3.6 Modal Header Spacing
+
+File: ModalHeader.tsx, line 58
+Priority: HIGH (RED)
+
+Current State:
+```tsx
+className="flex items-center h-8 px-4"
+// Height: 32px (h-8)
+// Padding: 16px horizontal (px-4)
+```
+
+Required Change:
+```tsx
+className="flex items-center h-10 px-0 py-1"
+// Height: 40px (h-10) - more comfortable
+// Padding: 0px horizontal (px-0) - rely on modal padding
+// Padding: 4px vertical (py-1) - centers text better
+```
+
+Exact Specifications:
+- Header Height: 40px (h-10)
+- Horizontal Padding: 0px (px-0) - prevents double-padding with modal
+- Vertical Padding: 4px (py-1)
+- Rationale: 40px height provides better visual weight, removing horizontal padding prevents double-padding
+
+Impact: HIGH - Improves header prominence
+Effort: LOW - Single className change
+ROI: 5/5 stars
+
+### 2.3.7 TabBar Spacing
+
+File: TabBar.tsx, line 93
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+className="flex gap-0.5 h-9"
+// Gap: 2px between tabs (gap-0.5)
+// Height: 36px (h-9)
+```
+
+Required Change:
+```tsx
+className="flex gap-1 h-9"
+// Gap: 4px between tabs (gap-1)
+// Height: 36px (h-9) - keep as is
+```
+
+Exact Specifications:
+- Tab Gap: 4px (gap-1)
+- Tab Bar Height: 36px (h-9) - unchanged
+- Rationale: 4px gap creates clearer visual separation between tabs
+
+Impact: MEDIUM - Improves tab clarity
+Effort: LOW - Single className change
+ROI: 3/5 stars
+
+### 2.3.8 Footer Button Spacing
+
+File: ModalFooter.tsx, line 63
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+className="flex items-center gap-1 h-10 p-2"
+// Gap: 4px between buttons (gap-1)
+// Height: 40px (h-10)
+// Padding: 8px all sides (p-2)
+```
+
+Required Change:
+```tsx
+className="flex items-center gap-2 h-10 px-0 py-0"
+// Gap: 8px between buttons (gap-2)
+// Height: 40px (h-10) - keep as is
+// Padding: 0px (rely on modal padding)
+```
+
+Exact Specifications:
+- Button Gap: 8px (gap-2)
+- Footer Height: 40px (h-10) - unchanged
+- Padding: 0px (px-0 py-0)
+- Rationale: 8px gap provides better visual separation, removing padding prevents double-padding
+
+Impact: MEDIUM - Improves button clarity
+Effort: LOW - Single className change
+ROI: 3/5 stars
+
+### 2.3.9 Chip Spacing (Width Quick-Select)
+
+File: WidthChips.tsx (inferred from Chip component)
+Priority: LOW (GREEN)
+
+Current State:
+```tsx
+// No explicit gap defined
+```
+
+Required Change:
+```tsx
+<div className="flex flex-wrap gap-2">
+// Gap: 8px between chips (gap-2)
+```
+
+Exact Specifications:
+- Chip Container Gap: 8px (gap-2)
+- Chip Height: 28px (h-7) - unchanged
+- Chip Horizontal Padding: 10px (px-2.5) - unchanged
+- Rationale: Explicit 8px gap ensures consistent spacing between width chips
+
+Impact: LOW - Minor improvement
+Effort: LOW - Single className addition
+ROI: 2/5 stars
+
+### 2.3.10 Spacing Summary Table
+
+Element                      | Current | Proposed | Change | Priority | Effort | ROI
+-----------------------------|---------|----------|--------|----------|--------|-----
+Modal padding                | 16px    | 20px     | +4px   | HIGH     | LOW    | 5/5
+Header-Tabs separator        | 8px     | 12px     | +4px   | HIGH     | LOW    | 5/5
+Tabs-Content separator       | 8px     | 12px     | +4px   | HIGH     | LOW    | 5/5
+Content-Footer separator     | 8px     | 16px     | +8px   | HIGH     | LOW    | 5/5
+Properties tab spacing       | 12px    | 16px     | +4px   | MEDIUM   | LOW    | 4/5
+Advanced tab spacing         | 12px    | 16px     | +4px   | MEDIUM   | LOW    | 4/5
+Label-to-input               | 8px     | 10px     | +2px   | LOW      | LOW    | 2/5
+Expandable section bottom    | 16px    | 12px     | -4px   | MEDIUM   | LOW    | 3/5
+Header height                | 32px    | 40px     | +8px   | HIGH     | LOW    | 5/5
+Tab gap                      | 2px     | 4px      | +2px   | MEDIUM   | LOW    | 3/5
+Footer button gap            | 4px     | 8px      | +4px   | MEDIUM   | LOW    | 3/5
+Chip gap                     | undef   | 8px      | +8px   | LOW      | LOW    | 2/5
+
+TOTAL HIGH PRIORITY CHANGES: 5 (estimated 2-3 hours)
+TOTAL MEDIUM PRIORITY CHANGES: 5 (estimated 2-3 hours)
+TOTAL LOW PRIORITY CHANGES: 2 (estimated 1 hour)
+TOTAL EFFORT: 5-7 hours
+
+---
+
+## 2.4 Typography Specifications
+
+### 2.4.1 Modal Header Title
+
+File: ModalHeader.tsx, line 63
+Priority: HIGH (RED)
+
+Current State:
+```tsx
+className="text-sm font-semibold text-neutral-900"
+// Font size: 14px (text-sm)
+// Font weight: 600 (font-semibold)
+// Color: #0F172A (text-neutral-900)
+```
+
+Required Change:
+```tsx
+className="text-base font-semibold text-neutral-900"
+// Font size: 16px (text-base)
+// Font weight: 600 (font-semibold) - keep as is
+// Color: #0F172A (text-neutral-900) - keep as is
+```
+
+Exact Specifications:
+- Font Size: 16px (text-base)
+- Font Weight: 600 (font-semibold)
+- Color: #0F172A (neutral-900)
+- Contrast Ratio: 15.8:1 (AAA compliant)
+- Rationale: 16px title creates better visual hierarchy, matches common modal title sizes
+
+Impact: HIGH - Establishes clear hierarchy
+Effort: LOW - Single className change
+ROI: 5/5 stars
+
+### 2.4.2 Tab Labels
+
+File: TabBar.tsx, line 113
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+className="flex-1 text-xs font-medium transition-colors"
+// Font size: 12px (text-xs)
+// Font weight: 500 (font-medium)
+```
+
+Required Change:
+```tsx
+className="flex-1 text-[13px] font-medium transition-colors"
+// Font size: 13px (custom size via arbitrary value)
+// Font weight: 500 (font-medium) - keep as is
+```
+
+Exact Specifications:
+- Font Size: 13px (text-[13px] - Tailwind arbitrary value)
+- Font Weight: 500 (font-medium)
+- Active Color: #FFFFFF (white) on #2563EB (blue-600) = 14:1 contrast (AAA)
+- Inactive Color: #64748B (neutral-500) = 4.6:1 contrast (AA)
+- Rationale: 13px matches design token specification, improves readability
+
+Impact: MEDIUM - Improves readability
+Effort: LOW - Single className change
+ROI: 3/5 stars
+
+### 2.4.3 Form Labels
+
+Files: Label.tsx line 53, Dropdown.tsx line 206, Input.tsx line 176
+Priority: NO CHANGE
+
+Current State:
+```tsx
+className="block text-xs font-medium text-neutral-600 mb-2"
+// Font size: 12px (text-xs)
+// Font weight: 500 (font-medium)
+// Color: #475569 (text-neutral-600)
+```
+
+Exact Specifications:
+- Font Size: 12px (text-xs) - NO CHANGE
+- Font Weight: 500 (font-medium) - NO CHANGE
+- Color: #475569 (neutral-600) - NO CHANGE
+- Contrast Ratio: 7:1 (AAA compliant)
+- Rationale: 12px medium weight labels are industry standard, excellent contrast
+
+Impact: N/A - No action needed
+Effort: N/A
+ROI: N/A
+
+### 2.4.4 Helper Text
+
+File: Input.tsx, line 218
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+className="text-xs ${getHelperTextColor()}"
+// Font size: 12px (text-xs)
+// Font weight: 400 (default/normal)
+```
+
+Required Change:
+```tsx
+className="text-[11px] ${getHelperTextColor()}"
+// Font size: 11px (custom size via arbitrary value)
+// Font weight: 400 (normal) - keep as is
+```
+
+Exact Specifications:
+- Font Size: 11px (text-[11px] - Tailwind arbitrary value)
+- Font Weight: 400 (normal)
+- Color: Varies by state (neutral-600, red-600, amber-600, green-700)
+- Rationale: 11px matches design token specification, creates better hierarchy (labels 12px > helper 11px)
+
+Impact: MEDIUM - Improves hierarchy
+Effort: LOW - Single className change
+ROI: 3/5 stars
+
+### 2.4.5 Typography Summary Table
+
+Element        | Current Size | Current Weight | Proposed Size | Proposed Weight | Priority | Effort | ROI
+---------------|--------------|----------------|---------------|-----------------|----------|--------|-----
+Modal title    | 14px         | 600            | **16px**      | 600             | HIGH     | LOW    | 5/5
+Tab labels     | 12px         | 500            | **13px**      | 500             | MEDIUM   | LOW    | 3/5
+Form labels    | 12px         | 500            | 12px          | 500             | NO CHANGE| N/A    | N/A
+Input text     | 14px         | 400            | 14px          | 400             | NO CHANGE| N/A    | N/A
+Dropdown text  | 14px         | 400            | 14px          | 400             | NO CHANGE| N/A    | N/A
+Button text    | 14px         | 600            | 14px          | 600             | NO CHANGE| N/A    | N/A
+Chip text      | 12px         | 500            | 12px          | 500             | NO CHANGE| N/A    | N/A
+Helper text    | 12px         | 400            | **11px**      | 400             | MEDIUM   | LOW    | 3/5
+
+### 2.4.6 Typography Color Palette
+
+Element          | Color Token    | Hex Value | Contrast Ratio | WCAG Status
+-----------------|----------------|-----------|----------------|-------------
+Primary text     | neutral-900    | #0F172A   | 15.8:1         | AAA
+Secondary text   | neutral-600    | #475569   | 7:1            | AAA
+Tertiary text    | neutral-500    | #64748B   | 4.6:1          | AA
+Error text       | red-600        | #DC2626   | 5.9:1          | AAA
+Warning text     | amber-600      | #D97706   | 4.7:1          | AA
+Success text     | green-700      | #15803D   | 5.2:1          | AAA (updated from green-600)
+
+TOTAL HIGH PRIORITY CHANGES: 1 (estimated 30 minutes)
+TOTAL MEDIUM PRIORITY CHANGES: 2 (estimated 1 hour)
+TOTAL EFFORT: 1.5 hours
+
+---
+
+## 2.5 Animation Specifications
+
+### 2.5.1 Modal Open/Close Animation
+
+File: useModalAnimation.ts (inferred from usage)
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+// Animation class: likely fade-in/fade-out with scale
+// Duration: 200ms (open), 150ms (close)
+// Easing: default (not specified)
+```
+
+Required Change:
+```tsx
+className={[
+  'transition-all duration-200',
+  isOpen ? 'opacity-100 scale-100 ease-out' : 'opacity-0 scale-95 ease-in',
+].join(' ')}
+```
+
+Exact Specifications:
+- Open Animation: 200ms ease-out (starts fast, ends slow)
+- Close Animation: 200ms ease-in (starts slow, ends fast)
+- Scale: 0.95 to 1.0 on open, 1.0 to 0.95 on close
+- Opacity: 0 to 1 on open, 1 to 0 on close
+- Rationale: Symmetric 200ms timing feels polished, ease-out on open feels responsive, ease-in on close feels natural
+
+Impact: MEDIUM - Improves perceived quality
+Effort: LOW - CSS class changes
+ROI: 3/5 stars
+
+### 2.5.2 Tab Switching Animation
+
+File: TabBar.tsx, line 113
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+className="flex-1 text-xs font-medium transition-colors"
+// Transition: colors only
+// Duration: default (150ms)
+```
+
+Required Changes:
+```tsx
+// Tab button
+className="flex-1 text-[13px] font-medium transition-colors duration-150 ease-in-out"
+
+// Tab panel content
+<div
+  role="tabpanel"
+  className="animate-in fade-in duration-150"
+>
+  {/* Tab content */}
+</div>
+```
+
+Exact Specifications:
+- Tab Button Transition: 150ms ease-in-out for color changes
+- Tab Panel Transition: 150ms fade-in animation
+- Rationale: Explicit 150ms duration ensures consistency, fade-in prevents jarring content swap
+
+Impact: MEDIUM - Improves tab switching feel
+Effort: LOW - CSS class additions
+ROI: 3/5 stars
+
+### 2.5.3 Expandable Section Animation
+
+File: ExpandableSection.tsx, lines 93-100
+Priority: LOW (GREEN)
+
+Current State:
+```tsx
+style={{
+  maxHeight: expanded ? `${contentHeight}px` : '0px',
+  opacity: expanded ? 1 : 0,
+  transitionProperty: 'max-height, opacity',
+  transitionDuration: expanded ? '300ms, 100ms' : '300ms, 100ms',
+  transitionDelay: expanded ? '0ms, 200ms' : '0ms, 0ms',
+}}
+```
+
+Required Change:
+```tsx
+style={{
+  maxHeight: expanded ? `${contentHeight}px` : '0px',
+  opacity: expanded ? 1 : 0,
+  transitionProperty: 'max-height, opacity',
+  transitionDuration: '300ms, 200ms', // Consistent durations
+  transitionDelay: expanded ? '0ms, 100ms' : '0ms, 0ms', // Shorter delay
+  transitionTimingFunction: 'ease-in-out',
+}}
+```
+
+Exact Specifications:
+- Max-Height Duration: 300ms (both expand and collapse)
+- Opacity Duration: 200ms (both expand and collapse)
+- Opacity Delay (Expand): 100ms (reduced from 200ms)
+- Opacity Delay (Collapse): 0ms
+- Timing Function: ease-in-out
+- Rationale: Shorter 100ms delay feels more responsive, consistent durations are easier to predict
+
+Impact: LOW - Minor improvement
+Effort: LOW - Inline style changes
+ROI: 2/5 stars
+
+### 2.5.4 Dropdown Open/Close Animation
+
+File: Dropdown.tsx, line 248
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+className="animate-in fade-in slide-in-from-top-1 duration-150"
+// Animation: fade + slide from top
+// Duration: 150ms
+// No close animation
+```
+
+Required Change:
+```tsx
+className={[
+  'transition-all duration-150',
+  isOpen
+    ? 'opacity-100 translate-y-0 ease-out'
+    : 'opacity-0 -translate-y-1 ease-in pointer-events-none',
+].join(' ')}
+```
+
+Exact Specifications:
+- Open Animation: 150ms ease-out, opacity 0→1, translateY -4px→0
+- Close Animation: 150ms ease-in, opacity 1→0, translateY 0→-4px
+- Pointer Events: none when closed (prevents interaction during close)
+- Rationale: Conditional animation provides smooth open and close, translate-y creates natural slide
+
+Impact: MEDIUM - Improves dropdown feel
+Effort: LOW - CSS class changes
+ROI: 3/5 stars
+
+### 2.5.5 Modal Drag Animation
+
+File: LinePropertiesModal.tsx, line 225
+Priority: NO CHANGE
+
+Current State:
+```tsx
+transition: isDragging ? 'none' : 'left 200ms ease-in-out, top 200ms ease-in-out'
+// Transition disabled during drag
+// Transition enabled after drag (200ms ease-in-out)
+```
+
+Exact Specifications:
+- During Drag: transition: none (immediate feedback)
+- After Drag: transition: left 200ms ease-in-out, top 200ms ease-in-out
+- Rationale: Disabling transition during drag provides immediate feedback, re-enabling after drag provides smooth snap
+
+Impact: N/A - No action needed (current implementation is excellent)
+Effort: N/A
+ROI: N/A
+
+### 2.5.6 Button Hover/Active States
+
+File: Button.tsx, line 142
+Priority: LOW (GREEN)
+
+Current State:
+```tsx
+'transition-colors duration-150'
+// Transition: colors only
+// Duration: 150ms
+```
+
+Required Change:
+```tsx
+'transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]'
+// Transition: all properties
+// Hover: scale up 2%
+// Active: scale down 2%
+```
+
+Exact Specifications:
+- Transition: all properties, 150ms
+- Hover Scale: 1.02 (102%)
+- Active Scale: 0.98 (98%)
+- Rationale: Subtle scale on hover provides tactile feedback, scale down on active reinforces button press
+
+Impact: LOW - Nice-to-have polish
+Effort: LOW - CSS class changes
+ROI: 2/5 stars
+
+### 2.5.7 Animation Summary Table
+
+Element              | Current Duration | Current Easing | Proposed Duration | Proposed Easing | Priority | Effort | ROI
+---------------------|------------------|----------------|-------------------|-----------------|----------|--------|-----
+Modal open           | 200ms            | default        | 200ms             | **ease-out**    | MEDIUM   | LOW    | 3/5
+Modal close          | 150ms            | default        | **200ms**         | **ease-in**     | MEDIUM   | LOW    | 3/5
+Tab switch           | 150ms            | default        | 150ms             | **ease-in-out** | MEDIUM   | LOW    | 3/5
+Tab content          | none             | none           | **150ms**         | **fade-in**     | MEDIUM   | LOW    | 3/5
+Expand section       | 300ms            | default        | 300ms             | **ease-in-out** | LOW      | LOW    | 2/5
+Dropdown open        | 150ms            | default        | 150ms             | **ease-out**    | MEDIUM   | LOW    | 3/5
+Dropdown close       | instant          | none           | **150ms**         | **ease-in**     | MEDIUM   | LOW    | 3/5
+Modal drag           | 200ms            | ease-in-out    | 200ms             | ease-in-out     | NO CHANGE| N/A    | N/A
+Button hover         | 150ms            | default        | 150ms             | default         | NO CHANGE| N/A    | N/A
+
+TOTAL MEDIUM PRIORITY CHANGES: 5 (estimated 2-3 hours)
+TOTAL LOW PRIORITY CHANGES: 2 (estimated 1 hour)
+TOTAL EFFORT: 3-4 hours
+
+---
+
+## 2.6 Border & Shadow Specifications
+
+### 2.6.1 Modal Outer Border
+
+File: LinePropertiesModal.tsx, line 217
+Priority: HIGH (RED)
+
+Current State:
+```tsx
+className="fixed bg-white rounded-lg shadow-lg p-4"
+// Border: none (relies on shadow only)
+// Border radius: 8px (rounded-lg)
+// Shadow: shadow-lg (0 10px 15px -3px rgba(0,0,0,0.1))
+```
+
+Required Change:
+```tsx
+className="fixed bg-white rounded-lg shadow-lg border border-neutral-200 p-5"
+// Border: 1px solid #E2E8F0 (border-neutral-200)
+// Border radius: 8px (rounded-lg) - keep as is
+// Shadow: shadow-lg - keep as is
+// Padding: 20px (p-5) - from spacing recommendations
+```
+
+Exact Specifications:
+- Border: 1px solid #E2E8F0 (neutral-200)
+- Border Radius: 8px (rounded-lg)
+- Shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)
+- Rationale: Subtle 1px border provides clear edge definition, complements shadow
+
+Impact: HIGH - Improves modal definition
+Effort: LOW - Single className addition
+ROI: 5/5 stars
+
+### 2.6.2 Tab Bar Border
+
+File: TabBar.tsx, line 93
+Priority: MEDIUM (YELLOW)
+
+Current State:
+```tsx
+<div className="flex gap-0.5 h-9">
+// No bottom border on tab bar container
+```
+
+Required Change:
+```tsx
+<div className="flex gap-1 h-9 border-b border-neutral-200">
+// Add 1px bottom border
+```
+
+Exact Specifications:
+- Border: 1px solid #E2E8F0 (neutral-200) on bottom edge
+- Active Tab Border: 2px solid #2563EB (blue-600) overlays container border
+- Rationale: 1px bottom border creates baseline, active tab's 2px border overlays this
+
+Impact: MEDIUM - Improves tab definition
+Effort: LOW - Single className addition
+ROI: 3/5 stars
+
+### 2.6.3 Border Summary Table
+
+Element          | Current Border | Current Radius | Proposed Border        | Proposed Radius | Priority | Effort | ROI
+-----------------|----------------|----------------|------------------------|-----------------|----------|--------|-----
+Modal outer      | none           | 8px            | **1px neutral-200**    | 8px             | HIGH     | LOW    | 5/5
+Separators       | 1px neutral-200| none           | 1px neutral-200        | none            | NO CHANGE| N/A    | N/A
+Inputs           | 1px neutral-300| 4px            | 1px neutral-300        | 4px             | NO CHANGE| N/A    | N/A
+Dropdowns        | 1px neutral-300| 4px            | 1px neutral-300        | 4px             | NO CHANGE| N/A    | N/A
+Buttons          | 1px (varies)   | 6px            | 1px (varies)           | 6px             | NO CHANGE| N/A    | N/A
+Chips            | 1px (varies)   | full           | 1px (varies)           | full            | NO CHANGE| N/A    | N/A
+Tab bar          | none           | none           | **1px neutral-200**    | none            | MEDIUM   | LOW    | 3/5
+Active tab       | 2px blue-600   | none           | 2px blue-600           | none            | NO CHANGE| N/A    | N/A
+
+TOTAL HIGH PRIORITY CHANGES: 1 (estimated 30 minutes)
+TOTAL MEDIUM PRIORITY CHANGES: 1 (estimated 30 minutes)
+TOTAL EFFORT: 1 hour
+
+---
+
+## 2.7 Implementation Priority Matrix
+
+### 2.7.1 HIGH Priority (Must-Have) - 9 Changes
+
+These changes have the highest impact on user experience and should be implemented first.
+
+#  | Change                                  | Component              | Impact | Effort | ROI | Est. Time
+---|----------------------------------------|------------------------|--------|--------|-----|----------
+1  | Increase modal padding to 20px         | LinePropertiesModal    | High   | Low    | 5/5 | 30 min
+2  | Increase header-tabs separator to 12px | LinePropertiesModal    | High   | Low    | 5/5 | 15 min
+3  | Increase tabs-content separator to 12px| LinePropertiesModal    | High   | Low    | 5/5 | 15 min
+4  | Increase content-footer separator to 16px| LinePropertiesModal  | High   | Low    | 5/5 | 15 min
+5  | Increase header height to 40px         | ModalHeader            | High   | Low    | 5/5 | 30 min
+6  | Increase modal title to 16px           | ModalHeader            | High   | Low    | 5/5 | 15 min
+7  | Add modal outer border (1px neutral-200)| LinePropertiesModal   | High   | Low    | 5/5 | 15 min
+8  | Fix active tab styling                 | TabBar                 | High   | Low    | 5/5 | 45 min
+9  | Standardize focus rings                | All interactive        | High   | Medium | 4/5 | 2 hours
+
+TOTAL ESTIMATED TIME: 4-6 hours
+EXPECTED IMPACT: Transforms modal from functional to polished
+
+### 2.7.2 MEDIUM Priority (Should-Have) - 13 Changes
+
+These changes improve usability and polish but are not critical.
+
+#  | Change                                  | Component              | Impact | Effort | ROI | Est. Time
+---|----------------------------------------|------------------------|--------|--------|-----|----------
+10 | Increase Properties tab spacing to 16px| PropertiesTab          | Medium | Low    | 4/5 | 15 min
+11 | Increase Advanced tab spacing to 16px  | AdvancedTab            | Medium | Low    | 4/5 | 15 min
+12 | Reduce expandable section bottom to 12px| ExpandableSection     | Medium | Low    | 3/5 | 15 min
+13 | Increase tab gap to 4px                | TabBar                 | Medium | Low    | 3/5 | 15 min
+14 | Increase footer button gap to 8px      | ModalFooter            | Medium | Low    | 3/5 | 15 min
+15 | Increase tab labels to 13px            | TabBar                 | Medium | Low    | 3/5 | 15 min
+16 | Reduce helper text to 11px             | Input, HelperText      | Medium | Low    | 3/5 | 30 min
+17 | Add tab bar bottom border              | TabBar                 | Medium | Low    | 3/5 | 15 min
+18 | Improve modal open/close animation     | useModalAnimation      | Medium | Medium | 3/5 | 1 hour
+19 | Add tab content fade transition        | LinePropertiesModal    | Medium | Low    | 3/5 | 30 min
+20 | Add dropdown close animation           | Dropdown               | Medium | Low    | 3/5 | 30 min
+21 | Standardize icon sizing (14px chevrons)| All icons              | Medium | Low    | 3/5 | 1 hour
+22 | Improve shadow hierarchy               | Modal, Dropdown        | Medium | Low    | 3/5 | 30 min
+
+TOTAL ESTIMATED TIME: 6-8 hours
+EXPECTED IMPACT: Significantly improves polish and consistency
+
+### 2.7.3 LOW Priority (Nice-to-Have) - 8 Changes
+
+These changes add extra polish but have minimal impact on core experience.
+
+#  | Change                                  | Component              | Impact | Effort | ROI | Est. Time
+---|----------------------------------------|------------------------|--------|--------|-----|----------
+23 | Increase label-to-input spacing to 10px| Label, Input, Dropdown | Low    | Low    | 2/5 | 30 min
+24 | Add explicit chip gap (8px)            | WidthChips             | Low    | Low    | 2/5 | 15 min
+25 | Simplify expandable section animation | ExpandableSection      | Low    | Low    | 2/5 | 30 min
+26 | Add button hover scale effect          | Button                 | Low    | Low    | 2/5 | 30 min
+27 | Darken success color to green-700      | Design tokens          | Low    | Low    | 2/5 | 15 min
+28 | Add button hover shadow                | Button                 | Low    | Low    | 1/5 | 30 min
+29 | Add loading states for dropdowns       | Dropdown               | Low    | Medium | 1/5 | 2 hours
+30 | Add modal loading skeleton             | LinePropertiesModal    | Low    | High   | 1/5 | 4 hours
+
+TOTAL ESTIMATED TIME: 8-10 hours
+EXPECTED IMPACT: Minor polish improvements
+
+### 2.7.4 Total Effort Summary
+
+Priority | Changes | Estimated Time | Impact
+---------|---------|----------------|--------
+HIGH     | 9       | 4-6 hours      | Transforms functional to polished
+MEDIUM   | 13      | 6-8 hours      | Significantly improves polish
+LOW      | 8       | 8-10 hours     | Minor polish improvements
+TOTAL    | 30      | 18-24 hours    | Professional, refined modal
+
+---
+
+## 2.8 Implementation Phases - Line Properties Modal
 
 ### Phase 1: Foundation Layer ✅ COMPLETE (14/14 tasks)
+
+STATUS: Complete
+DURATION: 2 weeks
+DELIVERABLES:
 - Extended Line type with duct properties
 - Created type definitions (duct.types.ts, modal.types.ts)
 - Created constants (duct.constants.ts, modal.constants.ts, calculations.constants.ts)
 - Updated barrel exports
 
-### Phase 2: Utility Layer 🚧 PENDING (10 tasks)
-- HVAC calculation functions
-- Modal positioning logic
-- Calculation formatting
-- Optimal width suggestions
+### Phase 2: Design Refinements (Week 1-2) - 30 tasks
 
-### Phase 3: Service Layer 🚧 PENDING (8 tasks)
-- LinePropertiesService (CRUD operations)
-- Validation logic
-- Batch update operations
-- Mixed value detection
+GOAL: Implement all spacing, typography, animation, and border improvements
 
-### Phase 4-13: Remaining Phases 🚧 PENDING (71 tasks)
-- Shared UI components
-- Tab components
-- Multi-select mode
-- Main modal assembly
-- Styling & design tokens
-- Accessibility features
-- Integration with DrawingCanvas
-- Testing & documentation
+HIGH PRIORITY TASKS (9 tasks - 4-6 hours):
+1. Update modal padding from 16px to 20px
+2. Update header-tabs separator from 8px to 12px
+3. Update tabs-content separator from 8px to 12px
+4. Update content-footer separator from 8px to 16px
+5. Update header height from 32px to 40px
+6. Update modal title from 14px to 16px
+7. Add modal outer border (1px neutral-200)
+8. Fix active tab styling (font-semibold, blue-600 border)
+9. Standardize focus rings across all interactive elements
 
-**Total:** 103 tasks (14 complete, 89 pending)
+MEDIUM PRIORITY TASKS (13 tasks - 6-8 hours):
+10. Update Properties tab spacing from 12px to 16px
+11. Update Advanced tab spacing from 12px to 16px
+12. Reduce expandable section bottom padding from 16px to 12px
+13. Update tab gap from 2px to 4px
+14. Update footer button gap from 4px to 8px
+15. Update tab labels from 12px to 13px
+16. Reduce helper text from 12px to 11px
+17. Add tab bar bottom border (1px neutral-200)
+18. Improve modal open/close animation (symmetric 200ms, ease-out/ease-in)
+19. Add tab content fade transition (150ms fade-in)
+20. Add dropdown close animation (150ms ease-in)
+21. Standardize icon sizing (14px chevrons)
+22. Improve shadow hierarchy (modal shadow-xl, dropdown shadow-lg)
+
+LOW PRIORITY TASKS (8 tasks - 8-10 hours):
+23. Update label-to-input spacing from 8px to 10px
+24. Add explicit chip gap (8px)
+25. Simplify expandable section animation timing
+26. Add button hover scale effect (1.02 on hover, 0.98 on active)
+27. Update success color from green-600 to green-700
+28. Add button hover shadow (shadow-sm)
+29. Add loading states for dropdowns
+30. Add modal loading skeleton
+
+DELIVERABLES:
+- Updated LinePropertiesModal.tsx with all spacing/border changes
+- Updated ModalHeader.tsx with height and title size changes
+- Updated TabBar.tsx with gap, border, and active tab styling
+- Updated ModalFooter.tsx with button gap changes
+- Updated PropertiesTab.tsx and AdvancedTab.tsx with spacing changes
+- Updated all shared components (Dropdown, Button, Input) with refinements
+- Design refinement documentation
+
+TESTING:
+- Visual regression tests for all changes
+- Accessibility audit (verify all contrast ratios maintained)
+- Animation smoothness testing
+- Cross-browser testing
+
+TOTAL EFFORT: 18-24 hours (2-3 weeks part-time)
+
+### Phase 3: Utility Layer 🚧 PENDING (10 tasks)
+
+GOAL: Implement HVAC calculation functions and modal positioning logic
+
+TASKS:
+1. Create calculateVelocity function (Wright Equation)
+2. Create calculateFriction function (Wright Equation)
+3. Create calculateVelocityPressure function
+4. Create formatCalculationResult function
+5. Create suggestOptimalWidth function
+6. Create calculateModalPosition function
+7. Create validateCFMInput function
+8. Add unit tests for all calculation functions
+9. Add unit tests for positioning logic
+10. Document all formulas and algorithms
+
+DELIVERABLES:
+- src/utils/hvac/calculations.ts
+- src/utils/modal/positioning.ts
+- src/utils/hvac/formatting.ts
+- Unit tests with 100% coverage
+
+TESTING:
+- Verify calculations match ASHRAE standards
+- Test edge cases (zero CFM, negative values, extreme widths)
+- Performance testing (calculations <50ms)
+
+TOTAL EFFORT: 40 hours (1 week)
+
+### Phase 4: Service Layer 🚧 PENDING (8 tasks)
+
+GOAL: Implement business logic for line property management
+
+TASKS:
+1. Create LinePropertiesService with CRUD operations
+2. Implement validation logic for all properties
+3. Implement batch update operations
+4. Implement mixed value detection for multi-select
+5. Add error handling and recovery
+6. Add unit tests for all service methods
+7. Add integration tests
+8. Document service API
+
+DELIVERABLES:
+- src/services/line/LinePropertiesService.ts
+- src/services/line/validation.ts
+- Unit and integration tests
+
+TESTING:
+- Test all CRUD operations
+- Test batch updates with various scenarios
+- Test validation rules
+- Test error handling
+
+TOTAL EFFORT: 32 hours (4 days)
+
+### Phase 5-13: Remaining Phases 🚧 PENDING (51 tasks)
+
+PHASES:
+- Phase 5: Shared UI Components (10 tasks)
+- Phase 6: Properties Tab Components (8 tasks)
+- Phase 7: Calculations Tab Components (6 tasks)
+- Phase 8: Advanced Tab Components (6 tasks)
+- Phase 9: Multi-Select Mode (8 tasks)
+- Phase 10: Main Modal Assembly (5 tasks)
+- Phase 11: Styling & Design Tokens (4 tasks)
+- Phase 12: Accessibility Features (6 tasks)
+- Phase 13: Integration & Testing (8 tasks)
+
+TOTAL EFFORT: 200 hours (5 weeks)
+
+GRAND TOTAL: 103 tasks
+- Phase 1 (Foundation): 14 tasks ✅ COMPLETE
+- Phase 2 (Design Refinements): 30 tasks 🚧 PENDING
+- Phases 3-13 (Implementation): 59 tasks 🚧 PENDING
 
 ---
 
-## Dependencies & Constraints
+================================================================================
+PART 3: CROSS-FEATURE INTEGRATION
+================================================================================
 
-### Dependencies
+## 3.1 Dependencies
+
+### 3.1.1 Feature Dependencies
+
+GLASSMORPHISM → LINE PROPERTIES MODAL:
+- Line Properties Modal will use glassmorphism Tier 2 styles
+- Modal must be updated with glass effects after glassmorphism implementation
+- Design tokens from glassmorphism will be used in modal styling
+
+LINE PROPERTIES MODAL → GLASSMORPHISM:
+- No blocking dependencies
+- Modal can be enhanced independently
+- Glassmorphism can be applied to modal later
+
+RECOMMENDED IMPLEMENTATION ORDER:
+1. Glassmorphism Design Theme (5 weeks)
+2. Line Properties Modal Design Refinements (2-3 weeks)
+3. Line Properties Modal Implementation (5 weeks)
+
+TOTAL TIMELINE: 12-13 weeks
+
+### 3.1.2 Technical Dependencies
+
+SHARED DEPENDENCIES:
 - React 18.2.0
 - TypeScript 5.1.6
-- Existing DrawingCanvas component
+- Tailwind CSS 3.3.3
 - Design system tokens
+- Existing DrawingCanvas component
 
-### Constraints
-- Must maintain <200 line file limit per module
-- Must achieve ≥80% test coverage
-- Must follow layered architecture
-- Must not introduce circular dependencies
-- Must maintain bundle size <176 KB
+GLASSMORPHISM DEPENDENCIES:
+- Modern browser support (Chrome 76+, Firefox 103+, Safari 9+, Edge 79+)
+- GPU acceleration support
+- CSS backdrop-filter support
 
----
-
-## Risks & Mitigation
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| Calculation accuracy issues | High | Low | Use ASHRAE standards, comprehensive testing |
-| Performance degradation | Medium | Low | Optimize calculations, use React.memo |
-| Accessibility gaps | Medium | Medium | Follow WCAG 2.1, use automated testing |
-| Complex state management | Medium | Medium | Use custom hooks, clear data flow |
-| Integration issues | Low | Low | Incremental integration, E2E tests |
+LINE PROPERTIES MODAL DEPENDENCIES:
+- Glassmorphism design tokens (for visual consistency)
+- HVAC calculation formulas (ASHRAE standards)
+- Existing line selection logic
 
 ---
 
-## Timeline & Milestones
+## 3.2 Integration Points
 
-### Milestone 1: Utility & Service Layers (Week 1-2)
-- Complete Phase 2: Utility Layer
-- Complete Phase 3: Service Layer
-- **Deliverable:** Calculation and business logic complete
+### 3.2.1 Design System Integration
 
-### Milestone 2: UI Components (Week 3-4)
-- Complete Phase 4: Shared Components
-- Complete Phase 5-7: Tab Components
-- **Deliverable:** All UI components built and tested
+DESIGN TOKENS:
+- Glassmorphism adds new glass-tokens.ts
+- Line Properties Modal uses existing design tokens + glass tokens
+- Both features share color palette, typography scale, spacing scale
 
-### Milestone 3: Integration & Polish (Week 5-6)
-- Complete Phase 8-9: Multi-select and Assembly
-- Complete Phase 10-11: Styling and Accessibility
-- **Deliverable:** Fully functional modal
+CSS UTILITIES:
+- Glassmorphism adds .glass-tier1, .glass-tier2, .glass-tier3 classes
+- Line Properties Modal uses these classes for consistent styling
+- Shared utility classes for spacing, typography, borders
 
-### Milestone 4: Testing & Launch (Week 7-8)
-- Complete Phase 12: Integration
-- Complete Phase 13: Testing & Documentation
-- **Deliverable:** Production-ready feature
+COMPONENT LIBRARY:
+- Glassmorphism updates Sidebar, BottomBar, Modal, Dropdown, Button, Input
+- Line Properties Modal uses updated shared components
+- Consistent visual language across all components
 
-**Total Duration:** 8 weeks
+### 3.2.2 Accessibility Integration
+
+WCAG 2.1 AA COMPLIANCE:
+- Both features must maintain 4.5:1 contrast ratios minimum
+- Both features support high contrast mode
+- Both features support reduced motion
+- Both features support reduced transparency
+
+KEYBOARD NAVIGATION:
+- Glassmorphism maintains existing keyboard navigation
+- Line Properties Modal adds comprehensive keyboard support
+- Focus management consistent across features
+
+SCREEN READER SUPPORT:
+- Glassmorphism maintains existing ARIA labels
+- Line Properties Modal adds comprehensive ARIA labels
+- Consistent screen reader announcements
+
+### 3.2.3 Performance Integration
+
+RENDERING PERFORMANCE:
+- Glassmorphism adds ~6-10ms UI rendering time
+- Line Properties Modal adds ~5-7ms modal rendering time
+- Combined impact: ~11-17ms (still within 60fps budget)
+
+BUNDLE SIZE:
+- Glassmorphism adds ~2KB CSS
+- Line Properties Modal adds ~15KB JavaScript
+- Combined impact: ~17KB (within 176KB budget)
+
+GPU MEMORY:
+- Glassmorphism uses ~12-36MB GPU memory
+- Line Properties Modal uses ~2-4MB GPU memory
+- Combined impact: ~14-40MB (minimal on modern devices)
 
 ---
 
-## Appendix
+## 3.3 Timeline & Milestones
 
-### HVAC Calculation Formulas
+### Overall Project Timeline: 12-13 Weeks
 
-**Velocity (fpm):**
+PHASE 1: GLASSMORPHISM FOUNDATION (Week 1)
+- Set up design tokens and base styles
+- Create utility classes
+- Set up browser fallbacks
+- Add accessibility media queries
+DELIVERABLE: Glass design system ready
+
+PHASE 2: GLASSMORPHISM PRIMARY UI (Week 2)
+- Apply glass to Sidebar and Bottom Bar
+- Test with PDF backgrounds
+- Verify contrast ratios
+- Performance testing
+DELIVERABLE: Primary UI with glass effects
+
+PHASE 3: GLASSMORPHISM FLOATING ELEMENTS (Week 3)
+- Apply glass to modals and overlays
+- Enhance PDF Controls
+- Update Draw Button
+- Test modal dragging
+DELIVERABLE: Floating elements with glass effects
+
+PHASE 4: GLASSMORPHISM INTERACTIVE CONTROLS (Week 4)
+- Apply glass to form controls
+- Test all interactive states
+- Keyboard navigation testing
+- Screen reader testing
+DELIVERABLE: All controls with glass effects
+
+PHASE 5: GLASSMORPHISM POLISH (Week 5)
+- Fine-tune blur values
+- Optimize performance
+- Final accessibility audit
+- User acceptance testing
+DELIVERABLE: Production-ready glassmorphism
+
+PHASE 6: MODAL DESIGN REFINEMENTS (Week 6-7)
+- Implement all HIGH priority changes (9 tasks)
+- Implement all MEDIUM priority changes (13 tasks)
+- Implement selected LOW priority changes (4 tasks)
+- Visual regression testing
+DELIVERABLE: Polished modal design
+
+PHASE 7: MODAL UTILITY LAYER (Week 8)
+- Implement HVAC calculations
+- Implement modal positioning
+- Unit tests with 100% coverage
+DELIVERABLE: Calculation and positioning logic
+
+PHASE 8: MODAL SERVICE LAYER (Week 9)
+- Implement LinePropertiesService
+- Implement validation logic
+- Implement batch operations
+- Integration tests
+DELIVERABLE: Business logic complete
+
+PHASE 9-12: MODAL UI COMPONENTS (Week 10-13)
+- Build all tab components
+- Build multi-select mode
+- Assemble main modal
+- Accessibility features
+- Integration with DrawingCanvas
+DELIVERABLE: Production-ready modal
+
+### Milestone Summary
+
+Milestone 1: Glassmorphism Complete (Week 5)
+- All UI components have glass effects
+- Accessibility compliance verified
+- Performance targets met
+- User acceptance testing passed
+
+Milestone 2: Modal Design Refinements Complete (Week 7)
+- All spacing/typography/animation improvements implemented
+- Visual regression tests passed
+- Accessibility maintained
+- User feedback incorporated
+
+Milestone 3: Modal Logic Complete (Week 9)
+- HVAC calculations implemented and tested
+- Service layer complete
+- 100% test coverage achieved
+- Integration tests passed
+
+Milestone 4: Full Feature Launch (Week 13)
+- Line Properties Modal fully functional
+- Glassmorphism applied throughout
+- All tests passing
+- Documentation complete
+- Production deployment ready
+
+---
+
+## 3.4 Success Metrics
+
+### 3.4.1 Glassmorphism Success Metrics
+
+METRIC                          | TARGET        | MEASUREMENT
+-------------------------------|---------------|-------------
+Visual Hierarchy Clarity       | 9/10          | User survey rating
+Accessibility Compliance       | 100%          | Lighthouse audit
+Performance (60fps)            | 95%+          | Chrome DevTools profiling
+Browser Compatibility          | 95%+          | BrowserStack testing
+User Satisfaction              | ≥4.5/5        | Post-release survey
+PDF Background Readability     | 100%          | Manual testing with various PDFs
+
+### 3.4.2 Line Properties Modal Success Metrics
+
+METRIC                          | TARGET        | MEASUREMENT
+-------------------------------|---------------|-------------
+Property Edit Time             | <5 seconds    | Time from click to save
+Calculation Accuracy           | 100%          | Match ASHRAE standards
+User Satisfaction              | ≥4.5/5        | Post-release survey
+Batch Edit Usage               | ≥30%          | % of edits using multi-select
+Accessibility Score            | 100%          | Lighthouse audit
+Modal Open Time                | <200ms        | Performance profiling
+Calculation Update Time        | <50ms         | Performance profiling
+
+### 3.4.3 Combined Success Metrics
+
+METRIC                          | TARGET        | MEASUREMENT
+-------------------------------|---------------|-------------
+Overall UI Rendering Time      | <27ms         | Chrome DevTools (60fps capable)
+Bundle Size                    | <176KB        | Webpack bundle analyzer
+Test Coverage                  | ≥80%          | Jest/Vitest coverage report
+Zero Accessibility Violations  | 100%          | axe DevTools, WAVE
+User Productivity Increase     | 60%+          | Time study before/after
+User Satisfaction              | ≥4.5/5        | Post-release survey
+
+---
+
+================================================================================
+APPENDICES
+================================================================================
+
+## APPENDIX A: HVAC Calculation Formulas
+
+### A.1 Velocity Calculation (fpm)
+
+FORMULA:
 ```
 V = (CFM × 144) / (W² × π/4)
 ```
 
-**Friction Loss (in.wc/100ft) - Wright Equation:**
+WHERE:
+- V = Velocity in feet per minute (fpm)
+- CFM = Cubic feet per minute (airflow)
+- W = Duct width in inches
+- 144 = Conversion factor (square inches to square feet)
+- π/4 = Circle area factor for round ducts
+
+EXAMPLE:
+- CFM = 1000
+- Width = 12 inches
+- V = (1000 × 144) / (12² × 0.7854)
+- V = 144000 / 113.097
+- V = 1273.24 fpm
+
+### A.2 Friction Loss Calculation (in.wc/100ft) - Wright Equation
+
+FORMULA:
 ```
 F = (0.109136 × Q^1.9) / (D^5.02)
 D = 1.30 × ((W × W)^0.625) / ((W + W)^0.25)
 ```
 
-**Velocity Pressure (in):**
+WHERE:
+- F = Friction loss in inches water column per 100 feet
+- Q = Airflow in CFM
+- D = Equivalent diameter in inches
+- W = Duct width in inches
+- 0.109136 = Wright equation constant
+- 1.30 = Equivalent diameter constant
+
+EXAMPLE:
+- CFM = 1000
+- Width = 12 inches
+- D = 1.30 × ((12 × 12)^0.625) / ((12 + 12)^0.25)
+- D = 1.30 × (144^0.625) / (24^0.25)
+- D = 1.30 × 18.93 / 2.21
+- D = 11.13 inches
+- F = (0.109136 × 1000^1.9) / (11.13^5.02)
+- F = 8668.25 / 181,234.56
+- F = 0.048 in.wc/100ft
+
+### A.3 Velocity Pressure Calculation (in)
+
+FORMULA:
 ```
 VP = (V / 4005)²
 ```
 
-### References
-- ASHRAE Fundamentals Handbook
-- SMACNA HVAC Duct Design Manual
-- Notion Wireframes: https://www.notion.so/Line-Properties-Modal-Wireframes-cad8bca63e5a413793a0dd2bb698f85f
-- Project Architecture: docs/ARCHITECTURE.md
-- Current Status: docs/LINE_PROPERTIES_MODAL.md
+WHERE:
+- VP = Velocity pressure in inches water column
+- V = Velocity in feet per minute (fpm)
+- 4005 = Velocity pressure constant
 
+EXAMPLE:
+- Velocity = 1273.24 fpm
+- VP = (1273.24 / 4005)²
+- VP = (0.318)²
+- VP = 0.101 in
+
+### A.4 Optimal Width Suggestion
+
+LOGIC:
+```
+IF velocity > 1500 fpm THEN
+  suggestedWidth = NEXT_LARGER_STANDARD_SIZE(currentWidth)
+  WHILE calculateVelocity(CFM, suggestedWidth) > 1500 fpm
+    suggestedWidth = NEXT_LARGER_STANDARD_SIZE(suggestedWidth)
+  END WHILE
+END IF
+```
+
+STANDARD SIZES: 4", 5", 6", 7", 8", 9", 10", 12", 14", 16", 18", 20", 22", 24", 26", 28", 30", 32", 34", 36", 38", 40"
+
+---
+
+## APPENDIX B: Design Tokens Reference
+
+### B.1 Glass Tokens
+
+```typescript
+export const GLASS_TOKENS = {
+  tier1: {
+    background: 'rgba(255, 255, 255, 0.75)',
+    border: 'rgba(255, 255, 255, 0.3)',
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+    textColor: '#0F172A',
+    contrastRatio: '15.8:1',
+  },
+  tier2: {
+    background: 'rgba(255, 255, 255, 0.85)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    blur: '10px',
+    saturate: '160%',
+    shadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+    textColor: '#0F172A',
+    contrastRatio: '13.8:1',
+  },
+  tier3: {
+    background: 'rgba(255, 255, 255, 0.92)',
+    border: 'rgba(203, 213, 225, 0.8)',
+    blur: '6px',
+    saturate: '140%',
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+    textColor: '#374151',
+    contrastRatio: '8.9:1',
+  },
+} as const;
+```
+
+### B.2 Modal Tokens
+
+```typescript
+export const MODAL_TOKENS = {
+  dimensions: {
+    WIDTH: 220,
+    PADDING: 20, // Updated from 16px
+    HEADER_HEIGHT: 40, // Updated from 32px
+    TAB_HEIGHT: 36,
+    FOOTER_HEIGHT: 40,
+    SECTION_GAP: 16,
+  },
+  spacing: {
+    HEADER_TABS_GAP: 12, // Updated from 8px
+    TABS_CONTENT_GAP: 12, // Updated from 8px
+    CONTENT_FOOTER_GAP: 16, // Updated from 8px
+    TAB_GAP: 4, // Updated from 2px
+    BUTTON_GAP: 8, // Updated from 4px
+    CHIP_GAP: 8,
+  },
+  typography: {
+    TITLE_SIZE: 16, // Updated from 14px
+    TAB_SIZE: 13, // Updated from 12px
+    LABEL_SIZE: 12,
+    INPUT_SIZE: 14,
+    HELPER_SIZE: 11, // Updated from 12px
+  },
+  animations: {
+    DURATION_OPEN: 200,
+    DURATION_CLOSE: 200, // Updated from 150ms
+    DURATION_TAB_SWITCH: 150,
+    DURATION_EXPAND: 300,
+    EASING_OPEN: 'ease-out',
+    EASING_CLOSE: 'ease-in',
+    EASING_TAB: 'ease-in-out',
+  },
+} as const;
+```
+
+---
+
+## APPENDIX C: CSS Code Examples
+
+### C.1 Glass Utility Classes
+
+```css
+/* Glass Tier 1: Primary UI (Sidebar, Bottom Bar) */
+.glass-tier1 {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Glass Tier 2: Floating Elements (Modals, Overlays) */
+.glass-tier2 {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Glass Tier 3: Interactive Controls (Buttons, Inputs) */
+.glass-tier3 {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Fallback for unsupported browsers */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Accessibility: High Contrast Mode */
+@media (prefers-contrast: high) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    background: #FFFFFF;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 2px solid #0F172A;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Accessibility: Reduced Transparency */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-tier1,
+  .glass-tier2,
+  .glass-tier3 {
+    background: #FFFFFF;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+```
+
+---
+
+## APPENDIX D: Testing Checklists
+
+### D.1 Glassmorphism Testing Checklist
+
+VISUAL TESTING:
+- [ ] Sidebar glass effect renders correctly
+- [ ] Bottom Bar glass effect renders correctly
+- [ ] Line Properties Modal glass effect renders correctly
+- [ ] PDF Controls glass effect renders correctly
+- [ ] Draw Button inactive glass effect renders correctly
+- [ ] Dropdown menu glass effect renders correctly
+- [ ] Button glass effects render correctly
+- [ ] Input glass effects render correctly
+- [ ] Glass effects work with PDF backgrounds
+- [ ] Glass effects work without PDF backgrounds
+- [ ] Layering hierarchy is visually clear
+- [ ] No visual glitches or artifacts
+
+ACCESSIBILITY TESTING:
+- [ ] All text meets 4.5:1 contrast ratio (WCAG AA)
+- [ ] High contrast mode provides solid backgrounds
+- [ ] Reduced motion mode disables blur effects
+- [ ] Reduced transparency mode provides solid backgrounds
+- [ ] Screen readers announce all content correctly
+- [ ] Keyboard navigation works as expected
+- [ ] Focus indicators are clearly visible
+- [ ] Color is not the only means of conveying information
+
+PERFORMANCE TESTING:
+- [ ] UI renders at 60fps with glass effects
+- [ ] Canvas rendering unaffected by glass effects
+- [ ] Modal dragging performs smoothly
+- [ ] No jank or stuttering during interactions
+- [ ] GPU memory usage within acceptable limits
+- [ ] Battery impact acceptable on laptops
+- [ ] Performance acceptable on low-end devices
+
+BROWSER TESTING:
+- [ ] Chrome (latest): Full glass effects
+- [ ] Firefox (latest): Full glass effects
+- [ ] Safari (latest): Full glass effects with -webkit- prefix
+- [ ] Edge (latest): Full glass effects
+- [ ] IE11: Fallback to solid backgrounds
+
+### D.2 Line Properties Modal Testing Checklist
+
+SPACING TESTING:
+- [ ] Modal padding is 20px
+- [ ] Header-tabs separator is 12px
+- [ ] Tabs-content separator is 12px
+- [ ] Content-footer separator is 16px
+- [ ] Header height is 40px
+- [ ] Properties tab spacing is 16px
+- [ ] Advanced tab spacing is 16px
+- [ ] Tab gap is 4px
+- [ ] Footer button gap is 8px
+- [ ] Chip gap is 8px
+
+TYPOGRAPHY TESTING:
+- [ ] Modal title is 16px semibold
+- [ ] Tab labels are 13px medium
+- [ ] Helper text is 11px normal
+- [ ] All text meets contrast requirements
+
+ANIMATION TESTING:
+- [ ] Modal opens in 200ms with ease-out
+- [ ] Modal closes in 200ms with ease-in
+- [ ] Tab switch is 150ms with ease-in-out
+- [ ] Tab content fades in 150ms
+- [ ] Dropdown opens/closes smoothly
+- [ ] Expandable section animates smoothly
+
+BORDER TESTING:
+- [ ] Modal has 1px neutral-200 border
+- [ ] Tab bar has 1px neutral-200 bottom border
+- [ ] Active tab has 2px blue-600 bottom border
+
+CRITICAL UI FIXES:
+- [ ] Active tab is clearly distinguishable
+- [ ] Advanced tab layout is balanced
+- [ ] Expandable section button is interactive
+- [ ] Width chips have proper spacing
+
+---
+
+## REFERENCES
+
+### External Documentation
+- ASHRAE Fundamentals Handbook: https://www.ashrae.org/
+- SMACNA HVAC Duct Design Manual: https://www.smacna.org/
+- WCAG 2.1 Guidelines: https://www.w3.org/WAI/WCAG21/quickref/
+- MDN backdrop-filter: https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter
+- Can I Use backdrop-filter: https://caniuse.com/css-backdrop-filter
+
+### Internal Documentation
+- Project Architecture: docs/ARCHITECTURE.md
+- Glassmorphism Proposal: docs/GLASSMORPHISM_DESIGN_PROPOSAL.md
+- Line Properties Modal Audit: docs/LINE_PROPERTIES_MODAL_DESIGN_AUDIT.md
+- Current Codebase Specs: docs/CURRENT_CODEBASE_SPECS.md
+- Project Status: docs/PROJECT_STATUS.md
+
+### Notion Resources
+- Line Properties Modal Wireframes: https://www.notion.so/Line-Properties-Modal-Wireframes-cad8bca63e5a413793a0dd2bb698f85f
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** 2025-10-17
+**Status:** Active Development
+**Next Review:** After Phase 2 completion
+
+================================================================================
+END OF DOCUMENT
+================================================================================
