@@ -1,0 +1,186 @@
+{
+  "version": "0.29.0",
+  "name": "task-master-ai",
+  "tags": {
+    "master": {
+      "metadata": {
+        "name": "master",
+        "description": "Main development tasks for HVAC Canvas project",
+        "createdAt": "2025-01-27T00:00:00.000Z",
+        "lastModified": "2025-01-27T00:00:00.000Z"
+      },
+      "tasks": [
+        {
+          "id": 1,
+          "title": "Glassmorphism Design Theme Implementation",
+          "description": "Implement modern glassmorphism design theme across the entire HVAC Canvas application using semi-transparent backgrounds with backdrop blur effects.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "details": "Create visual depth, enhance professional aesthetic, and allow PDF backgrounds to subtly show through UI elements while maintaining WCAG 2.1 AA accessibility compliance. Implement three-tier glass system with varying opacity and blur levels.",
+          "testStrategy": "Visual regression tests, accessibility audit (WCAG 2.1 AA), performance testing (60fps), cross-browser testing, PDF background interaction testing.",
+          "subtasks": []
+        },
+        {
+          "id": 2,
+          "title": "Line Properties Modal Enhancement",
+          "description": "Comprehensive enhancement of the Line Properties Modal based on detailed design audit with spacing refinements, typography improvements, and critical UI fixes.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            1
+          ],
+          "details": "Implement spacing refinements (12 adjustments), typography improvements (4 font changes), animation polish (9 timing refinements), border aesthetics (2 additions), and critical UI fixes (4 high-priority issues).",
+          "testStrategy": "Visual regression tests, accessibility audit, animation smoothness testing, cross-browser testing, user acceptance testing.",
+          "subtasks": []
+        },
+        {
+          "id": 3,
+          "title": "Glassmorphism Foundation Setup",
+          "description": "Set up design tokens and base styles for glassmorphism implementation.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [],
+          "details": "Create glass-tokens.ts with all tier specifications, add CSS custom properties for glass effects, create utility classes (.glass-tier1, .glass-tier2, .glass-tier3), set up browser compatibility fallbacks (@supports), add accessibility media query support.",
+          "testStrategy": "Verify tokens in Chrome, Firefox, Safari, Edge. Test fallbacks in IE11/older browsers. Validate accessibility media queries.",
+          "subtasks": []
+        },
+        {
+          "id": 4,
+          "title": "Primary UI Glassmorphism Implementation",
+          "description": "Apply glassmorphism to Sidebar and Bottom Bar components.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            3
+          ],
+          "details": "Update Sidebar component styles (Tier 1), update Bottom Bar component styles (Tier 1), test with and without PDF backgrounds, verify contrast ratios with automated tools, performance testing and optimization.",
+          "testStrategy": "Visual regression tests (Percy or Chromatic), accessibility audit (axe DevTools, WAVE), performance profiling (Chrome DevTools), cross-browser testing (BrowserStack).",
+          "subtasks": []
+        },
+        {
+          "id": 5,
+          "title": "Floating Elements Glassmorphism",
+          "description": "Apply glassmorphism to modals and overlays.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            4
+          ],
+          "details": "Update Line Properties Modal styles (Tier 2), enhance PDF Controls (already has glass, refine), update Draw Button inactive state, test modal dragging performance, verify layering hierarchy (z-index).",
+          "testStrategy": "Modal drag performance testing, z-index layering verification, PDF background interaction testing, accessibility audit.",
+          "subtasks": []
+        },
+        {
+          "id": 6,
+          "title": "Interactive Controls Glassmorphism",
+          "description": "Apply subtle glassmorphism to form controls.",
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [
+            5
+          ],
+          "details": "Update Dropdown component styles (Tier 3), update Button component styles (Tier 3), update Input component styles (Tier 3), update Chip component styles (Tier 3), test all interactive states (hover, focus, active, disabled).",
+          "testStrategy": "Interaction testing (hover, focus, active), keyboard navigation testing, screen reader testing (NVDA, JAWS), form usability testing.",
+          "subtasks": []
+        },
+        {
+          "id": 7,
+          "title": "Line Properties Modal Design Refinements",
+          "description": "Implement all spacing, typography, animation, and border improvements for the Line Properties Modal.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            2
+          ],
+          "details": "Implement HIGH priority changes (9 tasks - 4-6 hours): modal padding, separators, header height, title size, border, active tab styling, focus rings. Implement MEDIUM priority changes (13 tasks - 6-8 hours): tab spacing, typography, animations, borders.",
+          "testStrategy": "Visual regression tests for all changes, accessibility audit (verify all contrast ratios maintained), animation smoothness testing, cross-browser testing.",
+          "subtasks": []
+        },
+        {
+          "id": 8,
+          "title": "HVAC Calculation Functions",
+          "description": "Implement HVAC calculation functions and modal positioning logic.",
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [
+            7
+          ],
+          "details": "Create calculateVelocity function (Wright Equation), create calculateFriction function (Wright Equation), create calculateVelocityPressure function, create formatCalculationResult function, create suggestOptimalWidth function, create calculateModalPosition function.",
+          "testStrategy": "Verify calculations match ASHRAE standards, test edge cases (zero CFM, negative values, extreme widths), performance testing (calculations <50ms).",
+          "subtasks": []
+        },
+        {
+          "id": 9,
+          "title": "Line Properties Service Layer",
+          "description": "Implement business logic for line property management.",
+          "status": "pending",
+          "priority": "medium",
+          "dependencies": [
+            8
+          ],
+          "details": "Create LinePropertiesService with CRUD operations, implement validation logic for all properties, implement batch update operations, implement mixed value detection for multi-select, add error handling and recovery.",
+          "testStrategy": "Test all CRUD operations, test batch updates with various scenarios, test validation rules, test error handling.",
+          "subtasks": []
+        },
+        {
+          "id": 10,
+          "title": "Accessibility Compliance Verification",
+          "description": "Ensure all components meet WCAG 2.1 AA accessibility standards.",
+          "status": "pending",
+          "priority": "high",
+          "dependencies": [
+            6,
+            7
+          ],
+          "details": "Verify all text meets 4.5:1 contrast ratio (WCAG AA), test high contrast mode support, test reduced motion mode, test reduced transparency mode, verify screen reader compatibility, test keyboard navigation.",
+          "testStrategy": "Lighthouse audit, axe DevTools testing, WAVE testing, manual screen reader testing, keyboard navigation testing.",
+          "subtasks": []
+        }
+      ]
+    }
+  },
+  "currentTag": "master",
+  "development": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Implement Glassmorphism Design Theme",
+        "description": "Implement a modern glassmorphism design theme across the entire HVAC Canvas application using semi-transparent backgrounds with backdrop blur effects, ensuring WCAG 2.1 AA accessibility compliance.",
+        "details": "The implementation will involve applying glassmorphism styling globally and to key UI components. This includes defining a three-tier glass system with varying opacity and blur levels to create visual depth and hierarchy.\n\n1.  **Define CSS Variables/Theme Properties**: Establish global CSS variables (e.g., `--glass-color-base: rgba(255, 255, 255, 0.1);`, `--glass-blur-level-1: 5px;`, `--glass-blur-level-2: 10px;`, `--glass-blur-level-3: 20px;`) within a central stylesheet (e.g., `src/styles/theme.css` or `src/App.js` if using CSS-in-JS) for consistency.\n2.  **Create Three-Tier Glass System**: Implement a set of reusable CSS classes or styled components (e.g., `.glass-tier-1`, `.glass-tier-2`, `.glass-tier-3`) based on the defined variables:\n    *   **Tier 1 (Base/Primary)**: Low blur, moderate opacity. `background-color: var(--glass-color-base); backdrop-filter: blur(var(--glass-blur-level-1)); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);`\n    *   **Tier 2 (Secondary/Modal)**: Medium blur, slightly lower opacity. Adjust `background-color` and `backdrop-filter` accordingly.\n    *   **Tier 3 (Ephemeral/Sidebar)**: Higher blur, lower opacity. Adjust `background-color` and `backdrop-filter` accordingly.\n3.  **Apply Styles to Core Components**: Integrate these styles into existing UI components such as navigation bars, sidebars, cards, modals, and buttons. Focus on the main application layout in `src/App.js` or `src/components/Layout/` to ensure a consistent base.\n4.  **WCAG 2.1 AA Compliance**: \n    *   **Contrast**: Ensure all text and interactive elements on glassmorphic backgrounds meet a contrast ratio of at least 4.5:1. This may require choosing appropriate text colors or adding subtle text shadows.\n    *   **Focus Indicators**: Maintain clear and visible focus outlines for keyboard navigation across all interactive elements.\n    *   **Reduced Motion**: Implement `@media (prefers-reduced-motion)` for any animations or transitions to disable or reduce their impact.\n5.  **PDF Background Integration**: Test and fine-tune opacity levels to allow PDF backgrounds to subtly show through UI elements without compromising readability or usability of the foreground content. The `rgba` values in the `background-color` property are crucial here.\n6.  **Browser Compatibility & Fallback**: Provide a solid background color fallback for browsers that do not support `backdrop-filter`.\n7.  **Performance Optimization**: Evaluate the performance impact of `backdrop-filter` and consider using `will-change: backdrop-filter;` on elements if necessary, and optimize for GPU rendering where possible.",
+        "testStrategy": "1.  **Visual Inspection**: Manually inspect all application screens across Chrome, Firefox, and Safari to ensure consistent glassmorphism effects, blur levels, and opacity.\n2.  **Accessibility Audit**: \n    *   Use browser developer tools (e.g., Lighthouse, Accessibility Insights) to check for WCAG 2.1 AA compliance, focusing on contrast ratios for text and interactive elements.\n    *   Perform keyboard-only navigation to ensure all interactive elements have clear focus states.\n    *   Verify screen reader compatibility for key UI components.\n3.  **PDF Background Visibility**: Load various PDF documents within the application and verify that the content is subtly visible through glassmorphic UI elements while maintaining foreground readability.\n4.  **Responsiveness**: Test the design on different screen sizes and orientations to ensure the glassmorphism effects adapt correctly.\n5.  **Performance Testing**: Monitor rendering performance using browser developer tools (e.g., Performance tab) to identify and address any jank or slowdowns introduced by the blur effects, especially on pages with many glassmorphic elements.\n6.  **Fallback Test**: Disable `backdrop-filter` in developer tools to ensure the fallback styles provide an acceptable user experience.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Line Properties Modal UI/UX Enhancement",
+        "description": "Implement comprehensive UI/UX enhancements for the Line Properties Modal, addressing spacing, typography, animations, borders, and critical UI fixes based on a detailed design audit, incorporating both high and medium priority changes.",
+        "details": "Locate the existing Line Properties Modal component (e.g., `src/components/modals/LinePropertiesModal.jsx` or similar). Based on the provided design audit document (assume a specific link or file path is available), systematically implement the identified enhancements:\n\n1.  **Spacing Refinements**: Adjust all internal and external padding, margins, and component gaps within the modal to align with design specifications. Utilize existing or define new design tokens for consistent spacing values (e.g., `var(--spacing-unit-sm)`, `var(--spacing-unit-md)`).\n2.  **Typography Improvements**: Update font families, sizes, weights, line heights, and text colors for all text elements (labels, input values, titles, messages) in the modal to match the typography scale defined in the design system.\n3.  **Animation Polish**: Implement subtle and smooth transition animations for interactive elements (e.g., button hover states, input focus), modal entry/exit, and any state changes within the modal. Ensure animations are performant and non-disruptive.\n4.  **Border Aesthetics**: Refine border styles, radii, and colors for input fields, buttons, dividers, and the modal container itself. Ensure consistency with the new visual language.\n5.  **Critical UI Fixes**: Address all specific UI bugs or inconsistencies outlined in the design audit, such as overflow issues, misalignment of elements, or incorrect element states.\n\nPrioritize the implementation of `HIGH` priority changes (9 tasks) before proceeding with the `MEDIUM` priority changes (13 tasks). Ensure the modal remains responsive and accessible across various screen sizes and input methods.",
+        "testStrategy": "1.  **Visual Verification**: Manually inspect the Line Properties Modal across target browsers (Chrome, Firefox, Safari) and various screen resolutions/viewport sizes to ensure pixel-perfect alignment with the design audit specifications for all spacing, typography, animations, and border details.\n2.  **Functional Testing**: Verify that all interactive elements within the modal (inputs, sliders, buttons, toggles) remain fully functional and responsive after the UI/UX changes.\n3.  **Animation Validation**: Confirm that all implemented animations and transitions trigger correctly, are smooth, and enhance the user experience without introducing performance issues.\n4.  **Accessibility Audit**: Conduct a basic accessibility check using browser developer tools (e.g., Lighthouse, Accessibility Insights) to ensure focus management, keyboard navigation, and color contrast ratios meet WCAG 2.1 AA standards for the enhanced elements.\n5.  **Cross-Reference Design Audit**: Systematically review each high and medium priority item listed in the design audit document, confirming its correct implementation and resolution in the modal.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Glassmorphism Foundation Setup",
+        "description": "Establish core design tokens, CSS custom properties, and utility classes for glassmorphism, including browser fallbacks and accessibility support.",
+        "details": "1.  **Define Glassmorphism Design Tokens**: Create a new TypeScript file, `src/styles/glass-tokens.ts`, to define the specifications for three glassmorphism tiers. This file should export an object containing properties like `backgroundColor`, `backdropFilter` (with blur value), `border`, and `boxShadow` for each tier (e.g., `tier1`, `tier2`, `tier3`). Example structure:\n    ```typescript\n    export const GLASS_TOKENS = {\n      tier1: { backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(5px)', /* ... */ },\n      // ... tier2, tier3\n    };\n    ```\n2.  **Integrate CSS Custom Properties**: In a central stylesheet (e.g., `src/styles/_glassmorphism.scss` imported into `src/styles/global.scss` or `src/styles/theme.css`), define CSS custom properties (`--glass-bg-t1`, `--glass-blur-t1`, `--glass-border-t1`, `--glass-shadow-t1`, etc.) based on the values from `glass-tokens.ts`. Ensure consistent naming conventions.\n3.  **Create Utility Classes**: Implement CSS utility classes (`.glass-tier1`, `.glass-tier2`, `.glass-tier3`) in the same stylesheet. Each class should apply the respective CSS custom properties for `background`, `backdrop-filter`, `border`, and `box-shadow`. Add a common base class `.glass-base` for shared properties like `border-radius`.\n4.  **Implement Browser Compatibility Fallbacks**: Use `@supports` queries to detect `backdrop-filter` support.\n    *   For browsers that *do* support `backdrop-filter`, apply the intended glassmorphism styles with `-webkit-backdrop-filter` for broader compatibility.\n    *   For browsers that *do not* support `backdrop-filter`, provide a solid, slightly opaque fallback background color (e.g., `rgba(200, 200, 200, 0.9)`) and remove blur, border, and shadow effects.\n5.  **Add Accessibility Media Query Support**:\n    *   **Reduced Transparency/Motion**: Implement `@media (prefers-reduced-transparency), (prefers-reduced-motion)` to switch to a solid, less transparent background (e.g., `rgba(200, 200, 200, 0.9)`), disable `backdrop-filter`, and ensure text legibility by setting explicit `color`.\n    *   **High Contrast Mode**: Implement `@media (forced-colors: active)` to use system colors (`Canvas`, `CanvasText`, `Highlight`) for background, text, and borders, ensuring the glassmorphism effect is completely removed for maximum contrast.",
+        "testStrategy": "1.  **Code Review**: Verify `src/styles/glass-tokens.ts` correctly defines all tier specifications and `src/styles/_glassmorphism.scss` (or similar) correctly translates these tokens into CSS custom properties and utility classes.\n2.  **Browser Compatibility Testing**:\n    *   **Modern Browsers (Chrome, Firefox, Safari, Edge)**: Use developer tools to confirm `backdrop-filter` is applied correctly for each `.glass-tierX` class.\n    *   **Unsupported `backdrop-filter` Scenario**: Test in a browser or environment where `backdrop-filter` is known not to be supported (e.g., older browser version, or by temporarily disabling the property in dev tools for `backdrop-filter`). Verify that the fallback solid background is applied instead of the glass effect.\n3.  **Accessibility Testing**:\n    *   **Reduced Transparency**: On a system supporting `prefers-reduced-transparency` (e.g., macOS 'Reduce transparency' setting, or emulate in browser dev tools), verify that elements with `.glass-tierX` classes switch to the solid, less transparent fallback background and blur is disabled. Ensure text contrast remains high.\n    *   **Reduced Motion**: On a system supporting `prefers-reduced-motion`, ensure that no unexpected animations or transitions are introduced by the glassmorphism styles.\n    *   **High Contrast Mode**: Activate \"Forced Colors\" or \"High Contrast Mode\" in the operating system (e.g., Windows \"High contrast themes\") and verify that glassmorphism elements adopt system colors for background, text, and borders, effectively disabling the glass effect and prioritizing contrast.\n4.  **Semantic Check**: Ensure that the defined utility classes and custom properties align with the overall project's styling methodology and are ready for use by dependent tasks like Task 1.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-17T18:42:31.286Z",
+      "updated": "2025-10-17T18:43:46.472Z",
+      "description": "Main development tasks for HVAC Canvas project"
+    }
+  }
+}
