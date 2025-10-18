@@ -57,12 +57,12 @@ export function DrawButton(props: DrawButtonProps): JSX.Element {
       title="Toggle Draw (D)"
       onClick={onToggle}
       className={[
-        "group select-none fixed h-14 w-14 rounded-full shadow-lg focus:outline-none",
-        "ring-2",
+        "group select-none fixed h-14 w-14 rounded-full shadow-lg",
+        "flex items-center justify-center transition-all",
+        "focus:outline-none focus-visible:ring-2",
         isActive
-          ? "bg-[var(--color-primary-600)] ring-[var(--color-primary-300)] hover:bg-[var(--color-primary-700)]"
-          : "bg-white ring-neutral-300 hover:ring-neutral-300",
-        "flex items-center justify-center transition-colors"
+          ? "bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)]"
+          : "glass-tier3 glass-tier3-hover border border-neutral-200"
       ].join(" ")}
       style={{
         right: `${sidebarWidth + 24}px`,
@@ -78,4 +78,3 @@ export function DrawButton(props: DrawButtonProps): JSX.Element {
     </button>
   );
 }
-

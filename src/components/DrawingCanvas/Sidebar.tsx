@@ -61,7 +61,12 @@ export function Sidebar(props: SidebarProps): JSX.Element {
       <button
         type="button"
         onClick={onToggle}
-        className="fixed top-0 w-6 bg-neutral-200 hover:bg-neutral-300 transition-colors flex items-center justify-center z-10"
+        className={[
+          "fixed top-0 w-6 glass-tier3 glass-tier3-hover border border-neutral-200",
+          "flex items-center justify-center transition-all",
+          "focus:outline-none focus-visible:ring-2",
+          "z-20"
+        ].join(" ")}
         style={{
           right: `${sidebarWidth}px`,
           height: 'calc(100vh - 60px)' // Stop before bottom bar (60px)
@@ -78,14 +83,18 @@ export function Sidebar(props: SidebarProps): JSX.Element {
       {/* Sidebar Content - Fixed to not overlap bottom bar */}
       {!collapsed && (
         <div
-          className="fixed top-0 right-0 bg-white border-l border-neutral-200 flex flex-col"
+          className={[
+            "fixed top-0 right-0 z-10",
+            "glass-tier1 border-l border-neutral-200",
+            "flex flex-col"
+          ].join(" ")}
           style={{
             width: `${width}px`,
             height: 'calc(100vh - 60px)' // Stop before bottom bar (60px)
           }}
         >
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-neutral-200 bg-neutral-50">
+          <div className="p-4 border-b border-neutral-200 glass-tier1-section">
             <h2 className="text-lg font-semibold text-neutral-800">Line Summary</h2>
             <p className="text-xs text-neutral-500 mt-1">Scale: {currentScale.displayName}</p>
           </div>
@@ -122,4 +131,3 @@ export function Sidebar(props: SidebarProps): JSX.Element {
     </>
   );
 }
-

@@ -31,7 +31,7 @@ export function PdfControls(props: PdfControlsProps): JSX.Element {
   };
 
   return (
-    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur rounded-lg shadow-lg border border-neutral-200 p-3 z-20 min-w-[280px]">
+    <div className="absolute top-4 left-4 glass-pdf-controls rounded-lg border p-3 z-20 min-w-[280px]">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -41,7 +41,11 @@ export function PdfControls(props: PdfControlsProps): JSX.Element {
         <button
           type="button"
           onClick={onRemove}
-          className="w-6 h-6 flex items-center justify-center rounded hover:bg-neutral-100 transition-colors"
+          className={[
+            "w-6 h-6 flex items-center justify-center rounded",
+            "glass-tier3 glass-tier3-hover transition-all",
+            "focus:outline-none focus-visible:ring-2"
+          ].join(" ")}
           title="Remove PDF"
           aria-label="Remove PDF"
         >
@@ -81,4 +85,3 @@ export function PdfControls(props: PdfControlsProps): JSX.Element {
     </div>
   );
 }
-

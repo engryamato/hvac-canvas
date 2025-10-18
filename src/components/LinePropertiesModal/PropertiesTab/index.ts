@@ -3,7 +3,7 @@
  * 
  * Re-exports all Properties tab components.
  * 
- * Usage: import { PropertiesTab } from '@/components/LinePropertiesModal/PropertiesTab';
+ * Module path reference: '@/components/LinePropertiesModal/PropertiesTab'
  */
 
 // Main tab component
@@ -34,4 +34,3 @@ export type { MaterialDropdownProps } from './MaterialDropdown';
 
 export { GaugeDropdown } from './GaugeDropdown';
 export type { GaugeDropdownProps } from './GaugeDropdown';
-

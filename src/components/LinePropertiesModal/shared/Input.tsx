@@ -200,11 +200,11 @@ export function Input(props: InputProps): JSX.Element {
         className={[
           'w-full h-8 px-3',
           'text-sm text-neutral-900 placeholder:text-neutral-500',
-          'bg-white border rounded',
+          'glass-tier3 border rounded',
           getBorderColor(),
           'transition-all duration-150',
           'focus:outline-none focus:ring-1',
-          disabled && 'opacity-50 cursor-not-allowed bg-neutral-50',
+          disabled && 'opacity-50 cursor-not-allowed',
         ].join(' ')}
       />
 

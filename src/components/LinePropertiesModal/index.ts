@@ -3,7 +3,7 @@
  * 
  * Re-exports the main LinePropertiesModal component and all sub-components.
  * 
- * Usage: import { LinePropertiesModal } from '@/components/LinePropertiesModal';
+ * Module path reference: '@/components/LinePropertiesModal'
  */
 
 // Main modal component
@@ -30,4 +30,3 @@ export * from './MultiSelect';
 
 // Shared components
 export * from './shared';
-

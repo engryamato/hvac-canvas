@@ -3,7 +3,7 @@
  * 
  * Re-exports all multi-select mode components.
  * 
- * Usage: import { MultiSelectHeader, MixedValueDropdown } from '@/components/LinePropertiesModal/MultiSelect';
+ * Module path reference: '@/components/LinePropertiesModal/MultiSelect'
  */
 
 // Header component
@@ -29,4 +29,3 @@ export type { MultiSelectWarningProps } from './MultiSelectWarning';
 // Footer component
 export { MultiSelectFooter } from './MultiSelectFooter';
 export type { MultiSelectFooterProps } from './MultiSelectFooter';
-

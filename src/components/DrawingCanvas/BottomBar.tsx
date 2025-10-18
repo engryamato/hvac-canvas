@@ -105,7 +105,14 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-[60px] bg-white border-t border-neutral-200 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-10 flex items-center justify-between px-4 gap-4">
+    <div
+      className={[
+        "fixed bottom-0 left-0 right-0 h-[60px]",
+        "glass-tier1 border-t border-neutral-200",
+        "flex items-center justify-between px-4 gap-4",
+        "z-20"
+      ].join(" ")}
+    >
       {/* Left Side - PDF Controls */}
       <div className="flex items-center gap-3">
         {/* Hidden file input */}
@@ -122,7 +129,12 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
         <button
           type="button"
           onClick={handleUploadClick}
-          className="flex items-center gap-2 px-3 py-1.5 rounded border border-neutral-300 bg-white hover:bg-neutral-50 transition-colors text-sm text-neutral-700"
+          className={[
+            "flex items-center gap-2 px-3 py-1.5 rounded",
+            "glass-tier3 glass-tier3-hover border border-neutral-200",
+            "transition-all text-sm text-neutral-700",
+            "focus:outline-none focus-visible:ring-2"
+          ].join(" ")}
           title="Upload PDF"
         >
           <Upload className="w-4 h-4" />
@@ -131,7 +143,12 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
 
         {/* PDF Opacity Control - Only show when PDF is loaded */}
         {hasPdf && onPdfOpacityChange && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-neutral-300 bg-neutral-50">
+          <div
+            className={[
+              "flex items-center gap-2 px-3 py-1.5 rounded",
+              "glass-tier3 border border-neutral-200"
+            ].join(" ")}
+          >
             <span className="text-xs text-neutral-600 whitespace-nowrap">PDF Opacity:</span>
             <input
               type="range"
@@ -155,7 +172,12 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
           <button
             type="button"
             onClick={onPdfRemove}
-            className="px-2 py-1.5 rounded border border-red-300 bg-white hover:bg-red-50 transition-colors text-sm text-red-600"
+            className={[
+              "px-2 py-1.5 rounded",
+              "glass-tier3 glass-tier3-hover border border-red-300",
+              "transition-all text-sm text-red-600",
+              "focus:outline-none focus-visible:ring-2"
+            ].join(" ")}
             title="Remove PDF"
           >
             <Upload className="w-4 h-4 rotate-180" />
@@ -166,13 +188,23 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
       {/* Center - Zoom Controls and Scale Selector */}
       <div className="flex items-center gap-4">
         {/* Zoom Controls Group */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-neutral-300 bg-neutral-50">
+        <div
+          className={[
+            "flex items-center gap-2 px-3 py-1.5 rounded",
+            "glass-tier3 border border-neutral-200"
+          ].join(" ")}
+        >
           {/* Zoom Out Button */}
           <button
             type="button"
             onClick={onZoomOut}
             disabled={!canZoomOut}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className={[
+              "w-7 h-7 flex items-center justify-center rounded",
+              "glass-tier3 glass-tier3-hover",
+              "disabled:opacity-40 disabled:cursor-not-allowed",
+              "transition-all focus:outline-none focus-visible:ring-2"
+            ].join(" ")}
             aria-label="Zoom out"
             title="Zoom Out (-)"
           >
@@ -189,7 +221,12 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
             type="button"
             onClick={onZoomIn}
             disabled={!canZoomIn}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className={[
+              "w-7 h-7 flex items-center justify-center rounded",
+              "glass-tier3 glass-tier3-hover",
+              "disabled:opacity-40 disabled:cursor-not-allowed",
+              "transition-all focus:outline-none focus-visible:ring-2"
+            ].join(" ")}
             aria-label="Zoom in"
             title="Zoom In (+)"
           >
@@ -211,7 +248,11 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                 onScaleChange(selectedScale);
               }
             }}
-            className="px-3 py-1.5 text-sm rounded border border-neutral-300 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)] transition-colors cursor-pointer"
+            className={[
+              "px-3 py-1.5 text-sm rounded border border-neutral-200",
+              "glass-tier3 transition-all cursor-pointer",
+              "focus:outline-none focus-visible:ring-2"
+            ].join(" ")}
             aria-label="Select drawing scale"
           >
             {scaleOptions.map((scale) => (
@@ -232,4 +273,3 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
     </div>
   );
 }
-

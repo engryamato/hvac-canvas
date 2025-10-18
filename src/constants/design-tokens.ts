@@ -409,3 +409,119 @@ export const MODAL_TOKENS = {
  */
 export type ModalTokens = typeof MODAL_TOKENS;
 
+/**
+ * Glassmorphism Design Tokens
+ *
+ * Three-tier glassmorphism system for creating depth and visual hierarchy.
+ * Based on the Glassmorphism Design Proposal (docs/GLASSMORPHISM_DESIGN_PROPOSAL.md)
+ *
+ * Tier 1: Primary UI (Sidebar, Bottom Bar) - Medium glass effect
+ * Tier 2: Floating Elements (Modals, Overlays) - Strong glass effect
+ * Tier 3: Interactive Controls (Buttons, Inputs) - Light glass effect
+ *
+ * @example
+ * ```tsx
+ * import { GLASS_TOKENS } from '@/constants/design-tokens';
+ *
+ * const sidebarStyle = {
+ *   background: GLASS_TOKENS.tier1.background,
+ *   backdropFilter: `blur(${GLASS_TOKENS.tier1.blur}) saturate(${GLASS_TOKENS.tier1.saturate})`,
+ * };
+ * ```
+ */
+export const GLASS_TOKENS = {
+  /**
+   * Tier 1: Primary UI (Sidebar, Bottom Bar)
+   * Medium glass effect for persistent UI elements
+   * - 75% opacity for subtle transparency
+   * - 12px blur for medium frosted effect
+   * - 150% saturation for enhanced vibrancy
+   */
+  tier1: {
+    background: 'rgba(255, 255, 255, 0.75)',
+    border: 'rgba(255, 255, 255, 0.3)',
+    borderSolid: 'rgba(226, 232, 240, 0.8)', // neutral-200 with opacity
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+  },
+
+  /**
+   * Tier 2: Floating Elements (Modals, Overlays)
+   * Strong glass effect for contextual overlays
+   * - 85% opacity for better readability
+   * - 10px blur for moderate frosted effect
+   * - 160% saturation for vibrant appearance
+   */
+  tier2: {
+    background: 'rgba(255, 255, 255, 0.85)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    borderSolid: 'rgba(226, 232, 240, 0.9)', // neutral-200 with higher opacity
+    blur: '10px',
+    saturate: '160%',
+    shadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+    insetHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+  },
+
+  /**
+   * Tier 3: Interactive Controls (Buttons, Inputs, Dropdowns)
+   * Light glass effect for form controls
+   * - 92% opacity for maximum readability
+   * - 6px blur for subtle frosted effect
+   * - 140% saturation for gentle enhancement
+   */
+  tier3: {
+    background: 'rgba(255, 255, 255, 0.92)',
+    border: 'rgba(203, 213, 225, 0.8)', // neutral-300 with opacity
+    blur: '6px',
+    saturate: '140%',
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+  },
+
+  /**
+   * Special: PDF Controls (Already has glassmorphism)
+   * Enhanced glass effect for PDF overlay controls
+   * - 90% opacity for good readability over PDFs
+   * - 12px blur for strong frosted effect
+   * - 150% saturation for vibrancy
+   */
+  pdfControls: {
+    background: 'rgba(255, 255, 255, 0.9)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+    insetHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+  },
+
+  /**
+   * Dark Mode Variants (Future Implementation)
+   * Glassmorphism values for dark mode
+   */
+  dark: {
+    tier1: {
+      background: 'rgba(15, 23, 42, 0.7)',
+      border: 'rgba(255, 255, 255, 0.1)',
+      blur: '14px',
+      saturate: '130%',
+    },
+    tier2: {
+      background: 'rgba(15, 23, 42, 0.8)',
+      border: 'rgba(255, 255, 255, 0.15)',
+      blur: '12px',
+      saturate: '140%',
+    },
+    tier3: {
+      background: 'rgba(15, 23, 42, 0.9)',
+      border: 'rgba(255, 255, 255, 0.2)',
+      blur: '8px',
+      saturate: '120%',
+    },
+  },
+} as const;
+
+/**
+ * TypeScript types for glass tokens
+ */
+export type GlassTokens = typeof GLASS_TOKENS;
+

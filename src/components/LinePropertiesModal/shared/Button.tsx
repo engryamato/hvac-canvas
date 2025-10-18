@@ -137,22 +137,22 @@ export function Button(props: ButtonProps): JSX.Element {
         // Base styles
         'h-10 px-3 rounded-md',
         'text-sm font-semibold',
-        'bg-white border',
+        'glass-tier3 border',
         'flex items-center justify-center gap-2',
-        'transition-colors duration-150',
-        
+        'transition-all duration-150',
+
         // Focus styles
         'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-        
+
         // Width
         fullWidth ? 'w-full' : 'min-w-[72px]',
-        
+
         // Variant styles
         getVariantStyles(),
-        
+
         // Disabled/loading styles
         (disabled || loading) && 'opacity-50 cursor-not-allowed pointer-events-none',
-        
+
         // Custom className
         className,
       ].join(' ')}

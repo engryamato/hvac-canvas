@@ -543,6 +543,17 @@ export default function DrawingCanvasWithFAB() {
    * @param e - Keyboard event
    */
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // D key - toggle draw mode (only if not in an input field and not Cmd/Ctrl+D)
+    if (e.key.toLowerCase() === 'd' && !e.metaKey && !e.ctrlKey) {
+      // Don't toggle if user is typing in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+      setIsDrawActive(v => !v);
+      return;
+    }
+
     // Delete key - delete selected lines
     if (e.key === 'Delete' || e.key === 'Backspace') {
       if (selectedLineIds.length > 0 && !isModalOpen) {

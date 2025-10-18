@@ -90,7 +90,7 @@ export function TabBar(props: TabBarProps): JSX.Element {
 
   return (
     <div
-      className={`flex gap-0.5 h-9 ${className}`}
+      className={`flex gap-1 h-9 border-b border-neutral-200 ${className}`}
       role="tablist"
       aria-label="Modal tabs"
       aria-orientation="horizontal"
@@ -110,10 +110,10 @@ export function TabBar(props: TabBarProps): JSX.Element {
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, tab.id)}
             className={[
-              'flex-1 text-xs font-medium transition-colors',
+              'flex-1 text-[13px] font-medium transition-colors duration-150 ease-in-out',
               isActive
-                ? 'bg-blue-600 text-white border-b-2 border-blue-600'
-                : 'bg-transparent text-neutral-600 hover:bg-neutral-100',
+                ? 'text-neutral-900 font-semibold border-b-2 border-blue-600'
+                : 'text-neutral-500 hover:text-neutral-700',
             ].join(' ')}
           >
             {tab.label}

@@ -242,8 +242,7 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
           aria-label={`${label || 'Dropdown'} options`}
           className={[
             'absolute z-50 w-full mt-1',
-            'bg-white border border-neutral-300 rounded',
-            'shadow-lg',
+            'glass-tier3 border rounded',
             'max-h-56 overflow-y-auto',
             'animate-in fade-in slide-in-from-top-1 duration-150',
           ].join(' ')}

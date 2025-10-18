@@ -214,7 +214,8 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
         aria-labelledby={modalTitleId}
         aria-describedby={isMultiSelect ? modalDescId : undefined}
         className={[
-          'fixed bg-white rounded-lg shadow-lg p-4',
+          'fixed glass-tier2 rounded-lg border border-neutral-200 p-5',
+          isDragging ? 'glass-draggable dragging' : 'glass-draggable',
           animation.animationClass,
         ].join(' ')}
         style={{
@@ -224,6 +225,8 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
           // Disable transition during drag for immediate feedback
           transition: isDragging ? 'none' : 'left 200ms ease-in-out, top 200ms ease-in-out',
           zIndex: 1000,
+          // Increase opacity during drag for better visibility
+          background: isDragging ? 'rgba(255, 255, 255, 0.95)' : undefined,
         }}
       >
         {/* Header */}
@@ -245,7 +248,7 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
           />
         )}
 
-      <Separator className="my-2" aria-hidden="true" />
+      <Separator className="my-3" aria-hidden="true" />
 
       {/* Multi-Select Warning */}
       {isMultiSelect && <MultiSelectWarning className="mb-2" />}
@@ -253,7 +256,7 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
       {/* Tab Bar */}
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <Separator className="my-2" aria-hidden="true" />
+      <Separator className="my-3" aria-hidden="true" />
 
       {/* Tab Content */}
       <div
@@ -282,7 +285,7 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
         )}
       </div>
 
-      <Separator className="my-2" aria-hidden="true" />
+      <Separator className="my-4" aria-hidden="true" />
 
       {/* Footer */}
       {isMultiSelect ? (

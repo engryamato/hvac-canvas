@@ -231,7 +231,7 @@ describe('Shared Components', () => {
       render(<Chip label="8 inches" active={false} />);
       
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-white');
+      expect(button).toHaveClass('glass-tier3');
       expect(button).toHaveAttribute('aria-pressed', 'false');
     });
 
@@ -768,4 +768,3 @@ describe('Shared Components', () => {
     });
   });
 });
-
