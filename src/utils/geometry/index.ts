@@ -3,5 +3,8 @@
  */
 
 export { dist, midpoint } from './points';
-export { getClosestPointOnSegment, getLineLength } from './lines';
-
+export {
+  getClosestPointOnSegment,
+  getLineLength,
+  getDistancePointToSegment,
+} from './lines';

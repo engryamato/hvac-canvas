@@ -102,7 +102,7 @@ export function AdvancedTab(props: AdvancedTabProps): JSX.Element {
   };
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       {/* Metadata Section (Read-only) */}
       <Section title="Metadata">
         <MetadataDisplay

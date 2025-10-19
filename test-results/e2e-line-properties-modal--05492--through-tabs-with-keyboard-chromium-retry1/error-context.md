@@ -1,0 +1,101 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - img "Drawing canvas" [ref=e6]
+      - dialog "Line Properties" [ref=e8]:
+        - banner [ref=e9]:
+          - heading "Line Properties" [level=2] [ref=e10]
+        - separator [ref=e11]
+        - tablist "Modal tabs" [ref=e12]:
+          - tab "Properties" [active] [ref=e13]
+          - tab "Calculations" [selected] [ref=e14]
+          - tab "Advanced" [ref=e15]
+        - separator [ref=e16]
+        - tabpanel "Calculations" [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]:
+              - text: Airflow (CFM)
+              - spinbutton "Airflow in cubic feet per minute" [ref=e20]: "0"
+            - region "Calculation results" [ref=e21]:
+              - generic [ref=e22]:
+                - generic [ref=e23]:
+                  - img [ref=e25]
+                  - heading "Results" [level=3] [ref=e27]
+                - generic [ref=e28]:
+                  - 'row "Velocity: 0 fpm" [ref=e29]':
+                    - generic [ref=e30]: Velocity
+                    - generic [ref=e31]:
+                      - generic [ref=e32]: 0 fpm
+                      - 'img "Velocity status: success" [ref=e33]'
+                  - 'row "Friction: 0.00 in.wc/100ft" [ref=e35]':
+                    - generic [ref=e36]: Friction
+                    - generic [ref=e38]: 0.00 in.wc/100ft
+                  - 'row "Pressure: 0.00 in" [ref=e39]':
+                    - generic [ref=e40]: Pressure
+                    - generic [ref=e42]: 0.00 in
+        - separator [ref=e43]
+        - toolbar "Line actions" [ref=e44]:
+          - button "Duplicate line" [ref=e45]:
+            - generic [ref=e46]: Duplicate
+          - button "Delete line" [ref=e47]:
+            - generic [ref=e48]: Delete
+      - button "Enable Draw tool" [ref=e49]:
+        - img [ref=e50]
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - heading "Line Summary" [level=2] [ref=e55]
+        - paragraph [ref=e56]: "Scale: Custom (64px = 1\")"
+      - table [ref=e58]:
+        - rowgroup [ref=e59]:
+          - row "Width Count Total Length" [ref=e60]:
+            - cell "Width" [ref=e61]
+            - cell "Count" [ref=e62]
+            - cell "Total Length" [ref=e63]
+        - rowgroup [ref=e64]:
+          - row "8\" 1 3.1\"" [ref=e65]:
+            - cell "8\"" [ref=e66]
+            - cell "1" [ref=e67]
+            - cell "3.1\"" [ref=e68]
+      - button "Collapse sidebar" [ref=e69]:
+        - img [ref=e70]
+  - generic [ref=e72]:
+    - generic [ref=e73]:
+      - button "Upload PDF file" [ref=e74]
+      - button "Upload PDF" [ref=e75]:
+        - img [ref=e76]
+        - generic [ref=e79]: Upload PDF
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - button "Zoom out" [ref=e82]:
+          - img [ref=e83]
+        - generic [ref=e86]: 100%
+        - button "Zoom in" [ref=e87]:
+          - img [ref=e88]
+      - generic [ref=e91]:
+        - generic [ref=e92]: "Scale:"
+        - combobox "Select drawing scale" [ref=e93]:
+          - option "1/16\" = 1'-0\"" [selected]
+          - option "1/8\" = 1'-0\""
+          - option "1/4\" = 1'-0\""
+          - option "1/2\" = 1'-0\""
+          - option "3/4\" = 1'-0\""
+          - option "1\" = 1'-0\""
+          - option "1\" = 10'"
+          - option "1\" = 20'"
+          - option "1\" = 30'"
+          - option "1\" = 40'"
+          - option "1\" = 50'"
+          - option "1\" = 60'"
+          - option "1:1"
+          - option "1:5"
+          - option "1:10"
+          - option "1:20"
+          - option "1:50"
+          - option "1:100"
+          - option "1:200"
+          - option "1:500"
+    - generic [ref=e95]: Right-click + drag to pan
+```

@@ -53,81 +53,67 @@ export interface SidebarProps {
 export function Sidebar(props: SidebarProps): JSX.Element {
   const { collapsed, onToggle, lineSummary, currentScale, width = 320 } = props;
 
-  const sidebarWidth = collapsed ? 0 : width;
-
-  return (
-    <>
-      {/* Sidebar Toggle Button - Fixed to not overlap bottom bar */}
+  if (collapsed) {
+    return (
       <button
         type="button"
         onClick={onToggle}
-        className={[
-          "fixed top-0 w-6 glass-tier3 glass-tier3-hover border border-neutral-200",
-          "flex items-center justify-center transition-all",
-          "focus:outline-none focus-visible:ring-2",
-          "z-20"
-        ].join(" ")}
-        style={{
-          right: `${sidebarWidth}px`,
-          height: 'calc(100vh - 60px)' // Stop before bottom bar (60px)
-        }}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="w-6 neumorphic-raised-sm neumorphic-hover flex items-center justify-center transition-all hover:w-7"
+        aria-label="Expand sidebar"
       >
-        {collapsed ? (
-          <ChevronLeft className="w-4 h-4 text-neutral-700" />
-        ) : (
-          <ChevronRight className="w-4 h-4 text-neutral-700" />
-        )}
+        <ChevronLeft className="w-4 h-4 text-neutral-800" />
       </button>
+    );
+  }
 
-      {/* Sidebar Content - Fixed to not overlap bottom bar */}
-      {!collapsed && (
-        <div
-          className={[
-            "fixed top-0 right-0 z-10",
-            "glass-tier1 border-l border-neutral-200",
-            "flex flex-col"
-          ].join(" ")}
-          style={{
-            width: `${width}px`,
-            height: 'calc(100vh - 60px)' // Stop before bottom bar (60px)
-          }}
-        >
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-neutral-200 glass-tier1-section">
-            <h2 className="text-lg font-semibold text-neutral-800">Line Summary</h2>
-            <p className="text-xs text-neutral-500 mt-1">Scale: {currentScale.displayName}</p>
-          </div>
+  return (
+    <div
+      className="neumorphic-raised-lg flex flex-col animate-slide-in-right overflow-hidden"
+      style={{ width: `${width}px` }}
+    >
+      {/* Sidebar Header */}
+      <div className="p-6 neumorphic-inset-sm">
+        <h2 className="text-lg font-semibold text-neutral-900">Line Summary</h2>
+        <p className="text-xs text-neutral-500 mt-1">Scale: {currentScale.displayName}</p>
+      </div>
 
-          {/* Line Summary Table */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {lineSummary.length === 0 ? (
-              <p className="text-sm text-neutral-500 text-center mt-8">
-                No lines drawn yet
-              </p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-neutral-200">
-                    <th className="py-2 px-2 text-left text-neutral-600 font-medium">Width</th>
-                    <th className="py-2 px-2 text-right text-neutral-600 font-medium">Count</th>
-                    <th className="py-2 px-2 text-right text-neutral-600 font-medium">Total Length</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lineSummary.map((row) => (
-                    <tr key={row.width} className="border-b border-neutral-100 hover:bg-neutral-50">
-                      <td className="py-2 px-2 text-neutral-800 font-medium">{row.widthDisplay}</td>
-                      <td className="py-2 px-2 text-right text-neutral-600 text-mono tabular-nums">{row.count}</td>
-                      <td className="py-2 px-2 text-right text-neutral-800 text-mono tabular-nums">{row.totalLengthDisplay}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-    </>
+      {/* Line Summary Table */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {lineSummary.length === 0 ? (
+          <p className="text-sm text-neutral-500 text-center mt-8">
+            No lines drawn yet
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-neutral-200">
+                <th className="py-2 px-2 text-left text-neutral-600 font-medium">Width</th>
+                <th className="py-2 px-2 text-right text-neutral-600 font-medium">Count</th>
+                <th className="py-2 px-2 text-right text-neutral-600 font-medium">Total Length</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lineSummary.map((row) => (
+                <tr key={row.width} className="border-b border-neutral-100 hover:bg-neutral-50">
+                  <td className="py-2 px-2 text-neutral-800 font-medium">{row.widthDisplay}</td>
+                  <td className="py-2 px-2 text-right text-neutral-600 text-mono tabular-nums">{row.count}</td>
+                  <td className="py-2 px-2 text-right text-neutral-800 text-mono tabular-nums">{row.totalLengthDisplay}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Sidebar Toggle Button */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="p-2 neumorphic-raised-sm neumorphic-hover flex items-center justify-center transition-all"
+        aria-label="Collapse sidebar"
+      >
+        <ChevronRight className="w-4 h-4 text-neutral-800" />
+      </button>
+    </div>
   );
 }

@@ -9,7 +9,7 @@
  */
 
 import { DESIGN_TOKENS } from './design-tokens';
-import { generateCSSTokens } from './css-tokens.tsx';
+import { generateCSSTokens } from './css-tokens';
 
 /**
  * Technical blue color tokens (legacy - use DESIGN_TOKENS instead)
@@ -31,5 +31,5 @@ export const TECH_BLUE_CSS_VARS = generateCSSTokens();
 // Re-export for convenience
 export { DESIGN_TOKENS } from './design-tokens';
 export { SEMANTIC_COLORS } from './design-tokens';
-export { CSSTokens, generateCSSTokens } from './css-tokens.tsx';
+export { CSSTokens, generateCSSTokens } from './css-tokens';
 

@@ -229,9 +229,9 @@ describe('Shared Components', () => {
 
     it('should show inactive state', () => {
       render(<Chip label="8 inches" active={false} />);
-      
+
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('glass-tier3');
+      expect(button).toHaveClass('neumorphic-raised-sm');
       expect(button).toHaveAttribute('aria-pressed', 'false');
     });
 

@@ -1,21 +1,21 @@
 {
   "models": {
     "main": {
-      "provider": "gemini-cli",
-      "modelId": "gemini-2.5-flash",
-      "maxTokens": 65536,
+      "provider": "openai",
+      "modelId": "gpt-4o",
+      "maxTokens": 4096,
       "temperature": 0.2
     },
     "research": {
-      "provider": "perplexity",
-      "modelId": "sonar-pro",
-      "maxTokens": 8700,
+      "provider": "openai",
+      "modelId": "gpt-4o-mini",
+      "maxTokens": 4096,
       "temperature": 0.1
     },
     "fallback": {
-      "provider": "gemini-cli",
-      "modelId": "gemini-2.5-flash",
-      "maxTokens": 65536,
+      "provider": "anthropic",
+      "modelId": "claude-3-5-sonnet-20241022",
+      "maxTokens": 4096,
       "temperature": 0.2
     }
   },

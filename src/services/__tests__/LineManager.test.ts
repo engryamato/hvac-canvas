@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 import {
   addLine,
   removeLine,
+  removeLines,
   updateLineWidth,
   updateLineColor,
   updateLineLength,
@@ -69,6 +70,26 @@ describe('LineManager', () => {
     it('should return same length if ID not found', () => {
       const result = removeLine(testLines, 'nonexistent');
       expect(result.length).toBe(3);
+    });
+  });
+
+  describe('removeLines', () => {
+    it('should remove multiple lines by ID', () => {
+      const result = removeLines(testLines, ['1', '3']);
+      expect(result.length).toBe(1);
+      expect(result[0].id).toBe('2');
+    });
+
+    it('should return a copy when no IDs provided', () => {
+      const result = removeLines(testLines, []);
+      expect(result).not.toBe(testLines);
+      expect(result).toEqual(testLines);
+    });
+
+    it('should ignore IDs that do not exist', () => {
+      const result = removeLines(testLines, ['does-not-exist']);
+      expect(result).not.toBe(testLines);
+      expect(result).toEqual(testLines);
     });
   });
 
@@ -262,4 +283,3 @@ describe('LineManager', () => {
     });
   });
 });
-

@@ -59,7 +59,7 @@ export type {
 export {
   CSSTokens,
   generateCSSTokens,
-} from './css-tokens.tsx';
+} from './css-tokens';
 
 // Duct constants
 export {

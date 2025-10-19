@@ -1,0 +1,265 @@
+/**
+ * Neumorphism Utility Classes
+ * 
+ * CSS utility classes for applying neumorphic (soft UI) effects across the application.
+ * Neumorphism creates depth through dual shadows (light and dark) on a unified background.
+ * 
+ * Design Principles:
+ * - Unified background color: #E0E5EC (light gray-blue)
+ * - Dual shadows: light (top-left) + dark (bottom-right)
+ * - Raised elements: light shadow top-left, dark shadow bottom-right
+ * - Inset elements: inverted shadows (dark top-left, light bottom-right)
+ * - No borders, no transparency, no blur
+ * 
+ * Usage:
+ * - .neumorphic-base: Base background color
+ * - .neumorphic-raised-{sm|md|lg|xl}: Raised elements (buttons, cards)
+ * - .neumorphic-inset-{sm|md|lg}: Inset elements (inputs, pressed buttons)
+ * - .neumorphic-hover: Enhanced shadows on hover
+ * - .neumorphic-active: Inverted shadows when pressed
+ * - .neumorphic-focus: Accessible focus rings
+ * 
+ * Accessibility:
+ * - Respects prefers-contrast: high
+ * - Respects prefers-reduced-motion
+ * - Provides fallbacks for high contrast mode
+ */
+
+/* ============================================
+   Base Background
+   ============================================ */
+
+.neumorphic-base {
+  background: #E0E5EC;
+}
+
+/* ============================================
+   Raised Elements (Buttons, Cards, Panels)
+   ============================================ */
+
+/* Small raised effect - for small buttons, chips */
+.neumorphic-raised-sm {
+  background: #E0E5EC;
+  box-shadow: 
+    4px 4px 8px rgba(163, 177, 198, 0.6),
+    -4px -4px 8px rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Medium raised effect - for regular buttons, controls */
+.neumorphic-raised-md {
+  background: #E0E5EC;
+  box-shadow: 
+    6px 6px 12px rgba(163, 177, 198, 0.6),
+    -6px -6px 12px rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Large raised effect - for panels, sidebar */
+.neumorphic-raised-lg {
+  background: #E0E5EC;
+  box-shadow: 
+    8px 8px 16px rgba(163, 177, 198, 0.6),
+    -8px -8px 16px rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Extra large raised effect - for modals, major containers */
+.neumorphic-raised-xl {
+  background: #E0E5EC;
+  box-shadow: 
+    12px 12px 24px rgba(163, 177, 198, 0.6),
+    -12px -12px 24px rgba(255, 255, 255, 0.5);
+  border-radius: 32px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   Inset Elements (Inputs, Pressed Buttons)
+   ============================================ */
+
+/* Small inset effect - for small inputs, pressed small buttons */
+.neumorphic-inset-sm {
+  background: #E0E5EC;
+  box-shadow: 
+    inset 3px 3px 6px rgba(163, 177, 198, 0.6),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Medium inset effect - for regular inputs, pressed buttons */
+.neumorphic-inset-md {
+  background: #E0E5EC;
+  box-shadow: 
+    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Large inset effect - for large inputs, text areas */
+.neumorphic-inset-lg {
+  background: #E0E5EC;
+  box-shadow: 
+    inset 6px 6px 12px rgba(163, 177, 198, 0.6),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   Interactive States
+   ============================================ */
+
+/* Hover state - enhanced shadows with subtle lift */
+.neumorphic-hover:hover {
+  box-shadow: 
+    8px 8px 16px rgba(163, 177, 198, 0.7),
+    -8px -8px 16px rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Active/Pressed state - inverted to inset */
+.neumorphic-active:active {
+  box-shadow: 
+    inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.5);
+  transform: translateY(0);
+}
+
+/* Focus state - accessible blue outline ring */
+.neumorphic-focus:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 4px;
+  box-shadow: 
+    8px 8px 16px rgba(163, 177, 198, 0.6),
+    -8px -8px 16px rgba(255, 255, 255, 0.5),
+    0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Disabled state - reduced opacity */
+.neumorphic-disabled:disabled,
+.neumorphic-disabled[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ============================================
+   Accessibility: High Contrast Mode
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  .neumorphic-base,
+  .neumorphic-raised-sm,
+  .neumorphic-raised-md,
+  .neumorphic-raised-lg,
+  .neumorphic-raised-xl,
+  .neumorphic-inset-sm,
+  .neumorphic-inset-md,
+  .neumorphic-inset-lg {
+    /* Remove subtle shadows */
+    box-shadow: none;
+    
+    /* Add solid borders for definition */
+    border: 2px solid #0F172A;
+    
+    /* Ensure solid background */
+    background: #FFFFFF;
+  }
+  
+  /* Inset elements get darker background in high contrast */
+  .neumorphic-inset-sm,
+  .neumorphic-inset-md,
+  .neumorphic-inset-lg {
+    background: #F1F5F9;
+  }
+}
+
+/* ============================================
+   Accessibility: Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .neumorphic-raised-sm,
+  .neumorphic-raised-md,
+  .neumorphic-raised-lg,
+  .neumorphic-raised-xl,
+  .neumorphic-inset-sm,
+  .neumorphic-inset-md,
+  .neumorphic-inset-lg,
+  .neumorphic-hover,
+  .neumorphic-active,
+  .neumorphic-focus {
+    /* Remove all transitions and transforms */
+    transition: none;
+    transform: none;
+  }
+  
+  .neumorphic-hover:hover,
+  .neumorphic-active:active {
+    /* Keep shadows but remove transforms */
+    transform: none;
+  }
+}
+
+/* ============================================
+   Performance Optimizations
+   ============================================ */
+
+/* Force GPU compositing for neumorphic elements */
+.neumorphic-raised-sm,
+.neumorphic-raised-md,
+.neumorphic-raised-lg,
+.neumorphic-raised-xl,
+.neumorphic-inset-sm,
+.neumorphic-inset-md,
+.neumorphic-inset-lg {
+  /* GPU acceleration */
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
+/* Optimize interactive elements */
+.neumorphic-interactive {
+  will-change: box-shadow, transform;
+}
+
+.neumorphic-interactive:not(:hover):not(:active):not(:focus) {
+  will-change: auto;
+}
+
+/* ============================================
+   Utility Combinations
+   ============================================ */
+
+/* Flat surface (no shadows) - for backgrounds */
+.neumorphic-flat {
+  background: #E0E5EC;
+  box-shadow: none;
+}
+
+/* Subtle raised - for very subtle elevation */
+.neumorphic-raised-xs {
+  background: #E0E5EC;
+  box-shadow: 
+    2px 2px 4px rgba(163, 177, 198, 0.5),
+    -2px -2px 4px rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Circular neumorphic elements (FAB, avatar) */
+.neumorphic-circle {
+  border-radius: 50%;
+}
+
+/* Pill-shaped neumorphic elements (chips, tags) */
+.neumorphic-pill {
+  border-radius: 9999px;
+}
+

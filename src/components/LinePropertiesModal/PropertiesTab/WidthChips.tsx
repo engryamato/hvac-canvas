@@ -50,7 +50,7 @@ export function WidthChips(props: WidthChipsProps): JSX.Element {
   const { currentWidth, onWidthChange, disabled = false, className = '' } = props;
 
   return (
-    <div className={`flex items-center gap-1 ${className}`} role="group" aria-label="Quick width selection">
+    <div className={`flex items-center gap-2 ${className}`} role="group" aria-label="Quick width selection">
       {QUICK_WIDTH_CHIPS.map((width) => (
         <Chip
           key={width}

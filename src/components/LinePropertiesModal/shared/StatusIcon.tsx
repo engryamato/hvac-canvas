@@ -69,7 +69,7 @@ export function StatusIcon(props: StatusIconProps): JSX.Element {
       case 'success':
         return {
           Icon: Check,
-          color: 'text-green-600',
+          color: 'text-green-700',
           label: 'Success',
         };
       case 'warning':

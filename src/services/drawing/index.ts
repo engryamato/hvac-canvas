@@ -15,6 +15,7 @@ export {
 export {
   addLine,
   removeLine,
+  removeLines,
   updateLineWidth as updateLineWidthInCollection,
   updateLineColor as updateLineColorInCollection,
   updateLineLength,
@@ -23,3 +24,14 @@ export {
   getUniqueWidths,
 } from './LineManager';
 
+export {
+  findLineHit,
+  findEndpointHit,
+} from './HitTestService';
+
+export {
+  drawLines,
+  drawSnapIndicator,
+  drawDraftLine,
+  type DrawLinesOptions,
+} from './CanvasRenderService';

@@ -113,7 +113,7 @@ export function useModalAnimation(props: UseModalAnimationProps): ModalAnimation
     isVisible
       ? `duration-${ANIMATION_OPEN}`
       : `duration-${ANIMATION_CLOSE}`,
-    'ease-in-out',
+    isVisible ? 'ease-out' : 'ease-in',
   ].join(' ');
 
   return {

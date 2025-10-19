@@ -32,3 +32,10 @@ export {
   type UseKeyboardShortcutsParams,
 } from './useKeyboardShortcuts';
 
+// Line store hook
+export {
+  useLineStore,
+  type UseLineStoreReturn,
+  type AddLineOptions,
+  type SelectLineOptions,
+} from './useLineStore';

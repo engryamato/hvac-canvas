@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 /**
@@ -87,7 +88,9 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
 
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Find the selected option
@@ -170,6 +173,20 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
   };
 
   /**
+   * Calculate menu position when dropdown opens
+   */
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4, // 4px gap (mt-1)
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, [isOpen]);
+
+  /**
    * Handle click outside to close dropdown
    */
   useEffect(() => {
@@ -200,16 +217,17 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
   const ChevronIcon = isOpen ? ChevronUp : ChevronDown;
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-[100]' : ''} ${className}`} ref={dropdownRef}>
       {/* Label */}
       {label && (
-        <label className="block text-xs font-medium text-neutral-600 mb-2">
+        <label className="block text-xs font-medium text-neutral-600 mb-2.5">
           {label}
         </label>
       )}
 
       {/* Dropdown Button */}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
@@ -217,11 +235,11 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
         className={[
           'w-full h-8 px-3 flex items-center justify-between',
           'text-sm text-neutral-900',
-          'bg-white border rounded',
-          isOpen ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-300',
-          disabled ? 'opacity-50 cursor-not-allowed bg-neutral-50' : 'hover:border-neutral-400',
+          'neumorphic-inset-sm rounded-xl',
           'transition-all duration-150',
-          'focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500',
+          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+          !disabled && 'hover:shadow-md active:shadow-inner',
+          disabled && 'opacity-50 cursor-not-allowed',
         ].join(' ')}
         aria-label={ariaLabel || label}
         aria-haspopup="listbox"
@@ -231,22 +249,25 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
         <span className={selectedOption ? 'text-neutral-900' : 'text-neutral-500'}>
           {displayText}
         </span>
-        <ChevronIcon className="w-3 h-3 text-neutral-600 flex-shrink-0" />
+        <ChevronIcon className="w-3.5 h-3.5 text-neutral-600 flex-shrink-0" />
       </button>
 
       {/* Dropdown Menu */}
-      {isOpen && (
+      {isOpen && menuPosition && createPortal(
         <div
           ref={menuRef}
           role="listbox"
           aria-label={`${label || 'Dropdown'} options`}
           className={[
-            'absolute z-50 w-full mt-1',
-            'glass-tier3 border rounded',
+            'fixed z-[200]',
+            'neumorphic-raised-md rounded-xl',
             'max-h-56 overflow-y-auto',
             'animate-in fade-in slide-in-from-top-1 duration-150',
           ].join(' ')}
           style={{
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`,
+            width: `${menuPosition.width}px`,
             scrollbarWidth: 'thin',
             scrollbarColor: '#d1d5db #f3f4f6',
           }}
@@ -279,7 +300,8 @@ export function Dropdown<T = any>(props: DropdownProps<T>): JSX.Element {
               </div>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

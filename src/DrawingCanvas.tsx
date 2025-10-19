@@ -1,68 +1,66 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 
-// Type imports
-import type {
-  Pt,
-  Line,
-  DrawingPhase,
-  SnapTarget,
-  Scale,
-  LineSummaryRow,
-  PdfState,
-} from './types';
+import type { Pt, Line, Scale, LineSummaryRow, PdfState } from "./types";
 
-// Constant imports
 import {
-  ZOOM_FACTOR,
-  MIN_ZOOM,
-  MAX_ZOOM,
-  MIN_LINE_LENGTH,
-  SELECTION_HIGHLIGHT_WIDTH,
-  HIT_TEST_MIN_TOLERANCE,
-  HIT_TEST_WIDTH_FACTOR,
-  SNAP_INDICATOR_RADIUS,
-  SNAP_INDICATOR_COLOR,
-  SNAP_INDICATOR_FILL,
   ARCHITECTURAL_SCALES,
   ENGINEERING_SCALES,
   METRIC_SCALES,
   CSSTokens,
-} from './constants';
+  ZOOM_FACTOR,
+  MIN_ZOOM,
+  MAX_ZOOM,
+} from "./constants";
 
-// Utility imports
 import {
-  dist,
-  getLineLength,
   screenToCanvas,
   getPointerPos,
-  setupHiDPICanvas,
   findSnapTarget,
   resolveSnapPoint,
   pixelsToInches,
   formatLength,
-  uid,
-} from './utils';
+  setupHiDPICanvas,
+} from "./utils";
 
-// PDF utility imports
 import {
   loadPdfFile,
   renderPdfPage,
   drawPdfOnCanvas,
-} from './utils/pdf/pdfLoader';
+} from "./utils/pdf/pdfLoader";
 
-// Service imports
 import {
+  addLine,
+  removeLines,
+  createLine,
+  initializeLineDefaults,
+  updateLineProperties,
+  batchUpdateLines,
+  findLineHit,
+  findLineById,
+  findEndpointHit,
+  drawLines,
+  drawSnapIndicator,
+  drawDraftLine,
+  duplicateLine,
+  updateLineWidthInCollection,
   updateLineLength,
-} from './services';
+} from "./services";
 
-// Component imports
+import {
+  useDrawingState,
+  useCanvasSetup,
+  useKeyboardShortcuts,
+  useViewportTransform,
+  useLineStore,
+} from "./hooks";
+
 import {
   DrawButton,
   Sidebar,
   BottomBar,
   CanvasRenderer,
-} from './components';
-import { LinePropertiesModal } from './components/LinePropertiesModal';
+} from "./components";
+import { LinePropertiesModal } from "./components/LinePropertiesModal";
 
 /**
  * Drawing Canvas + FAB — Straight-Line (HVAC prep) Edition — FULL SCREEN
@@ -73,47 +71,6 @@ import { LinePropertiesModal } from './components/LinePropertiesModal';
  * - Drawn lines maintain their scale - only the canvas viewport adjusts
  * - All other functionality remains the same (straight segments, width editing, etc.)
  */
-
-/**
- * Custom hook for managing drawing state
- * Consolidates all drawing-related state into a single hook
- */
-function useDrawingState() {
-  const [phase, setPhase] = useState<DrawingPhase>('idle');
-  const [startPoint, setStartPoint] = useState<Pt | null>(null);
-  const [endPoint, setEndPoint] = useState<Pt | null>(null);
-  const [snapTarget, setSnapTarget] = useState<SnapTarget | null>(null);
-
-  const reset = useCallback(() => {
-    setStartPoint(null);
-    setEndPoint(null);
-    setSnapTarget(null);
-    setPhase('idle');
-  }, []);
-
-  const startDrawing = useCallback((point: Pt, snap: SnapTarget | null) => {
-    setStartPoint(point);
-    setEndPoint(null);
-    setSnapTarget(snap);
-    setPhase('waiting-for-end');
-  }, []);
-
-  const updateEndPoint = useCallback((point: Pt, snap: SnapTarget | null) => {
-    setEndPoint(point);
-    setSnapTarget(snap);
-  }, []);
-
-  return {
-    phase,
-    startPoint,
-    endPoint,
-    snapTarget,
-    reset,
-    startDrawing,
-    updateEndPoint,
-    setSnapTarget
-  };
-}
 
 export default function DrawingCanvasWithFAB() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -267,90 +224,32 @@ export default function DrawingCanvasWithFAB() {
       );
     }
 
-    for (const ln of lines) {
-      // Validate line data before rendering
-      if (!ln || !ln.a || !ln.b || typeof ln.width !== 'number' || !ln.color) {
-        console.warn('Invalid line data, skipping:', ln);
-        continue;
-      }
-
-      ctx.lineWidth = ln.width;
-      ctx.strokeStyle = ln.color;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      ctx.moveTo(ln.a.x, ln.a.y);
-      ctx.lineTo(ln.b.x, ln.b.y);
-      ctx.stroke();
-
-      // Check if line is selected (single or multi-select)
-      const isSelected = selectedLineIds.includes(ln.id);
-
-      if (isSelected) {
-        // Selection outline - use duct type color
-        const selectionColor = ln.type === 'supply' ? '#2563eb' : '#dc2626';
-        ctx.lineWidth = ln.width + SELECTION_HIGHLIGHT_WIDTH;
-        ctx.strokeStyle = `${selectionColor}40`; // 25% opacity
-        ctx.beginPath();
-        ctx.moveTo(ln.a.x, ln.a.y);
-        ctx.lineTo(ln.b.x, ln.b.y);
-        ctx.stroke();
-
-        // Draw endpoint handles for selected line (only for single selection)
-        if (selectedLineIds.length === 1) {
-          const ENDPOINT_RADIUS = 6 / viewportScale;
-          const ENDPOINT_STROKE_WIDTH = 2 / viewportScale;
-
-          // Endpoint A
-          ctx.beginPath();
-          ctx.arc(ln.a.x, ln.a.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
-          ctx.fillStyle = "white";
-          ctx.fill();
-          ctx.strokeStyle = selectionColor;
-          ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
-          ctx.stroke();
-
-          // Endpoint B
-          ctx.beginPath();
-          ctx.arc(ln.b.x, ln.b.y, ENDPOINT_RADIUS, 0, Math.PI * 2);
-          ctx.fillStyle = "white";
-          ctx.fill();
-          ctx.strokeStyle = selectionColor;
-          ctx.lineWidth = ENDPOINT_STROKE_WIDTH;
-          ctx.stroke();
-        }
-      }
+    if (lines.length > 0) {
+      drawLines(ctx, lines, {
+        selectedLineIds,
+        viewportScale,
+      });
     }
 
-    // Draw snap indicator (scale size appropriately)
     if (drawingState.snapTarget) {
-      ctx.beginPath();
-      ctx.arc(
-        drawingState.snapTarget.point.x,
-        drawingState.snapTarget.point.y,
-        SNAP_INDICATOR_RADIUS / viewportScale,
-        0,
-        Math.PI * 2
-      );
-      ctx.fillStyle = SNAP_INDICATOR_FILL;
-      ctx.fill();
-      ctx.strokeStyle = SNAP_INDICATOR_COLOR;
-      ctx.lineWidth = 2 / viewportScale;
-      ctx.stroke();
+      drawSnapIndicator(ctx, drawingState.snapTarget, viewportScale);
     }
 
-    // Draw rubber-band preview (click-click mode)
-    if (isDrawActive && drawingState.phase === 'waiting-for-end' && drawingState.startPoint && drawingState.endPoint) {
-      ctx.setLineDash([8 / viewportScale, 6 / viewportScale]);
-      ctx.lineWidth = defaultWidth;
-      ctx.strokeStyle = "#64748B"; // neutral-500 for preview line
-      ctx.beginPath();
-      ctx.moveTo(drawingState.startPoint.x, drawingState.startPoint.y);
-      ctx.lineTo(drawingState.endPoint.x, drawingState.endPoint.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
+    if (
+      isDrawActive &&
+      drawingState.phase === 'waiting-for-end' &&
+      drawingState.startPoint &&
+      drawingState.endPoint
+    ) {
+      drawDraftLine(
+        ctx,
+        drawingState.startPoint,
+        drawingState.endPoint,
+        defaultWidth,
+        viewportScale
+      );
     }
-  }, [lines, selectedId, isDrawActive, drawingState, defaultWidth, viewportScale, viewportOffset, pdfState]);
+  }, [lines, selectedLineIds, isDrawActive, drawingState, defaultWidth, viewportScale, pdfState]);
 
   // Setup canvas and handle resize
   useEffect(() => {
@@ -370,27 +269,15 @@ export default function DrawingCanvasWithFAB() {
   useEffect(() => { render(); }, [render]);
 
   const hitTest = useCallback((p: Pt): string | null => {
-    let best: { id: string; d: number } | null = null;
-    for (const ln of lines) {
-      const d = distancePointToSegment(p, ln.a, ln.b);
-      const tol = Math.max(HIT_TEST_MIN_TOLERANCE, ln.width / HIT_TEST_WIDTH_FACTOR);
-      if (d <= tol && (!best || d < best.d)) best = { id: ln.id, d };
-    }
-    return best?.id ?? null;
+    return findLineHit(lines, p);
   }, [lines]);
 
   // Check if cursor is near an endpoint of a line
   const hitTestEndpoint = useCallback((p: Pt, lineId: string): 'a' | 'b' | null => {
-    const line = lines.find(ln => ln.id === lineId);
+    const line = findLineById(lines, lineId);
     if (!line) return null;
 
-    const ENDPOINT_THRESHOLD = 15; // pixels
-    const distToA = dist(p, line.a);
-    const distToB = dist(p, line.b);
-
-    if (distToA <= ENDPOINT_THRESHOLD && distToA <= distToB) return 'a';
-    if (distToB <= ENDPOINT_THRESHOLD) return 'b';
-    return null;
+    return findEndpointHit(line, p);
   }, [lines]);
 
   // calculateHudPosition removed - now using useModalPosition hook in LinePropertiesModal
@@ -460,17 +347,16 @@ export default function DrawingCanvasWithFAB() {
    */
   const handleLineUpdate = useCallback((lineId: string, updates: Partial<Line>) => {
     setLines(prev => prev.map(line => {
-      if (line.id === lineId) {
-        return {
-          ...line,
-          ...updates,
-          metadata: {
-            ...line.metadata,
-            updatedAt: Date.now(),
-          },
-        };
+      if (line.id !== lineId) {
+        return line;
       }
-      return line;
+
+      try {
+        return updateLineProperties(line, updates);
+      } catch (error) {
+        console.error('Failed to update line properties:', error);
+        return line;
+      }
     }));
   }, []);
 
@@ -481,26 +367,25 @@ export default function DrawingCanvasWithFAB() {
    * @param updates - Partial line properties to apply to all lines
    */
   const handleBatchUpdate = useCallback((lineIds: string[], updates: Partial<Line>) => {
-    setLines(prev => prev.map(line => {
-      if (lineIds.includes(line.id)) {
-        return {
-          ...line,
-          ...updates,
-          metadata: {
-            ...line.metadata,
-            updatedAt: Date.now(),
-          },
-        };
+    setLines(prev => {
+      try {
+        return batchUpdateLines(prev, lineIds, updates);
+      } catch (error) {
+        console.error('Failed to batch update lines:', error);
+        return prev;
       }
-      return line;
-    }));
+    });
   }, []);
 
   /**
    * Handle line deletion from modal
    */
   const handleLineDelete = useCallback(() => {
-    setLines(prev => prev.filter(line => !selectedLineIds.includes(line.id)));
+    if (selectedLineIds.length === 0) {
+      return;
+    }
+
+    setLines(prev => removeLines(prev, selectedLineIds));
     handleClearSelection();
   }, [selectedLineIds, handleClearSelection]);
 
@@ -508,33 +393,21 @@ export default function DrawingCanvasWithFAB() {
    * Handle line duplication from modal
    */
   const handleLineDuplicate = useCallback(() => {
-    const now = Date.now();
-    const newLines: Line[] = [];
-
-    selectedLineIds.forEach(lineId => {
-      const line = lines.find(l => l.id === lineId);
-      if (line) {
-        // Offset the duplicated line by 20px down and right
-        const offset = 20;
-        const newLine: Line = {
-          ...line,
-          id: uid(),
-          a: { x: line.a.x + offset, y: line.a.y + offset },
-          b: { x: line.b.x + offset, y: line.b.y + offset },
-          metadata: {
-            createdAt: now,
-            updatedAt: now,
-          },
-        };
-        newLines.push(newLine);
-      }
-    });
-
-    if (newLines.length > 0) {
-      setLines(prev => [...prev, ...newLines]);
-      // Select the duplicated lines
-      setSelectedLineIds(newLines.map(l => l.id));
+    if (selectedLineIds.length === 0) {
+      return;
     }
+
+    const duplicates = selectedLineIds
+      .map(lineId => lines.find(line => line.id === lineId))
+      .filter((line): line is Line => Boolean(line))
+      .map(line => duplicateLine(line, { x: 20, y: 20 }));
+
+    if (duplicates.length === 0) {
+      return;
+    }
+
+    setLines(prev => [...prev, ...duplicates]);
+    setSelectedLineIds(duplicates.map(line => line.id));
   }, [selectedLineIds, lines]);
 
   /**
@@ -603,38 +476,36 @@ export default function DrawingCanvasWithFAB() {
   const handleDrawingSecondClick = useCallback(() => {
     if (!drawingState.startPoint || !drawingState.endPoint) return;
 
-    if (dist(drawingState.startPoint, drawingState.endPoint) > MIN_LINE_LENGTH) {
-      const now = Date.now();
-      const newLine: Line = {
-        id: uid(),
-        a: drawingState.startPoint,
-        b: drawingState.endPoint,
-        width: defaultWidth,
-        color: defaultColor,
-        type: defaultColor === '#2563eb' ? 'supply' : 'return',
-        layer: 'Default',
-        material: 'Galvanized Steel',
-        gauge: '26ga',
-        airflow: 0,
-        notes: '',
-        tags: [],
-        customProperties: {},
-        metadata: {
-          createdAt: now,
-          updatedAt: now,
-        },
-      };
-      setLines(prev => [...prev, newLine]);
+    const result = createLine({
+      startPoint: drawingState.startPoint,
+      endPoint: drawingState.endPoint,
+      width: defaultWidth,
+      color: defaultColor,
+    });
 
-      // Only auto-select and open modal if not in draw mode
-      // This prevents modal from interrupting multi-line drawing workflow
-      if (!isDrawActive) {
-        handleLineSelection(newLine.id, false);
+    if (!result.success || !result.line) {
+      if (result.error) {
+        console.warn('Line creation failed:', result.error);
       }
+      drawingState.reset();
+      return;
+    }
+
+    const initializedLine = initializeLineDefaults({
+      ...result.line,
+      type: defaultColor === '#2563eb' ? 'supply' : 'return',
+    });
+
+    setLines(prev => addLine(prev, initializedLine));
+
+    // Only auto-select and open modal if not in draw mode
+    // This prevents modal from interrupting multi-line drawing workflow
+    if (!isDrawActive) {
+      handleLineSelection(initializedLine.id, false);
     }
 
     drawingState.reset();
-  }, [drawingState, defaultWidth, defaultColor, handleLineSelection, isDrawActive]);
+  }, [drawingState, defaultWidth, defaultColor, isDrawActive, handleLineSelection]);
 
   // Pan mode detection (right-click only)
   const shouldEnterPanMode = useCallback((e: React.PointerEvent): boolean => {
@@ -796,7 +667,7 @@ export default function DrawingCanvasWithFAB() {
 
   const updateSelectedWidth = useCallback((fn: (w: number) => number) => {
     if (!selectedId) return;
-    setLines(prev => prev.map(l => l.id === selectedId ? { ...l, width: fn(l.width) } : l));
+    setLines(prev => updateLineWidthInCollection(prev, selectedId, fn));
   }, [selectedId]);
 
   // Width input handlers for increment/decrement controls
@@ -1077,7 +948,10 @@ export default function DrawingCanvasWithFAB() {
     }
   }, []);
 
-  const sidebarWidth = sidebarCollapsed ? 0 : 320;
+  // Sidebar width for FAB positioning
+  // When collapsed: 24px toggle button width
+  // When expanded: 320px sidebar width
+  const sidebarWidth = sidebarCollapsed ? 24 : 320;
 
   // PDF upload handler
   const handlePdfUpload = useCallback(async (file: File) => {
@@ -1167,61 +1041,66 @@ export default function DrawingCanvasWithFAB() {
   const canZoomOut = viewportScale > MIN_ZOOM;
 
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-hidden flex">
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden flex flex-col" style={{
+      background: '#E0E5EC'
+    }}>
       <CSSTokens />
 
-      {/* Canvas Container with Canvas Element */}
-      <CanvasRenderer
-        canvasRef={canvasRef}
-        containerRef={containerRef}
-        isDrawActive={isDrawActive}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onWheel={onWheel}
-        onContextMenu={onContextMenu}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        sidebarWidth={sidebarWidth}
-      >
-        {/* Line Properties Modal - replaces old Width HUD */}
-        {isModalOpen && selectedLineIds.length > 0 && (
-          <LinePropertiesModal
-            selectedLines={selectedLineIds.map(id => lines.find(l => l.id === id)!).filter(Boolean)}
-            onUpdate={handleLineUpdate}
-            onBatchUpdate={handleBatchUpdate}
-            onClose={handleModalClose}
-            onDuplicate={handleLineDuplicate}
-            onDelete={handleLineDelete}
-            onDeleteAll={handleLineDelete}
-            viewportBounds={{
-              width: containerRef.current?.clientWidth || window.innerWidth,
-              height: containerRef.current?.clientHeight || window.innerHeight,
-              scrollX: 0,
-              scrollY: 0,
-            }}
-            canvasBounds={containerRef.current?.getBoundingClientRect()}
-            isOpen={isModalOpen}
+      {/* Main Content Area - flex row for canvas and sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Canvas Container with Canvas Element */}
+        <CanvasRenderer
+          canvasRef={canvasRef}
+          containerRef={containerRef}
+          isDrawActive={isDrawActive}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onWheel={onWheel}
+          onContextMenu={onContextMenu}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          sidebarWidth={0}
+        >
+          {/* Line Properties Modal - replaces old Width HUD */}
+          {isModalOpen && selectedLineIds.length > 0 && (
+            <LinePropertiesModal
+              selectedLines={selectedLineIds.map(id => lines.find(l => l.id === id)!).filter(Boolean)}
+              onUpdate={handleLineUpdate}
+              onBatchUpdate={handleBatchUpdate}
+              onClose={handleModalClose}
+              onDuplicate={handleLineDuplicate}
+              onDelete={handleLineDelete}
+              onDeleteAll={handleLineDelete}
+              viewportBounds={{
+                width: containerRef.current?.clientWidth || window.innerWidth,
+                height: containerRef.current?.clientHeight || window.innerHeight,
+                scrollX: 0,
+                scrollY: 0,
+              }}
+              canvasBounds={containerRef.current?.getBoundingClientRect()}
+              isOpen={isModalOpen}
+            />
+          )}
+
+          {/* Draw Mode Toggle Button */}
+          <DrawButton
+            isActive={isDrawActive}
+            onToggle={() => setIsDrawActive(v => !v)}
+            sidebarWidth={sidebarWidth}
           />
-        )}
+        </CanvasRenderer>
 
-        {/* Draw Mode Toggle Button */}
-        <DrawButton
-          isActive={isDrawActive}
-          onToggle={() => setIsDrawActive(v => !v)}
-          sidebarWidth={sidebarWidth}
+        {/* Sidebar - Part of flex layout, not fixed */}
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(v => !v)}
+          lineSummary={lineSummary}
+          currentScale={currentScale}
+          width={320}
         />
-      </CanvasRenderer>
-
-      {/* Sidebar with Toggle Button */}
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(v => !v)}
-        lineSummary={lineSummary}
-        currentScale={currentScale}
-        width={320}
-      />
+      </div>
 
       {/* Bottom Bar - Zoom Controls, Scale Selector, and PDF Controls */}
       <BottomBar
@@ -1241,14 +1120,4 @@ export default function DrawingCanvasWithFAB() {
       />
     </div>
   );
-}
-
-function distancePointToSegment(p: Pt, a: Pt, b: Pt): number {
-  const abx = b.x - a.x, aby = b.y - a.y;
-  const apx = p.x - a.x, apy = p.y - a.y;
-  const ab2 = abx * abx + aby * aby;
-  if (ab2 === 0) return Math.hypot(apx, apy);
-  let t = (apx * abx + apy * aby) / ab2; t = Math.max(0, Math.min(1, t));
-  const cx = a.x + t * abx, cy = a.y + t * aby;
-  return Math.hypot(p.x - cx, p.y - cy);
 }

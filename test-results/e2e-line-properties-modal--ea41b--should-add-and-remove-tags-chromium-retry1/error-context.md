@@ -1,0 +1,122 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - img "Drawing canvas" [ref=e6]
+      - dialog "Line Properties" [ref=e8]:
+        - banner [ref=e9]:
+          - heading "Line Properties" [level=2] [ref=e10]
+        - separator [ref=e11]
+        - tablist "Modal tabs" [ref=e12]:
+          - tab "Properties" [ref=e13]
+          - tab "Calculations" [ref=e14]
+          - tab "Advanced" [selected] [ref=e15]
+        - separator [ref=e16]
+        - tabpanel "Advanced" [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]:
+              - heading "Metadata" [level=3] [ref=e21]
+              - region "Line metadata" [ref=e23]:
+                - generic [ref=e24]:
+                  - generic [ref=e25]:
+                    - generic [ref=e26]: "ID:"
+                    - generic [ref=e27]: 703gd02
+                  - generic [ref=e28]:
+                    - generic [ref=e29]: "Created:"
+                    - generic [ref=e30]: Oct 20, 1:56 AM
+                  - generic [ref=e31]:
+                    - generic [ref=e32]: "Updated:"
+                    - generic [ref=e33]: Oct 20, 1:56 AM
+            - generic [ref=e34]:
+              - heading "Notes" [level=3] [ref=e36]
+              - generic [ref=e38]:
+                - text: Notes
+                - textbox "Notes" [ref=e39]:
+                  - /placeholder: Add notes...
+                - generic [ref=e40]: 0/120
+            - generic [ref=e41]:
+              - heading "Tags" [level=3] [ref=e43]
+              - generic [ref=e45]:
+                - text: Tags
+                - list "Tags" [ref=e46]:
+                  - button "Kitchen Remove Kitchen" [ref=e47]:
+                    - text: Kitchen
+                    - button "Remove Kitchen" [ref=e48]:
+                      - img [ref=e49]
+                  - button "Add new tag" [ref=e52]:
+                    - img [ref=e53]
+                    - text: Add tag
+            - generic [ref=e54]:
+              - heading "Custom Properties" [level=3] [ref=e56]
+              - generic [ref=e58]:
+                - text: Custom Properties
+                - list "Custom properties" [ref=e59]:
+                  - paragraph [ref=e60]: No custom properties
+                - button "Add new property" [ref=e61]:
+                  - img [ref=e62]
+                  - text: Add property
+        - separator [ref=e63]
+        - toolbar "Line actions" [ref=e64]:
+          - button "Duplicate line" [ref=e65]:
+            - generic [ref=e66]: Duplicate
+          - button "Delete line" [ref=e67]:
+            - generic [ref=e68]: Delete
+      - button "Enable Draw tool" [ref=e69]:
+        - img [ref=e70]
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - heading "Line Summary" [level=2] [ref=e75]
+        - paragraph [ref=e76]: "Scale: Custom (64px = 1\")"
+      - table [ref=e78]:
+        - rowgroup [ref=e79]:
+          - row "Width Count Total Length" [ref=e80]:
+            - cell "Width" [ref=e81]
+            - cell "Count" [ref=e82]
+            - cell "Total Length" [ref=e83]
+        - rowgroup [ref=e84]:
+          - row "8\" 1 3.1\"" [ref=e85]:
+            - cell "8\"" [ref=e86]
+            - cell "1" [ref=e87]
+            - cell "3.1\"" [ref=e88]
+      - button "Collapse sidebar" [ref=e89]:
+        - img [ref=e90]
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - button "Upload PDF file" [ref=e94]
+      - button "Upload PDF" [ref=e95]:
+        - img [ref=e96]
+        - generic [ref=e99]: Upload PDF
+    - generic [ref=e100]:
+      - generic [ref=e101]:
+        - button "Zoom out" [ref=e102]:
+          - img [ref=e103]
+        - generic [ref=e106]: 100%
+        - button "Zoom in" [ref=e107]:
+          - img [ref=e108]
+      - generic [ref=e111]:
+        - generic [ref=e112]: "Scale:"
+        - combobox "Select drawing scale" [ref=e113]:
+          - option "1/16\" = 1'-0\"" [selected]
+          - option "1/8\" = 1'-0\""
+          - option "1/4\" = 1'-0\""
+          - option "1/2\" = 1'-0\""
+          - option "3/4\" = 1'-0\""
+          - option "1\" = 1'-0\""
+          - option "1\" = 10'"
+          - option "1\" = 20'"
+          - option "1\" = 30'"
+          - option "1\" = 40'"
+          - option "1\" = 50'"
+          - option "1\" = 60'"
+          - option "1:1"
+          - option "1:5"
+          - option "1:10"
+          - option "1:20"
+          - option "1:50"
+          - option "1:100"
+          - option "1:200"
+          - option "1:500"
+    - generic [ref=e115]: Right-click + drag to pan
+```

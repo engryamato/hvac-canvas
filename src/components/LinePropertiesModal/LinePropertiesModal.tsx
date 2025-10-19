@@ -198,10 +198,14 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
       {/* Backdrop */}
       <div
         className={[
-          'fixed inset-0 bg-black/20',
+          'fixed inset-0',
           animation.animationClass,
         ].join(' ')}
-        style={{ zIndex: 999 }}
+        style={{
+          zIndex: 999,
+          background: 'rgba(224, 229, 236, 0.3)',
+          backdropFilter: 'blur(2px)',
+        }}
         onClick={handleBackdropClick}
         aria-hidden="true"
       />
@@ -214,19 +218,17 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
         aria-labelledby={modalTitleId}
         aria-describedby={isMultiSelect ? modalDescId : undefined}
         className={[
-          'fixed glass-tier2 rounded-lg border border-neutral-200 p-5',
-          isDragging ? 'glass-draggable dragging' : 'glass-draggable',
+          'fixed neumorphic-raised-xl p-8',
           animation.animationClass,
         ].join(' ')}
         style={{
           width: `${MODAL_WIDTH}px`,
           left: `${position.x}px`,
           top: `${position.y}px`,
+          borderRadius: '32px',
           // Disable transition during drag for immediate feedback
           transition: isDragging ? 'none' : 'left 200ms ease-in-out, top 200ms ease-in-out',
           zIndex: 1000,
-          // Increase opacity during drag for better visibility
-          background: isDragging ? 'rgba(255, 255, 255, 0.95)' : undefined,
         }}
       >
         {/* Header */}
@@ -273,15 +275,24 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
             onUpdate={handleUpdate}
             expanded={isPropertiesExpanded}
             onToggleExpand={() => setIsPropertiesExpanded(!isPropertiesExpanded)}
+            className="animate-in fade-in duration-150"
           />
         )}
 
         {activeTab === 'calculations' && firstLine && (
-          <CalculationsTab line={firstLine} onUpdate={handleUpdate} />
+          <CalculationsTab
+            line={firstLine}
+            onUpdate={handleUpdate}
+            className="animate-in fade-in duration-150"
+          />
         )}
 
         {activeTab === 'advanced' && firstLine && (
-          <AdvancedTab line={firstLine} onUpdate={handleUpdate} />
+          <AdvancedTab
+            line={firstLine}
+            onUpdate={handleUpdate}
+            className="animate-in fade-in duration-150"
+          />
         )}
       </div>
 

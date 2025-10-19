@@ -94,13 +94,10 @@ export function ExpandableSection(props: ExpandableSectionProps): JSX.Element {
         style={{
           maxHeight: expanded ? `${contentHeight}px` : '0px',
           opacity: expanded ? 1 : 0,
-          transitionProperty: 'max-height, opacity',
-          transitionDuration: expanded ? '300ms, 100ms' : '300ms, 100ms',
-          transitionDelay: expanded ? '0ms, 200ms' : '0ms, 0ms',
         }}
         aria-hidden={!expanded}
       >
-        <div className="space-y-3 pb-4">
+        <div className="space-y-3 pb-3">
           {children}
         </div>
       </div>
@@ -109,7 +106,7 @@ export function ExpandableSection(props: ExpandableSectionProps): JSX.Element {
       <Button
         variant="expand"
         onClick={onToggle}
-        icon={<ChevronIcon className="w-4 h-4" />}
+        icon={<ChevronIcon className="w-3.5 h-3.5" />}
         fullWidth
         aria-expanded={expanded}
         aria-label={expanded ? 'Show less details' : 'Show more details'}

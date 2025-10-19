@@ -104,23 +104,23 @@ export function Button(props: ButtonProps): JSX.Element {
       case 'danger':
         return [
           'border-red-600 text-red-600',
-          'hover:bg-red-50',
-          'active:bg-red-100',
+          'hover:bg-red-50 hover:scale-[1.02] hover:shadow-sm',
+          'active:bg-red-100 active:scale-100',
         ].join(' ');
 
       case 'expand':
         return [
           'border-neutral-300 border-dashed text-neutral-600',
-          'hover:bg-neutral-50',
-          'active:bg-neutral-100',
+          'hover:bg-neutral-50 hover:scale-[1.02] hover:shadow-sm',
+          'active:bg-neutral-100 active:scale-100',
         ].join(' ');
 
       case 'primary':
       default:
         return [
           'border-neutral-300 text-neutral-700',
-          'hover:bg-neutral-50',
-          'active:bg-neutral-100',
+          'hover:bg-neutral-50 hover:scale-[1.02] hover:shadow-sm',
+          'active:bg-neutral-100 active:scale-100',
         ].join(' ');
     }
   };
@@ -135,14 +135,14 @@ export function Button(props: ButtonProps): JSX.Element {
       aria-busy={loading ? true : undefined}
       className={[
         // Base styles
-        'h-10 px-3 rounded-md',
+        'h-10 px-3 rounded-xl',
         'text-sm font-semibold',
-        'glass-tier3 border',
+        'neumorphic-raised-sm neumorphic-hover neumorphic-active',
         'flex items-center justify-center gap-2',
         'transition-all duration-150',
 
         // Focus styles
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
 
         // Width
         fullWidth ? 'w-full' : 'min-w-[72px]',

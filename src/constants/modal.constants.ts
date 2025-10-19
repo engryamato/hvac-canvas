@@ -48,7 +48,7 @@ export const ADVANCED_TAB_HEIGHT = 360;
  * Animation durations (in milliseconds)
  */
 export const ANIMATION_OPEN = 200; // Modal open animation
-export const ANIMATION_CLOSE = 150; // Modal close animation
+export const ANIMATION_CLOSE = 200; // Modal close animation
 export const ANIMATION_EXPAND = 300; // Section expand/collapse
 export const DROPDOWN_ANIMATION = 150; // Dropdown open/close
 export const TRANSITION_REPOSITION = 200; // Modal repositioning

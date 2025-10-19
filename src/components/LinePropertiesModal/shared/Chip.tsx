@@ -124,7 +124,7 @@ export function Chip(props: ChipProps): JSX.Element {
       className={[
         // Base styles
         'inline-flex items-center gap-1.5',
-        'rounded-full border',
+        'rounded-full',
         'font-medium',
         'transition-all duration-150',
 
@@ -133,22 +133,25 @@ export function Chip(props: ChipProps): JSX.Element {
 
         // Active/inactive styles
         active
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'glass-tier3 text-neutral-700 border-neutral-300',
+          ? 'bg-blue-600 text-white border-blue-600 border'
+          : 'neumorphic-raised-sm text-neutral-800',
 
         // Hover styles
-        !disabled && onClick && !active && 'hover:bg-neutral-50 hover:border-neutral-400',
+        !disabled && onClick && !active && 'neumorphic-hover',
         !disabled && onClick && active && 'hover:bg-blue-700',
 
+        // Active/pressed state
+        !disabled && onClick && 'neumorphic-active',
+
         // Focus styles
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
 
         // Disabled styles
         disabled && 'opacity-50 cursor-not-allowed',
 
         // Cursor
         onClick || removable ? 'cursor-pointer' : 'cursor-default',
-        
+
         // Custom className
         className,
       ].join(' ')}

@@ -57,22 +57,28 @@ export function DrawButton(props: DrawButtonProps): JSX.Element {
       title="Toggle Draw (D)"
       onClick={onToggle}
       className={[
-        "group select-none fixed h-14 w-14 rounded-full shadow-lg",
-        "flex items-center justify-center transition-all",
-        "focus:outline-none focus-visible:ring-2",
+        "group select-none fixed h-14 w-14 rounded-full",
+        "flex items-center justify-center",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "transition-all duration-300",
         isActive
-          ? "bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)]"
-          : "glass-tier3 glass-tier3-hover border border-neutral-200"
+          ? "neumorphic-inset-md"
+          : "neumorphic-raised-sm neumorphic-hover"
       ].join(" ")}
       style={{
         right: `${sidebarWidth + 24}px`,
-        bottom: `${bottomPosition}px`
+        bottom: `${bottomPosition}px`,
+        transition: 'right 300ms ease-in-out',
+        zIndex: 50
       }}
     >
       <Pencil
+        size={20}
         className={[
-          "transition-transform",
-          isActive ? "scale-110 text-white" : "text-neutral-600 group-hover:text-neutral-900"
+          "transition-all duration-300",
+          isActive
+            ? "scale-110 text-primary-600"
+            : "text-neutral-700 group-hover:text-neutral-900 group-hover:scale-105"
         ].join(" ")}
       />
     </button>

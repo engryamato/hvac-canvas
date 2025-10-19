@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { dist, midpoint, getClosestPointOnSegment, getLineLength } from '../geometry';
+import {
+  dist,
+  midpoint,
+  getClosestPointOnSegment,
+  getLineLength,
+  getDistancePointToSegment,
+} from '../geometry';
 import type { Line } from '../../types';
 
 describe('Geometry Utilities', () => {
@@ -112,5 +118,33 @@ describe('Geometry Utilities', () => {
       expect(getLineLength(line)).toBe(0);
     });
   });
-});
 
+  describe('getDistancePointToSegment', () => {
+    it('should calculate perpendicular distance to segment interior', () => {
+      const distance = getDistancePointToSegment(
+        { x: 5, y: 5 },
+        { x: 0, y: 0 },
+        { x: 10, y: 0 }
+      );
+      expect(distance).toBe(5);
+    });
+
+    it('should return distance to nearest endpoint when projection is before segment', () => {
+      const distance = getDistancePointToSegment(
+        { x: -5, y: 0 },
+        { x: 0, y: 0 },
+        { x: 10, y: 0 }
+      );
+      expect(distance).toBe(5);
+    });
+
+    it('should handle zero-length segments', () => {
+      const distance = getDistancePointToSegment(
+        { x: 3, y: 4 },
+        { x: 0, y: 0 },
+        { x: 0, y: 0 }
+      );
+      expect(distance).toBe(5);
+    });
+  });
+});
