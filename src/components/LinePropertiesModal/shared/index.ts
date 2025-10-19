@@ -4,7 +4,7 @@
  * Re-exports all shared UI components used across the Line Properties Modal.
  * These components provide consistent styling and behavior throughout the modal.
  * 
- * Usage: import { Dropdown, Button, Input } from '@/components/LinePropertiesModal/shared';
+ * Module path reference: '@/components/LinePropertiesModal/shared'
  */
 
 // Form components
@@ -40,4 +40,3 @@ export type { SectionProps } from './Section';
 
 export { Separator } from './Separator';
 export type { SeparatorProps } from './Separator';
-

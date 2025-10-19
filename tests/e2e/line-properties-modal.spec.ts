@@ -20,11 +20,21 @@ import { test, expect, type Page } from '@playwright/test';
  */
 async function drawLine(page: Page, x1: number, y1: number, x2: number, y2: number) {
   const canvas = page.locator('canvas');
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('Canvas not found');
+
+  // First click to start the line
   await canvas.click({ position: { x: x1, y: y1 } });
+
+  // Move mouse to end position (this updates the drawing state's endPoint)
+  await page.mouse.move(box.x + x2, box.y + y2);
+  await page.waitForTimeout(50);
+
+  // Second click to complete the line
   await canvas.click({ position: { x: x2, y: y2 } });
 
-  // Wait for line to be created
-  await page.waitForTimeout(100);
+  // Wait for line to be created by checking if sidebar no longer shows "No lines drawn yet"
+  await expect(page.getByText('No lines drawn yet')).not.toBeVisible({ timeout: 2000 });
 }
 
 /**
@@ -73,13 +83,16 @@ test.describe('Line Properties Modal - E2E Tests', () => {
       // Enable draw mode and draw a line
       await page.getByRole('button', { name: 'Enable Draw tool' }).click();
       await drawLine(page, 100, 100, 300, 100);
-      
+
       // Disable draw mode
       await page.keyboard.press('d');
-      
+
+      // Wait for draw mode to be disabled
+      await expect(page.getByRole('button', { name: 'Enable Draw tool' })).toBeVisible();
+
       // Click on the line to select it
       await selectLine(page, 200, 100);
-      
+
       // Modal should be visible
       await expect(page.getByRole('dialog', { name: /line properties/i })).toBeVisible();
       await expect(page.getByText('Line Properties')).toBeVisible();

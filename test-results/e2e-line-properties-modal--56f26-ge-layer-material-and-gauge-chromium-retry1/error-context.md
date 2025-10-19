@@ -1,0 +1,135 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img "Drawing canvas" [ref=e6]
+        - dialog "Line Properties" [ref=e8]:
+          - banner [ref=e9]:
+            - heading "Line Properties" [level=2] [ref=e10]
+          - separator [ref=e11]
+          - tablist "Modal tabs" [ref=e12]:
+            - tab "Properties" [selected] [ref=e13]
+            - tab "Calculations" [ref=e14]
+            - tab "Advanced" [ref=e15]
+          - separator [ref=e16]
+          - tabpanel "Properties" [ref=e17]:
+            - generic [ref=e18]:
+              - generic [ref=e19]:
+                - text: Type
+                - button "Duct type selector" [ref=e20]:
+                  - generic [ref=e21]: Return
+                  - img [ref=e22]
+              - generic [ref=e24]:
+                - text: Width
+                - button "Duct width selector" [ref=e25]:
+                  - generic [ref=e26]: 8"
+                  - img [ref=e27]
+              - group "Quick width selection" [ref=e29]:
+                - button "6\"" [ref=e30]
+                - button "8\"" [pressed] [ref=e31]
+                - button "10\"" [ref=e32]
+                - button "12\"" [ref=e33]
+                - button "14\"" [ref=e34]
+              - generic [ref=e35]:
+                - text: Length
+                - paragraph [ref=e36]: 5.08 m (measured)
+              - generic [ref=e37]:
+                - generic [ref=e39]:
+                  - generic [ref=e40]:
+                    - text: Layer
+                    - button "Layer selector" [ref=e41]:
+                      - generic [ref=e42]: Default
+                      - img [ref=e43]
+                  - generic [ref=e45]:
+                    - text: Material
+                    - button "Material selector" [ref=e46]:
+                      - generic [ref=e47]: Galvanized Steel
+                      - img [ref=e48]
+                  - generic [ref=e50]:
+                    - generic [ref=e51]:
+                      - text: Gauge
+                      - button "Sheet metal gauge selector" [expanded] [active] [ref=e52]:
+                        - generic [ref=e53]: 26 ga
+                        - img [ref=e54]
+                    - paragraph [ref=e56]: (0.019" thick)
+                - button "Show less details" [expanded] [ref=e57]:
+                  - img [ref=e59]
+                  - generic [ref=e61]: Less Details
+          - separator [ref=e62]
+          - toolbar "Line actions" [ref=e63]:
+            - button "Duplicate line" [ref=e64]:
+              - generic [ref=e65]: Duplicate
+            - button "Delete line" [ref=e66]:
+              - generic [ref=e67]: Delete
+        - button "Enable Draw tool" [ref=e68]:
+          - img [ref=e69]
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Line Summary" [level=2] [ref=e74]
+          - paragraph [ref=e75]: "Scale: Custom (64px = 1\")"
+        - table [ref=e77]:
+          - rowgroup [ref=e78]:
+            - row "Width Count Total Length" [ref=e79]:
+              - cell "Width" [ref=e80]
+              - cell "Count" [ref=e81]
+              - cell "Total Length" [ref=e82]
+          - rowgroup [ref=e83]:
+            - row "8\" 1 3.1\"" [ref=e84]:
+              - cell "8\"" [ref=e85]
+              - cell "1" [ref=e86]
+              - cell "3.1\"" [ref=e87]
+        - button "Collapse sidebar" [ref=e88]:
+          - img [ref=e89]
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - button "Upload PDF file" [ref=e93]
+        - button "Upload PDF" [ref=e94]:
+          - img [ref=e95]
+          - generic [ref=e98]: Upload PDF
+      - generic [ref=e99]:
+        - generic [ref=e100]:
+          - button "Zoom out" [ref=e101]:
+            - img [ref=e102]
+          - generic [ref=e105]: 100%
+          - button "Zoom in" [ref=e106]:
+            - img [ref=e107]
+        - generic [ref=e110]:
+          - generic [ref=e111]: "Scale:"
+          - combobox "Select drawing scale" [ref=e112]:
+            - option "1/16\" = 1'-0\"" [selected]
+            - option "1/8\" = 1'-0\""
+            - option "1/4\" = 1'-0\""
+            - option "1/2\" = 1'-0\""
+            - option "3/4\" = 1'-0\""
+            - option "1\" = 1'-0\""
+            - option "1\" = 10'"
+            - option "1\" = 20'"
+            - option "1\" = 30'"
+            - option "1\" = 40'"
+            - option "1\" = 50'"
+            - option "1\" = 60'"
+            - option "1:1"
+            - option "1:5"
+            - option "1:10"
+            - option "1:20"
+            - option "1:50"
+            - option "1:100"
+            - option "1:200"
+            - option "1:500"
+      - generic [ref=e114]: Right-click + drag to pan
+  - listbox "Gauge options" [ref=e115]:
+    - option "26 ga ✓" [selected] [ref=e116]:
+      - generic [ref=e117]: 26 ga
+      - generic [ref=e118]: ✓
+    - option "24 ga" [ref=e119]:
+      - generic [ref=e120]: 24 ga
+    - option "22 ga" [ref=e121]:
+      - generic [ref=e122]: 22 ga
+    - option "20 ga" [ref=e123]:
+      - generic [ref=e124]: 20 ga
+    - option "18 ga" [ref=e125]:
+      - generic [ref=e126]: 18 ga
+```

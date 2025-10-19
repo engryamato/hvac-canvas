@@ -3,7 +3,7 @@
  * 
  * Re-exports all Advanced tab components.
  * 
- * Usage: import { AdvancedTab } from '@/components/LinePropertiesModal/AdvancedTab';
+ * Module path reference: '@/components/LinePropertiesModal/AdvancedTab'
  */
 
 // Main tab component
@@ -28,4 +28,3 @@ export type { CustomPropertyProps } from './CustomProperty';
 
 export { CustomPropertiesManager } from './CustomPropertiesManager';
 export type { CustomPropertiesManagerProps } from './CustomPropertiesManager';
-

@@ -130,7 +130,7 @@ export const DESIGN_TOKENS = {
     full: '9999px',
   },
   
-  // Shadows
+  // Shadows - Enhanced with colored shadows for depth
   shadow: {
     xs: '0 1px 2px 0 rgba(15, 23, 42, 0.05)',
     sm: '0 1px 3px 0 rgba(15, 23, 42, 0.1), 0 1px 2px -1px rgba(15, 23, 42, 0.1)',
@@ -138,14 +138,41 @@ export const DESIGN_TOKENS = {
     lg: '0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1)',
     xl: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1)',
     '2xl': '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+    'primary-sm': '0 2px 8px -2px rgba(37, 99, 235, 0.3)',
+    'primary-md': '0 4px 16px -4px rgba(37, 99, 235, 0.4)',
+    'primary-lg': '0 8px 24px -6px rgba(37, 99, 235, 0.5)',
+    'glow-sm': '0 0 12px rgba(59, 130, 246, 0.3)',
+    'glow-md': '0 0 20px rgba(59, 130, 246, 0.4)',
+    'glow-lg': '0 0 32px rgba(59, 130, 246, 0.5)',
+    'inner-sm': 'inset 0 1px 2px rgba(15, 23, 42, 0.05)',
+    'inner-md': 'inset 0 2px 4px rgba(15, 23, 42, 0.08)',
   },
   
-  // Transitions
+  gradient: {
+    primary: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+    'primary-hover': 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+    accent: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
+    glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+    'glass-border': 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.2) 100%)',
+    shimmer: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)',
+  },
+  
   transition: {
-    fast: '100ms cubic-bezier(0.4, 0, 0.2, 1)',
-    base: '150ms cubic-bezier(0.4, 0, 0.2, 1)',
-    slow: '200ms cubic-bezier(0.4, 0, 0.2, 1)',
-    slower: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+    fast: '150ms cubic-bezier(0.4, 0, 0.2, 1)',
+    base: '250ms cubic-bezier(0.4, 0, 0.2, 1)',
+    slow: '400ms cubic-bezier(0.4, 0, 0.2, 1)',
+    slower: '600ms cubic-bezier(0.4, 0, 0.2, 1)',
+    spring: '500ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+    bounce: '600ms cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+  },
+  
+  animation: {
+    pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+    'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+    shimmer: 'shimmer 2s linear infinite',
+    'fade-in': 'fadeIn 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+    'slide-in-right': 'slideInRight 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+    'scale-in': 'scaleIn 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
   },
   
   // Component Sizes
@@ -408,4 +435,239 @@ export const MODAL_TOKENS = {
  * TypeScript types for modal tokens
  */
 export type ModalTokens = typeof MODAL_TOKENS;
+
+/**
+ * Glassmorphism Design Tokens
+ *
+ * Three-tier glassmorphism system for creating depth and visual hierarchy.
+ * Based on the Glassmorphism Design Proposal (docs/GLASSMORPHISM_DESIGN_PROPOSAL.md)
+ *
+ * Tier 1: Primary UI (Sidebar, Bottom Bar) - Medium glass effect
+ * Tier 2: Floating Elements (Modals, Overlays) - Strong glass effect
+ * Tier 3: Interactive Controls (Buttons, Inputs) - Light glass effect
+ *
+ * @example
+ * ```tsx
+ * import { GLASS_TOKENS } from '@/constants/design-tokens';
+ *
+ * const sidebarStyle = {
+ *   background: GLASS_TOKENS.tier1.background,
+ *   backdropFilter: `blur(${GLASS_TOKENS.tier1.blur}) saturate(${GLASS_TOKENS.tier1.saturate})`,
+ * };
+ * ```
+ */
+export const GLASS_TOKENS = {
+  /**
+   * Tier 1: Primary UI (Sidebar, Bottom Bar)
+   * Medium glass effect for persistent UI elements
+   * - 75% opacity for subtle transparency
+   * - 12px blur for medium frosted effect
+   * - 150% saturation for enhanced vibrancy
+   */
+  tier1: {
+    background: 'rgba(255, 255, 255, 0.75)',
+    border: 'rgba(255, 255, 255, 0.3)',
+    borderSolid: 'rgba(226, 232, 240, 0.8)', // neutral-200 with opacity
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+  },
+
+  /**
+   * Tier 2: Floating Elements (Modals, Overlays)
+   * Strong glass effect for contextual overlays
+   * - 85% opacity for better readability
+   * - 10px blur for moderate frosted effect
+   * - 160% saturation for vibrant appearance
+   */
+  tier2: {
+    background: 'rgba(255, 255, 255, 0.85)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    borderSolid: 'rgba(226, 232, 240, 0.9)', // neutral-200 with higher opacity
+    blur: '10px',
+    saturate: '160%',
+    shadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+    insetHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+  },
+
+  /**
+   * Tier 3: Interactive Controls (Buttons, Inputs, Dropdowns)
+   * Light glass effect for form controls
+   * - 92% opacity for maximum readability
+   * - 6px blur for subtle frosted effect
+   * - 140% saturation for gentle enhancement
+   */
+  tier3: {
+    background: 'rgba(255, 255, 255, 0.92)',
+    border: 'rgba(203, 213, 225, 0.8)', // neutral-300 with opacity
+    blur: '6px',
+    saturate: '140%',
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+  },
+
+  /**
+   * Special: PDF Controls (Already has glassmorphism)
+   * Enhanced glass effect for PDF overlay controls
+   * - 90% opacity for good readability over PDFs
+   * - 12px blur for strong frosted effect
+   * - 150% saturation for vibrancy
+   */
+  pdfControls: {
+    background: 'rgba(255, 255, 255, 0.9)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
+    insetHighlight: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+  },
+
+  /**
+   * Dark Mode Variants (Future Implementation)
+   * Glassmorphism values for dark mode
+   */
+  dark: {
+    tier1: {
+      background: 'rgba(15, 23, 42, 0.7)',
+      border: 'rgba(255, 255, 255, 0.1)',
+      blur: '14px',
+      saturate: '130%',
+    },
+    tier2: {
+      background: 'rgba(15, 23, 42, 0.8)',
+      border: 'rgba(255, 255, 255, 0.15)',
+      blur: '12px',
+      saturate: '140%',
+    },
+    tier3: {
+      background: 'rgba(15, 23, 42, 0.9)',
+      border: 'rgba(255, 255, 255, 0.2)',
+      blur: '8px',
+      saturate: '120%',
+    },
+  },
+} as const;
+
+/**
+ * TypeScript types for glass tokens
+ */
+export type GlassTokens = typeof GLASS_TOKENS;
+
+/**
+ * Neumorphism Design Tokens
+ *
+ * Neumorphic (soft UI) design system for creating depth through dual shadows.
+ * Neumorphism uses a unified background color with light and dark shadows to create
+ * the illusion of raised or inset elements.
+ *
+ * Design Principles:
+ * - Unified background: #E0E5EC (light gray-blue)
+ * - Dual shadows: light (top-left) + dark (bottom-right)
+ * - Raised elements: light shadow top-left, dark shadow bottom-right
+ * - Inset elements: inverted shadows (dark top-left, light bottom-right)
+ * - No borders, no transparency, no blur
+ *
+ * Performance Benefits:
+ * - No backdrop-filter (GPU-intensive)
+ * - Solid backgrounds (better rendering)
+ * - Simple box-shadow (hardware accelerated)
+ *
+ * @example
+ * ```tsx
+ * import { NEUMORPHISM_TOKENS } from '@/constants/design-tokens';
+ *
+ * const buttonStyle = {
+ *   background: NEUMORPHISM_TOKENS.background,
+ *   boxShadow: NEUMORPHISM_TOKENS.shadows.raised.medium,
+ *   borderRadius: NEUMORPHISM_TOKENS.borderRadius.medium,
+ * };
+ * ```
+ */
+export const NEUMORPHISM_TOKENS = {
+  /**
+   * Base background color
+   * All neumorphic elements use this unified background
+   */
+  background: '#E0E5EC',
+
+  /**
+   * Shadow colors
+   * Light shadow (top-left) and dark shadow (bottom-right)
+   */
+  shadowColors: {
+    light: 'rgba(255, 255, 255, 0.5)',
+    dark: 'rgba(163, 177, 198, 0.6)',
+  },
+
+  /**
+   * Raised element shadows
+   * Creates the illusion of elements rising from the surface
+   * Format: dark shadow (bottom-right), light shadow (top-left)
+   */
+  shadows: {
+    raised: {
+      small: '4px 4px 8px rgba(163, 177, 198, 0.6), -4px -4px 8px rgba(255, 255, 255, 0.5)',
+      medium: '6px 6px 12px rgba(163, 177, 198, 0.6), -6px -6px 12px rgba(255, 255, 255, 0.5)',
+      large: '8px 8px 16px rgba(163, 177, 198, 0.6), -8px -8px 16px rgba(255, 255, 255, 0.5)',
+      xlarge: '12px 12px 24px rgba(163, 177, 198, 0.6), -12px -12px 24px rgba(255, 255, 255, 0.5)',
+    },
+    inset: {
+      small: 'inset 3px 3px 6px rgba(163, 177, 198, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.5)',
+      medium: 'inset 4px 4px 8px rgba(163, 177, 198, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.5)',
+      large: 'inset 6px 6px 12px rgba(163, 177, 198, 0.6), inset -6px -6px 12px rgba(255, 255, 255, 0.5)',
+    },
+    hover: {
+      small: '6px 6px 12px rgba(163, 177, 198, 0.7), -6px -6px 12px rgba(255, 255, 255, 0.6)',
+      medium: '8px 8px 16px rgba(163, 177, 198, 0.7), -8px -8px 16px rgba(255, 255, 255, 0.6)',
+      large: '10px 10px 20px rgba(163, 177, 198, 0.7), -10px -10px 20px rgba(255, 255, 255, 0.6)',
+    },
+  },
+
+  /**
+   * Border radius values
+   * Neumorphism uses larger border radius for softer appearance
+   */
+  borderRadius: {
+    small: '12px',
+    medium: '16px',
+    large: '24px',
+    xlarge: '32px',
+    full: '9999px',
+  },
+
+  /**
+   * Spacing values
+   * Increased spacing for better breathing room
+   */
+  spacing: {
+    tight: '12px',
+    normal: '16px',
+    relaxed: '20px',
+    loose: '24px',
+    spacious: '32px',
+  },
+
+  /**
+   * Text colors for neumorphic backgrounds
+   * Darker colors for better contrast on #E0E5EC
+   */
+  textColors: {
+    primary: '#1E293B',
+    secondary: '#334155',
+    tertiary: '#64748B',
+    disabled: '#94A3B8',
+  },
+
+  /**
+   * Interactive state colors
+   */
+  interactive: {
+    focus: '#3B82F6',
+    focusRing: 'rgba(59, 130, 246, 0.1)',
+  },
+} as const;
+
+/**
+ * TypeScript types for neumorphism tokens
+ */
+export type NeumorphismTokens = typeof NEUMORPHISM_TOKENS;
 

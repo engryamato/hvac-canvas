@@ -68,3 +68,41 @@ export function getLineLength(line: Line): number {
   return dist(line.a, line.b);
 }
 
+/**
+ * Calculate the shortest distance from a point to a line segment.
+ *
+ * Uses vector projection to find the closest point on the segment and then
+ * measures the distance between the point and that closest point.
+ *
+ * @param p - Arbitrary point
+ * @param a - Start point of the line segment
+ * @param b - End point of the line segment
+ * @returns The perpendicular distance from point p to segment AB
+ *
+ * @example
+ * const distance = getDistancePointToSegment(
+ *   { x: 5, y: 5 },
+ *   { x: 0, y: 0 },
+ *   { x: 10, y: 0 }
+ * );
+ * // Returns: 5
+ */
+export function getDistancePointToSegment(p: Pt, a: Pt, b: Pt): number {
+  const abx = b.x - a.x;
+  const aby = b.y - a.y;
+  const apx = p.x - a.x;
+  const apy = p.y - a.y;
+  const ab2 = abx * abx + aby * aby;
+
+  if (ab2 === 0) {
+    return Math.hypot(apx, apy);
+  }
+
+  let t = (apx * abx + apy * aby) / ab2;
+  t = Math.max(0, Math.min(1, t));
+
+  const cx = a.x + t * abx;
+  const cy = a.y + t * aby;
+
+  return Math.hypot(p.x - cx, p.y - cy);
+}

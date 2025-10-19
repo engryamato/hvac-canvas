@@ -179,7 +179,7 @@ describe('AdvancedTab Components', () => {
       render(<TagChip label="Kitchen" onRemove={vi.fn()} disabled={true} />);
       
       const removeButton = screen.getByRole('button', { name: /remove/i });
-      expect(removeButton).toBeDisabled();
+      expect(removeButton).toHaveAttribute('aria-disabled', 'true');
     });
   });
 
@@ -516,4 +516,3 @@ describe('AdvancedTab Components', () => {
     });
   });
 });
-

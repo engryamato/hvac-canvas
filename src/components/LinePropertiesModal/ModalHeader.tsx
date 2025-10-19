@@ -55,12 +55,12 @@ export function ModalHeader(props: ModalHeaderProps): JSX.Element {
 
   return (
     <header
-      className={`flex items-center h-8 px-4 ${className}`}
+      className={`flex items-center h-10 px-0 py-1 ${className}`}
       onMouseDown={dragHandleProps?.onMouseDown}
       style={dragHandleProps?.style}
     >
       {/* Title */}
-      <h2 id={titleId} className="text-sm font-semibold text-neutral-900">
+      <h2 id={titleId} className="text-base font-semibold text-neutral-900">
         {title}
       </h2>
     </header>

@@ -124,18 +124,18 @@ export function Input(props: InputProps): JSX.Element {
   const helperTextId = `${inputId}-helper`;
 
   /**
-   * Get border color based on validation state
+   * Get focus ring color based on validation state
    */
-  const getBorderColor = (): string => {
+  const getFocusRingColor = (): string => {
     switch (validationState) {
       case 'error':
-        return 'border-red-500 focus:border-red-500 focus:ring-red-500';
+        return 'focus:ring-red-500';
       case 'warning':
-        return 'border-amber-500 focus:border-amber-500 focus:ring-amber-500';
+        return 'focus:ring-amber-500';
       case 'success':
-        return 'border-green-500 focus:border-green-500 focus:ring-green-500';
+        return 'focus:ring-green-500';
       default:
-        return 'border-neutral-300 focus:border-blue-500 focus:ring-blue-500';
+        return 'focus:ring-blue-500';
     }
   };
 
@@ -173,7 +173,7 @@ export function Input(props: InputProps): JSX.Element {
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-xs font-medium text-neutral-600 mb-2"
+          className="block text-xs font-medium text-neutral-600 mb-2.5"
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -200,11 +200,11 @@ export function Input(props: InputProps): JSX.Element {
         className={[
           'w-full h-8 px-3',
           'text-sm text-neutral-900 placeholder:text-neutral-500',
-          'bg-white border rounded',
-          getBorderColor(),
+          'neumorphic-inset-sm rounded-xl',
           'transition-all duration-150',
-          'focus:outline-none focus:ring-1',
-          disabled && 'opacity-50 cursor-not-allowed bg-neutral-50',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2',
+          getFocusRingColor(),
+          disabled && 'opacity-50 cursor-not-allowed',
         ].join(' ')}
       />
 
@@ -215,7 +215,7 @@ export function Input(props: InputProps): JSX.Element {
           {helperText && (
             <p
               id={helperTextId}
-              className={`text-xs ${getHelperTextColor()}`}
+              className={`text-[11px] ${getHelperTextColor()}`}
             >
               {helperText}
             </p>

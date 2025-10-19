@@ -98,7 +98,7 @@ export function PropertiesTab(props: PropertiesTabProps): JSX.Element {
   } = props;
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       {/* Type Dropdown */}
       <TypeDropdown
         value={line.type}

@@ -40,6 +40,25 @@ export function removeLine(lines: Line[], lineId: string): Line[] {
 }
 
 /**
+ * Remove multiple lines from a collection by their IDs
+ *
+ * @param lines - Current line collection
+ * @param lineIds - IDs of lines to remove
+ * @returns New array without the specified lines
+ *
+ * @example
+ * const newLines = removeLines(currentLines, ['line-123', 'line-456']);
+ */
+export function removeLines(lines: Line[], lineIds: string[]): Line[] {
+  if (lineIds.length === 0) {
+    return [...lines];
+  }
+
+  const idSet = new Set(lineIds);
+  return lines.filter(line => !idSet.has(line.id));
+}
+
+/**
  * Update a line's width in a collection
  * 
  * @param lines - Current line collection
@@ -188,4 +207,3 @@ export function updateLineLength(
     };
   });
 }
-

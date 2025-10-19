@@ -60,7 +60,7 @@ export function ModalFooter(props: ModalFooterProps): JSX.Element {
 
   return (
     <div
-      className={`flex items-center gap-1 h-10 p-2 ${className}`}
+      className={`flex items-center gap-2 h-10 px-0 py-0 ${className}`}
       role="toolbar"
       aria-label="Line actions"
     >

@@ -146,7 +146,40 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, '
 .transition-colors{transition:background-color var(--transition-base), color var(--transition-base)}
 .transition-transform{transition:transform var(--transition-base)}
 .transition-all{transition:all var(--transition-base)}
+.transition-spring{transition:all var(--transition-spring)}
+.scale-102{transform:scale(1.02)}
+.scale-105{transform:scale(1.05)}
 .scale-110{transform:scale(1.1)}
+
+/* Gradients */
+.bg-gradient-primary{background:var(--gradient-primary)}
+.bg-gradient-primary-hover{background:var(--gradient-primary-hover)}
+.bg-gradient-accent{background:var(--gradient-accent)}
+
+/* Enhanced Shadows */
+.shadow-primary-sm{box-shadow:var(--shadow-primary-sm)}
+.shadow-primary-md{box-shadow:var(--shadow-primary-md)}
+.shadow-primary-lg{box-shadow:var(--shadow-primary-lg)}
+.shadow-glow-sm{box-shadow:var(--shadow-glow-sm)}
+.shadow-glow-md{box-shadow:var(--shadow-glow-md)}
+.shadow-glow-lg{box-shadow:var(--shadow-glow-lg)}
+.shadow-inner-sm{box-shadow:var(--shadow-inner-sm)}
+.shadow-inner-md{box-shadow:var(--shadow-inner-md)}
+
+/* Animations */
+.animate-pulse{animation:var(--animation-pulse)}
+.animate-pulse-slow{animation:var(--animation-pulse-slow)}
+.animate-shimmer{animation:var(--animation-shimmer)}
+.animate-fade-in{animation:var(--animation-fade-in)}
+.animate-slide-in-right{animation:var(--animation-slide-in-right)}
+.animate-scale-in{animation:var(--animation-scale-in)}
+
+/* Keyframes */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+@keyframes slideInRight{0%{transform:translateX(100%);opacity:0}100%{transform:translateX(0);opacity:1}}
+@keyframes scaleIn{0%{transform:scale(0.95);opacity:0}100%{transform:scale(1);opacity:1}}
 
 /* Group hover */
 .group:hover .group-hover\:text-neutral-900{color:var(--color-neutral-900)}
@@ -157,6 +190,11 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, '
 .hover\:bg-neutral-300:hover{background:var(--color-neutral-300)}
 .hover\:bg-primary-700:hover{background:var(--color-primary-700)}
 .hover\:bg-error-700:hover{background:var(--color-error-700)}
+.hover\:shadow-md:hover{box-shadow:var(--shadow-md)}
+.hover\:shadow-xl:hover{box-shadow:var(--shadow-xl)}
+.hover\:border-primary-300:hover{border-color:var(--color-primary-300)}
+.hover\:scale-105:hover{transform:scale(1.05)}
+.hover\:scale-110:hover{transform:scale(1.1)}
 
 /* Disabled states */
 .disabled\:opacity-40:disabled{opacity:0.4}

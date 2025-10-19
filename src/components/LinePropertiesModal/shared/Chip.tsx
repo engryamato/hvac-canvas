@@ -109,7 +109,7 @@ export function Chip(props: ChipProps): JSX.Element {
   /**
    * Handle remove click
    */
-  const handleRemove = (e: React.MouseEvent) => {
+  const handleRemove = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation(); // Prevent chip onClick from firing
     if (!disabled && onRemove) {
       onRemove();
@@ -124,31 +124,34 @@ export function Chip(props: ChipProps): JSX.Element {
       className={[
         // Base styles
         'inline-flex items-center gap-1.5',
-        'rounded-full border',
+        'rounded-full',
         'font-medium',
         'transition-all duration-150',
-        
+
         // Size styles
         getSizeStyles(),
-        
+
         // Active/inactive styles
         active
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-white text-neutral-600 border-neutral-300',
-        
+          ? 'bg-blue-600 text-white border-blue-600 border'
+          : 'neumorphic-raised-sm text-neutral-800',
+
         // Hover styles
-        !disabled && onClick && !active && 'hover:bg-neutral-50 hover:border-neutral-400',
+        !disabled && onClick && !active && 'neumorphic-hover',
         !disabled && onClick && active && 'hover:bg-blue-700',
-        
+
+        // Active/pressed state
+        !disabled && onClick && 'neumorphic-active',
+
         // Focus styles
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-        
+        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+
         // Disabled styles
         disabled && 'opacity-50 cursor-not-allowed',
-        
+
         // Cursor
         onClick || removable ? 'cursor-pointer' : 'cursor-default',
-        
+
         // Custom className
         className,
       ].join(' ')}
@@ -160,10 +163,18 @@ export function Chip(props: ChipProps): JSX.Element {
 
       {/* Remove button */}
       {removable && (
-        <button
-          type="button"
+        <span
+          role="button"
+          tabIndex={-1}
+          aria-label={`Remove ${label}`}
+          aria-disabled={disabled || undefined}
           onClick={handleRemove}
-          disabled={disabled}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleRemove(event);
+            }
+          }}
           className={[
             'flex-shrink-0 w-3 h-3 flex items-center justify-center',
             'rounded-full',
@@ -171,15 +182,12 @@ export function Chip(props: ChipProps): JSX.Element {
             active
               ? 'hover:bg-blue-500'
               : 'hover:bg-neutral-200',
-            'focus:outline-none',
+            disabled && 'opacity-50 cursor-not-allowed',
           ].join(' ')}
-          aria-label={`Remove ${label}`}
-          tabIndex={-1} // Prevent tab focus, use chip's tab index
         >
           <X className="w-2.5 h-2.5" />
-        </button>
+        </span>
       )}
     </button>
   );
 }
-

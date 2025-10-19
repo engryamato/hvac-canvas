@@ -3,7 +3,7 @@
  * 
  * Re-exports all Calculations tab components.
  * 
- * Usage: import { CalculationsTab } from '@/components/LinePropertiesModal/CalculationsTab';
+ * Module path reference: '@/components/LinePropertiesModal/CalculationsTab'
  */
 
 // Main tab component
@@ -22,4 +22,3 @@ export type { ResultsDisplayProps, CalculationResults } from './ResultsDisplay';
 
 export { WarningBanner } from './WarningBanner';
 export type { WarningBannerProps } from './WarningBanner';
-

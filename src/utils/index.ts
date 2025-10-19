@@ -11,6 +11,7 @@ export {
   midpoint,
   getClosestPointOnSegment,
   getLineLength,
+  getDistancePointToSegment,
 } from './geometry';
 
 // Canvas utilities

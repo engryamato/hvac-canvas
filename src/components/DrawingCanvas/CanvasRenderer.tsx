@@ -98,7 +98,7 @@ export function CanvasRenderer(props: CanvasRendererProps): JSX.Element {
     >
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 bg-white ${isDrawActive ? "cursor-crosshair" : "cursor-default"}`}
+        className={`absolute inset-0 ${isDrawActive ? "cursor-crosshair" : "cursor-default"}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

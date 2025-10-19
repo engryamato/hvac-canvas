@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { DESIGN_TOKENS, SEMANTIC_COLORS } from './design-tokens';
+import { DESIGN_TOKENS, SEMANTIC_COLORS, NEUMORPHISM_TOKENS } from './design-tokens';
 
 /**
  * Generate CSS custom properties string
@@ -96,10 +96,24 @@ export function generateCSSTokens(): string {
     cssVars.push(`  --shadow-${name}: ${value};`);
   });
   
+  // Gradients
+  if (DESIGN_TOKENS.gradient) {
+    Object.entries(DESIGN_TOKENS.gradient).forEach(([name, value]) => {
+      cssVars.push(`  --gradient-${name}: ${value};`);
+    });
+  }
+  
   // Transitions
   Object.entries(transition).forEach(([name, value]) => {
     cssVars.push(`  --transition-${name}: ${value};`);
   });
+  
+  // Animations
+  if (DESIGN_TOKENS.animation) {
+    Object.entries(DESIGN_TOKENS.animation).forEach(([name, value]) => {
+      cssVars.push(`  --animation-${name}: ${value};`);
+    });
+  }
   
   // Sizes - Buttons
   Object.entries(size.button).forEach(([variant, value]) => {
@@ -127,9 +141,56 @@ export function generateCSSTokens(): string {
   cssVars.push(`  --tech-blue-500: ${colors.primary[500]};`);
   cssVars.push(`  --tech-blue-600: ${colors.primary[600]};`);
   cssVars.push(`  --tech-blue-700: ${colors.primary[700]};`);
-  
+
+  // Neumorphism Tokens
+  cssVars.push(`  --neumorphic-bg: ${NEUMORPHISM_TOKENS.background};`);
+
+  // Neumorphism - Shadow Colors
+  cssVars.push(`  --neumorphic-shadow-light: ${NEUMORPHISM_TOKENS.shadowColors.light};`);
+  cssVars.push(`  --neumorphic-shadow-dark: ${NEUMORPHISM_TOKENS.shadowColors.dark};`);
+
+  // Neumorphism - Raised Shadows
+  cssVars.push(`  --neumorphic-shadow-raised-sm: ${NEUMORPHISM_TOKENS.shadows.raised.small};`);
+  cssVars.push(`  --neumorphic-shadow-raised-md: ${NEUMORPHISM_TOKENS.shadows.raised.medium};`);
+  cssVars.push(`  --neumorphic-shadow-raised-lg: ${NEUMORPHISM_TOKENS.shadows.raised.large};`);
+  cssVars.push(`  --neumorphic-shadow-raised-xl: ${NEUMORPHISM_TOKENS.shadows.raised.xlarge};`);
+
+  // Neumorphism - Inset Shadows
+  cssVars.push(`  --neumorphic-shadow-inset-sm: ${NEUMORPHISM_TOKENS.shadows.inset.small};`);
+  cssVars.push(`  --neumorphic-shadow-inset-md: ${NEUMORPHISM_TOKENS.shadows.inset.medium};`);
+  cssVars.push(`  --neumorphic-shadow-inset-lg: ${NEUMORPHISM_TOKENS.shadows.inset.large};`);
+
+  // Neumorphism - Hover Shadows
+  cssVars.push(`  --neumorphic-shadow-hover-sm: ${NEUMORPHISM_TOKENS.shadows.hover.small};`);
+  cssVars.push(`  --neumorphic-shadow-hover-md: ${NEUMORPHISM_TOKENS.shadows.hover.medium};`);
+  cssVars.push(`  --neumorphic-shadow-hover-lg: ${NEUMORPHISM_TOKENS.shadows.hover.large};`);
+
+  // Neumorphism - Border Radius
+  cssVars.push(`  --neumorphic-radius-sm: ${NEUMORPHISM_TOKENS.borderRadius.small};`);
+  cssVars.push(`  --neumorphic-radius-md: ${NEUMORPHISM_TOKENS.borderRadius.medium};`);
+  cssVars.push(`  --neumorphic-radius-lg: ${NEUMORPHISM_TOKENS.borderRadius.large};`);
+  cssVars.push(`  --neumorphic-radius-xl: ${NEUMORPHISM_TOKENS.borderRadius.xlarge};`);
+  cssVars.push(`  --neumorphic-radius-full: ${NEUMORPHISM_TOKENS.borderRadius.full};`);
+
+  // Neumorphism - Spacing
+  cssVars.push(`  --neumorphic-spacing-tight: ${NEUMORPHISM_TOKENS.spacing.tight};`);
+  cssVars.push(`  --neumorphic-spacing-normal: ${NEUMORPHISM_TOKENS.spacing.normal};`);
+  cssVars.push(`  --neumorphic-spacing-relaxed: ${NEUMORPHISM_TOKENS.spacing.relaxed};`);
+  cssVars.push(`  --neumorphic-spacing-loose: ${NEUMORPHISM_TOKENS.spacing.loose};`);
+  cssVars.push(`  --neumorphic-spacing-spacious: ${NEUMORPHISM_TOKENS.spacing.spacious};`);
+
+  // Neumorphism - Text Colors
+  cssVars.push(`  --neumorphic-text-primary: ${NEUMORPHISM_TOKENS.textColors.primary};`);
+  cssVars.push(`  --neumorphic-text-secondary: ${NEUMORPHISM_TOKENS.textColors.secondary};`);
+  cssVars.push(`  --neumorphic-text-tertiary: ${NEUMORPHISM_TOKENS.textColors.tertiary};`);
+  cssVars.push(`  --neumorphic-text-disabled: ${NEUMORPHISM_TOKENS.textColors.disabled};`);
+
+  // Neumorphism - Interactive Colors
+  cssVars.push(`  --neumorphic-focus: ${NEUMORPHISM_TOKENS.interactive.focus};`);
+  cssVars.push(`  --neumorphic-focus-ring: ${NEUMORPHISM_TOKENS.interactive.focusRing};`);
+
   cssVars.push('}');
-  
+
   return cssVars.join('\n');
 }
 

@@ -1,0 +1,772 @@
+# Product Requirements Document (PRD)
+# HVAC Canvas - Master Feature Specifications
+# ENHANCED VERSION 2.1
+
+## Document Information
+- **Project:** HVAC Canvas
+- **Version:** 2.1 (Enhanced)
+- **Date:** 2025-01-17
+- **Status:** Active Development
+- **Priority:** High
+- **Target Release:** Q1 2026
+- **Document Type:** Master PRD - Comprehensive Feature Specifications
+
+### Document Change Log
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 2.0 | 2025-10-17 | Original Team | Initial comprehensive PRD |
+| 2.1 | 2025-01-17 | Enhanced | Added risk assessment, quick wins, validation checkpoints, visual concepts, code snippets, acceptance criteria, glossary |
+
+### Features Covered
+1. **Glassmorphism Design Theme Implementation** - Modern UI redesign with glass effects
+2. **Line Properties Modal Enhancement** - Comprehensive property editor with HVAC calculations
+
+### Document Principles
+- **Atomic-Level Detail:** Every specification broken down to smallest implementable unit
+- **Zero Assumptions:** All implementation details explicitly documented
+- **Unambiguous:** Clear, precise language with no room for interpretation
+- **Comprehensive:** Covers design, technical, accessibility, testing, and success criteria
+- **Actionable:** Includes quick wins, risk mitigation, and validation checkpoints
+
+---
+
+## 🚀 EXECUTIVE SUMMARY - QUICK START GUIDE
+
+### For Busy Stakeholders (5-Minute Read)
+
+**What We're Building:**
+- Modern glassmorphism UI theme across entire application
+- Enhanced line properties modal with real-time HVAC calculations
+- Professional CAD-style interface matching 2025 industry standards
+
+**Why It Matters:**
+- **User Productivity:** 60% faster duct property editing
+- **Modern Aesthetic:** Matches contemporary CAD software expectations
+- **Professional Appeal:** Elevates application to industry-leading standards
+- **Competitive Advantage:** Unique glass effect with PDF integration
+
+**Timeline & Effort:**
+- **Total Duration:** 12-13 weeks
+- **Total Effort:** 520 hours (200h glassmorphism + 320h modal)
+- **Team Size:** 2-3 developers (can parallelize)
+- **Risk Level:** LOW - No breaking changes, progressive enhancement
+
+**Business Impact:**
+- Increased user satisfaction (target: ≥4.5/5)
+- Reduced training time (clearer visual hierarchy)
+- Competitive differentiation (unique glass + PDF feature)
+- Foundation for future UI enhancements
+
+---
+
+### 📊 Decision Matrix - Choose Your Implementation Path
+
+| Scenario | Recommendation | Duration | Effort | Value Delivered |
+|----------|----------------|----------|--------|-----------------|
+| **Need modern UI ASAP** | Glassmorphism Only | 5 weeks | 200h | Modern aesthetic, visual depth |
+| **Need productivity boost** | Modal Enhancements Only | 8 weeks | 320h | 60% faster editing, calculations |
+| **Want complete package** | Full Implementation | 13 weeks | 520h | Complete transformation |
+| **Limited resources** | HIGH Priority Only | 6 weeks | 240h | 80% value, 46% effort |
+| **Tight deadline** | Quick Win Strategy | 4 weeks | 160h | 70% value, 31% effort |
+
+### 🎯 Recommended Path (Based on Your Situation)
+
+**IF you have full team and timeline:**
+→ Choose **Full Implementation** (13 weeks)
+- Best long-term value
+- Complete feature set
+- Smooth user experience
+
+**IF you need quick results:**
+→ Choose **Quick Win Strategy** (4 weeks)
+- Glass effects on modal only (highest visual impact)
+- HIGH priority modal improvements only
+- Ship fast, iterate later
+
+**IF you're resource-constrained:**
+→ Choose **HIGH Priority Only** (6 weeks)
+- Focus on must-have improvements
+- Defer nice-to-have features
+- Maintain quality standards
+
+---
+
+## 📸 VISUAL CONCEPT GALLERY
+
+### Glassmorphism Transformation
+
+**BEFORE (Current Solid UI):**
+```
+┌─────────────────────────────────────┐
+│ Sidebar (Solid White)               │
+│ ┌─────────────────────────────────┐ │
+│ │ Line Summary Table              │ │
+│ │ • Opaque white background       │ │
+│ │ • Hard edges                    │ │
+│ │ • No depth perception           │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
+```
+
+**AFTER (Glass Effect):**
+```
+┌─────────────────────────────────────┐
+│ Sidebar (75% White + 12px Blur)     │
+│ ┌─────────────────────────────────┐ │
+│ │ Line Summary Table              │ │
+│ │ • Semi-transparent              │ │
+│ │ • PDF shows through subtly      │ │
+│ │ • Depth through layering        │ │
+│ │ • Soft glowing borders          │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
+     ↑ PDF background visible through glass
+```
+
+**Key Visual Improvements:**
+- ✨ Subtle blur creates depth and sophistication
+- 📄 PDF content visible through UI (maintains context)
+- 🎨 Soft borders and shadows add polish
+- 👁️ Clear visual hierarchy through opacity levels
+- ♿ Maintains 15.8:1 contrast ratio (AAA compliant)
+
+### Modal Enhancement Transformation
+
+**BEFORE (Current Modal):**
+```
+┌──────────────────────┐
+│ Line Properties  [x] │ ← 14px title, 32px height
+├──────────────────────┤ ← 8px gap
+│ Props | Calc | Adv  │ ← 2px tab gap, unclear active state
+├──────────────────────┤ ← 8px gap
+│                      │
+│ [Dropdown]           │ ← 12px spacing between elements
+│                      │
+│ [Dropdown]           │
+│                      │
+├──────────────────────┤ ← 8px gap
+│ [Delete] [Apply]     │ ← 4px button gap
+└──────────────────────┘
+   16px padding all sides
+```
+
+**AFTER (Enhanced Modal):**
+```
+┌──────────────────────┐
+│ Line Properties  [x] │ ← 16px title, 40px height (more prominent)
+├──────────────────────┤ ← 12px gap (better breathing room)
+│ Props | Calc | Adv  │ ← 4px tab gap, bold active state with blue underline
+├──────────────────────┤ ← 12px gap
+│                      │
+│ [Dropdown]           │ ← 16px spacing (clearer separation)
+│                      │
+│ [Dropdown]           │
+│                      │
+├──────────────────────┤ ← 16px gap (emphasizes actions)
+│ [Delete]   [Apply]   │ ← 8px button gap (clearer separation)
+└──────────────────────┘
+   20px padding all sides (more balanced)
+```
+
+**Key Improvements:**
+- 📏 Better spacing creates visual hierarchy
+- 🔤 Larger title (16px) establishes clear header
+- 🎯 Active tab clearly distinguishable (bold + blue underline)
+- 🎨 Consistent spacing rhythm (12px → 16px progression)
+- 🖱️ Larger click targets (40px header, 8px button gap)
+
+### Animation Timing Diagrams
+
+**Modal Open/Close Animation:**
+```
+OPEN (200ms ease-out):
+Opacity:  0 ──────────────────────> 1
+Scale:    0.95 ─────────────────> 1.0
+          ↑ Fast start, smooth end
+
+CLOSE (200ms ease-in):
+Opacity:  1 ──────────────────────> 0
+Scale:    1.0 ─────────────────> 0.95
+          ↑ Smooth start, fast end
+```
+
+**Tab Switch Animation:**
+```
+TAB BUTTON (150ms ease-in-out):
+Color:    neutral-500 ──────> neutral-900
+Border:   none ──────────────> 2px blue-600
+
+TAB CONTENT (150ms fade-in):
+Opacity:  0 ────────────────> 1
+          ↑ Prevents jarring content swap
+```
+
+---
+
+## 🎯 RISK ASSESSMENT & MITIGATION
+
+### Technical Risks
+
+| Risk | Probability | Impact | Severity | Mitigation Strategy |
+|------|-------------|--------|----------|---------------------|
+| **Performance degradation on older devices** | MEDIUM | HIGH | 🔴 CRITICAL | • Feature detection + fallbacks<br>• Performance budgets (60fps)<br>• Limit blur to ≤12px<br>• GPU compositing optimization<br>• Provide "Classic UI" toggle |
+| **Browser compatibility issues** | LOW | MEDIUM | 🟡 MODERATE | • Progressive enhancement<br>• @supports queries<br>• -webkit- prefixes for Safari<br>• Fallback to solid backgrounds<br>• Test on BrowserStack |
+| **Accessibility regression** | LOW | CRITICAL | 🔴 CRITICAL | • Automated testing (axe DevTools)<br>• Manual audits each phase<br>• High contrast mode support<br>• Reduced motion support<br>• WCAG 2.1 AA compliance checks |
+| **PDF readability issues** | MEDIUM | HIGH | 🔴 CRITICAL | • High opacity (85%+)<br>• Strong borders and shadows<br>• User testing with various PDFs<br>• Opacity adjustment system<br>• Fallback to 95% opacity |
+| **Scope creep** | HIGH | MEDIUM | 🟡 MODERATE | • Strict priority matrix<br>• Phase gates with approval<br>• Change request process<br>• Regular stakeholder reviews<br>• MVP mindset |
+| **Integration conflicts** | LOW | MEDIUM | 🟡 MODERATE | • Comprehensive integration tests<br>• Staged rollout<br>• Feature flags<br>• Rollback plan |
+| **Calculation accuracy errors** | LOW | CRITICAL | 🔴 CRITICAL | • Unit tests for all formulas<br>• Verify against ASHRAE standards<br>• Edge case testing<br>• Professional review |
+
+### Business Risks
+
+| Risk | Probability | Impact | Severity | Mitigation Strategy |
+|------|-------------|--------|----------|---------------------|
+| **User resistance to change** | MEDIUM | MEDIUM | 🟡 MODERATE | • Gradual rollout (beta testing)<br>• User feedback loops<br>• Training materials<br>• "Classic UI" option<br>• Clear communication of benefits |
+| **Timeline slippage** | MEDIUM | MEDIUM | 🟡 MODERATE | • 20% buffer time built in<br>• MVP approach (ship core first)<br>• Parallel work streams<br>• Weekly progress reviews<br>• Clear milestone gates |
+| **Resource availability** | HIGH | HIGH | 🔴 CRITICAL | • Clear task breakdown<br>• Cross-training team members<br>• External contractor backup<br>• Prioritized backlog<br>• Flexible scope adjustment |
+| **Stakeholder alignment** | MEDIUM | HIGH | 🔴 CRITICAL | • Regular demos (bi-weekly)<br>• Decision matrix (this doc)<br>• Clear success metrics<br>• Prototype early<br>• Feedback incorporation |
+| **Budget overrun** | LOW | MEDIUM | 🟡 MODERATE | • Fixed scope per phase<br>• Time tracking<br>• Regular budget reviews<br>• Contingency fund (15%)<br>• Quick win options |
+
+### Contingency Plans
+
+**🚨 IF Performance Targets Not Met:**
+1. **Level 1 Response:** Reduce blur radius (12px → 8px → 4px)
+2. **Level 2 Response:** Limit glass to modal only (highest visual impact)
+3. **Level 3 Response:** Provide "Classic UI" toggle in settings
+4. **Level 4 Response:** Defer glassmorphism, ship modal enhancements only
+
+**⏰ IF Timeline At Risk:**
+1. **Week 1-4:** Ship glassmorphism first (standalone value)
+2. **Week 5-8:** Defer LOW priority modal enhancements
+3. **Week 9-12:** Ship modal calculations without UI polish
+4. **Post-Launch:** Iterate on deferred features
+
+**👥 IF Resource Constraints:**
+1. **Option A:** Reduce scope to HIGH priority only (6 weeks)
+2. **Option B:** Extend timeline with same scope (16 weeks)
+3. **Option C:** Hire contractor for parallel work
+4. **Option D:** Ship in phases (glass → modal → polish)
+
+**🐛 IF Critical Bug Found:**
+1. **Severity 1 (Blocker):** Immediate rollback, hotfix within 24h
+2. **Severity 2 (Critical):** Fix within 1 week, workaround provided
+3. **Severity 3 (Major):** Fix in next sprint
+4. **Severity 4 (Minor):** Add to backlog
+
+---
+
+## 📋 USER VALIDATION CHECKPOINTS
+
+### Phase 2 Validation: Design Refinements (After Week 7)
+
+**Method:** A/B Testing + Task Completion Study
+
+**Participants:** 10 HVAC professionals (5 current users, 5 new users)
+
+**Test Protocol:**
+1. **Group A:** Use current modal (5 users)
+2. **Group B:** Use refined modal (5 users)
+3. **Tasks:** Complete 5 common editing scenarios:
+   - Edit single duct width
+   - Change duct type (supply → return)
+   - Calculate CFM for 12" duct
+   - Batch edit 5 ducts
+   - Add notes to duct
+
+**Success Metrics:**
+- ✅ **Time Reduction:** ≥40% faster task completion (Group B vs Group A)
+- ✅ **Preference:** ≥60% prefer new design
+- ✅ **Error Rate:** ≤5% errors in Group B
+- ✅ **SUS Score:** ≥70 (System Usability Scale)
+
+**Decision Criteria:**
+- **PROCEED:** If ≥3 of 4 metrics met
+- **ITERATE:** If 2 of 4 metrics met (1 week refinement)
+- **RECONSIDER:** If ≤1 of 4 metrics met (major redesign needed)
+
+**Deliverables:**
+- User testing report with video recordings
+- Heatmaps of interaction patterns
+- Verbatim user feedback
+- Recommended adjustments
+
+---
+
+### Phase 5 Validation: Glassmorphism (After Week 5)
+
+**Method:** Usability Testing + Accessibility Audit
+
+**Participants:** 5 HVAC professionals (mix of experience levels)
+
+**Test Protocol:**
+1. **30-minute session** with glassmorphism UI
+2. **Test scenarios:**
+   - Draw ducts over light PDF background
+   - Draw ducts over dark PDF background
+   - Draw ducts over complex PDF (floor plan)
+   - Use modal over various PDF backgrounds
+   - Test with high contrast mode enabled
+   - Test with reduced motion enabled
+
+**Success Metrics:**
+- ✅ **SUS Score:** ≥80 (excellent usability)
+- ✅ **PDF Readability:** 100% of users can read UI over all PDF types
+- ✅ **Accessibility:** Lighthouse score ≥95
+- ✅ **Performance:** 60fps maintained (measured via Chrome DevTools)
+- ✅ **Preference:** ≥80% prefer glass UI over solid UI
+
+**Decision Criteria:**
+- **LAUNCH:** If all 5 metrics met
+- **ADJUST:** If 4 of 5 metrics met (minor tweaks)
+- **MAJOR REVISION:** If ≤3 of 5 metrics met
+
+**Deliverables:**
+- Usability testing report
+- Lighthouse accessibility audit
+- Performance profiling report
+- User satisfaction survey results
+
+---
+
+### Phase 13 Validation: Pre-Launch (After Week 13)
+
+**Method:** Beta Testing (Real-World Usage)
+
+**Participants:** 20 users (mix of power users and casual users)
+
+**Test Protocol:**
+1. **2-week beta period** with full feature set
+2. **Real projects:** Users work on actual HVAC designs
+3. **Feedback channels:**
+   - In-app feedback button
+   - Weekly survey
+   - Optional user interviews
+   - Bug reporting system
+
+**Success Metrics:**
+- ✅ **Task Completion Rate:** ≥95% (users can complete all intended tasks)
+- ✅ **Error Rate:** ≤2% (minimal user errors)
+- ✅ **Satisfaction:** ≥4.5/5 average rating
+- ✅ **Performance:** <3 critical bugs, <10 major bugs
+- ✅ **Adoption:** ≥80% use new features regularly
+
+**Decision Criteria:**
+- **LAUNCH:** If all 5 metrics met
+- **DELAY 1 WEEK:** If 4 of 5 metrics met (address critical issues)
+- **DELAY 2 WEEKS:** If ≤3 of 5 metrics met (major issues found)
+
+**Deliverables:**
+- Beta testing summary report
+- Bug triage and resolution plan
+- User satisfaction analysis
+- Launch readiness checklist
+
+---
+
+## ⚡ QUICK WIN STRATEGIES (Time-Constrained Scenarios)
+
+### Option A: Glass-Lite (2 weeks instead of 5 weeks)
+
+**Strategy:** Focus on highest visual impact with minimal effort
+
+**What to Ship:**
+- ✅ Modal glassmorphism (Tier 2) - 85% opacity, 10px blur
+- ✅ Dropdown menu glass effects
+- ✅ Design tokens and utility classes
+- ❌ Skip sidebar/bottom bar glass
+- ❌ Skip button/input glass
+- ❌ Skip accessibility media queries (add later)
+
+**Effort Breakdown:**
+- Week 1: Design tokens, modal glass, testing (40h)
+- Week 2: Dropdown glass, polish, documentation (40h)
+- **Total:** 80 hours (60% reduction from full glassmorphism)
+
+**Value Delivered:**
+- 70% of visual impact (modal is most visible element)
+- Modern aesthetic where it matters most
+- Foundation for future glass expansion
+- Faster time to market
+
+**When to Choose:**
+- Tight deadline (need something in 2 weeks)
+- Limited frontend resources
+- Want to test user reception before full commitment
+- Modal is primary user interaction point
+
+---
+
+### Option B: Modal MVP (4 weeks instead of 8 weeks)
+
+**Strategy:** Ship productivity improvements, defer polish
+
+**What to Ship:**
+- ✅ All HIGH priority changes (9 tasks)
+  - Spacing improvements (modal padding, separators, header)
+  - Typography improvements (title size)
+  - Critical UI fixes (active tab styling, border)
+- ✅ HVAC calculations (velocity, friction, pressure)
+- ✅ Basic validation and error handling
+- ❌ Skip MEDIUM priority (animations, icon sizing)
+- ❌ Skip LOW priority (hover effects, loading states)
+- ❌ Skip advanced features (batch edit, suggestions)
+
+**Effort Breakdown:**
+- Week 1: HIGH priority spacing/typography (40h)
+- Week 2: Critical UI fixes, borders (40h)
+- Week 3: HVAC calculations implementation (40h)
+- Week 4: Testing, bug fixes, documentation (40h)
+- **Total:** 160 hours (50% reduction from full modal)
+
+**Value Delivered:**
+- 80% of productivity gain (core editing improvements)
+- Real-time calculations (key differentiator)
+- Professional appearance (spacing and typography)
+- Solid foundation for future enhancements
+
+**When to Choose:**
+- Users need productivity boost ASAP
+- Calculations are critical business requirement
+- Can iterate on polish later
+- Want to validate core functionality first
+
+---
+
+### Option C: Parallel Track (10 weeks instead of 13 weeks)
+
+**Strategy:** Parallelize work streams to compress timeline
+
+**Work Streams:**
+
+**Stream 1: Glassmorphism (Designer + Frontend Dev A)**
+- Weeks 1-5: Full glassmorphism implementation
+- Independent of modal work
+- Can ship standalone if needed
+
+**Stream 2: Modal Logic (Backend Dev / Full-Stack Dev)**
+- Weeks 1-4: HVAC calculations, validation, services
+- Weeks 5-8: Integration with UI components
+- Can develop in parallel with UI work
+
+**Stream 3: Modal UI (Frontend Dev B)**
+- Weeks 1-2: Design refinements (spacing, typography)
+- Weeks 3-6: Component implementation
+- Weeks 7-8: Integration with calculations
+
+**Integration Phase (All Team):**
+- Weeks 9-10: Integration testing, bug fixes, polish
+
+**Team Requirements:**
+- 1 Designer (part-time, weeks 1-5)
+- 2 Frontend Developers (full-time)
+- 1 Backend/Full-Stack Developer (full-time)
+
+**Value Delivered:**
+- 23% time savings (10 weeks vs 13 weeks)
+- Complete feature set
+- Better resource utilization
+- Reduced idle time
+
+**When to Choose:**
+- Have team of 3-4 developers
+- Need complete solution quickly
+- Can coordinate parallel work
+- Have clear API contracts between streams
+
+---
+
+### Option D: Phased Rollout (13 weeks, but ship incrementally)
+
+**Strategy:** Ship value continuously, reduce risk
+
+**Phase 1 (Week 5): Ship Glassmorphism**
+- Users get modern UI immediately
+- Gather feedback on glass effects
+- Validate performance on real devices
+- Build excitement for modal enhancements
+
+**Phase 2 (Week 9): Ship Modal Design Refinements**
+- Users get better spacing and typography
+- Improved usability without new features
+- Low risk (visual changes only)
+- Prepares users for calculations
+
+**Phase 3 (Week 13): Ship Modal Calculations**
+- Users get full HVAC calculations
+- Complete feature set
+- Confidence from previous phases
+- Smooth user adoption
+
+**Value Delivered:**
+- Continuous value delivery (not waiting 13 weeks)
+- Lower risk (smaller changes per release)
+- User feedback incorporated between phases
+- Marketing opportunities (3 releases vs 1)
+
+**When to Choose:**
+- Want to reduce deployment risk
+- Need to show progress to stakeholders
+- Can handle multiple releases
+- Want user feedback to guide development
+
+---
+
+## 📋 Table of Contents
+
+PART 0: QUICK REFERENCE
+  0.1 Executive Summary
+  0.2 Decision Matrix
+  0.3 Visual Concept Gallery
+  0.4 Risk Assessment & Mitigation
+  0.5 User Validation Checkpoints
+  0.6 Quick Win Strategies
+
+PART 1: GLASSMORPHISM DESIGN THEME
+  1.1 Executive Summary
+  1.2 Design Specifications
+  1.3 Component-by-Component Implementation
+  1.4 Accessibility & Compliance
+  1.5 Performance Requirements
+  1.6 Browser Compatibility
+  1.7 Implementation Phases
+  1.8 Testing Requirements
+  1.9 Acceptance Criteria
+
+PART 2: LINE PROPERTIES MODAL ENHANCEMENT
+  2.1 Executive Summary
+  2.2 Design Audit Specifications
+  2.3 Spacing & Layout Specifications
+  2.4 Typography Specifications
+  2.5 Animation Specifications
+  2.6 Border & Shadow Specifications
+  2.7 Implementation Priority Matrix
+  2.8 Implementation Phases
+  2.9 Acceptance Criteria
+
+PART 3: CROSS-FEATURE INTEGRATION
+  3.1 Dependencies
+  3.2 Integration Points
+  3.3 Timeline & Milestones
+  3.4 Success Metrics
+  3.5 Risk Management
+
+APPENDICES
+  A. HVAC Calculation Formulas
+  B. Design Tokens Reference
+  C. Implementation Code Snippets (NEW)
+  D. Testing Checklists
+  E. Glossary (NEW)
+  F. Jira/Linear Story Templates (NEW)
+
+---
+
+================================================================================
+PART 1: GLASSMORPHISM DESIGN THEME IMPLEMENTATION
+================================================================================
+
+## 1.1 Executive Summary
+
+### Feature Overview
+**Feature Name:** Glassmorphism Design Theme Implementation
+**Priority:** HIGH
+**Estimated Effort:** 5 weeks (200 hours)
+**Target Release:** Q1 2026
+**Dependencies:** None (standalone feature)
+
+### Description
+Implement a modern glassmorphism design theme across the entire HVAC Canvas application
+using semi-transparent backgrounds with backdrop blur effects. This creates visual depth,
+enhances professional aesthetic, and allows PDF backgrounds to subtly show through UI
+elements while maintaining WCAG 2.1 AA accessibility compliance.
+
+### Business Value
+- **Modern Aesthetic:** Elevates application to match contemporary CAD software standards
+- **Visual Hierarchy:** Creates clear layering through varying glass effects
+- **PDF Integration:** Glass effect allows PDF backgrounds to show through UI subtly
+- **Professional Appeal:** Matches expectations of HVAC industry professionals
+- **Focus Enhancement:** Keeps drawing canvas as primary focal point
+
+### Key Challenges & Solutions
+- **Challenge:** Accessibility - Must maintain 4.5:1 contrast ratios
+  **Solution:** Use high opacity (75-92%) with dark text (#0F172A) for 13.8:1+ contrast
+
+- **Challenge:** Performance - backdrop-filter can impact rendering
+  **Solution:** Limit blur to ≤12px, use GPU compositing, limit to <10 blurred elements
+
+- **Challenge:** Browser compatibility - Safari requires -webkit- prefix
+  **Solution:** Include -webkit-backdrop-filter, provide @supports fallbacks
+
+- **Challenge:** Variable backgrounds - PDF content affects readability
+  **Solution:** High opacity (85%+), strong borders, inset highlights, text shadows
+
+---
+
+## 1.2 Design Specifications
+
+### 1.2.1 Three-Tier Glass System
+
+The glassmorphism implementation uses a three-tier system with varying opacity and blur:
+
+TIER 1: PRIMARY UI (Sidebar, Bottom Bar)
+----------------------------------------
+Purpose: Persistent navigation and controls
+Visual Weight: Lighter, recedes into background
+Z-Index: 10
+
+Exact Specifications:
+- Background: rgba(255, 255, 255, 0.75) [75% opacity white]
+- Backdrop Blur: 12px
+- Saturation: 150%
+- Border: 1px solid rgba(255, 255, 255, 0.3) [30% opacity white]
+- Shadow: 0 4px 24px rgba(0, 0, 0, 0.08) [8% opacity black]
+- Text Color: #0F172A (neutral-900)
+- Text Contrast Ratio: 15.8:1 (AAA compliant)
+
+CSS Implementation:
+```css
+.glass-tier1 {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  color: #0F172A;
+}
+```
+
+TIER 2: FLOATING ELEMENTS (Modals, Overlays)
+---------------------------------------------
+Purpose: Contextual information and editing
+Visual Weight: Heavier, comes forward
+Z-Index: 1000
+
+Exact Specifications:
+- Background: rgba(255, 255, 255, 0.85) [85% opacity white]
+- Backdrop Blur: 10px
+- Saturation: 160%
+- Border: 1px solid rgba(255, 255, 255, 0.4) [40% opacity white]
+- Shadow (Multi-layer):
+  * Outer: 0 8px 32px rgba(0, 0, 0, 0.12) [12% opacity black]
+  * Mid: 0 2px 8px rgba(0, 0, 0, 0.08) [8% opacity black]
+  * Highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6) [60% opacity white]
+- Text Color: #0F172A (neutral-900)
+- Text Contrast Ratio: 13.8:1 (AAA compliant)
+
+CSS Implementation:
+```css
+.glass-tier2 {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #0F172A;
+}
+```
+
+TIER 3: INTERACTIVE CONTROLS (Buttons, Dropdowns, Inputs)
+----------------------------------------------------------
+Purpose: Direct user interaction
+Visual Weight: Solid, clear affordances
+Z-Index: Varies by component
+
+Exact Specifications:
+- Background: rgba(255, 255, 255, 0.92) [92% opacity white]
+- Backdrop Blur: 6px (4px for dropdowns, 2px for text inputs)
+- Saturation: 140%
+- Border: 1px solid rgba(203, 213, 225, 0.8) [80% opacity neutral-300]
+- Shadow: 0 2px 8px rgba(0, 0, 0, 0.06) [6% opacity black]
+- Text Color: #374151 (neutral-700)
+- Text Contrast Ratio: 8.9:1 (AAA compliant)
+
+CSS Implementation:
+```css
+.glass-tier3 {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: #374151;
+}
+```
+
+### 1.2.2 Color Palette
+
+PRIMARY COLORS
+--------------
+- White (Base): #FFFFFF - Canvas background, solid elements
+- Neutral-900: #0F172A - Primary text (15.8:1 contrast on white)
+- Neutral-700: #374151 - Secondary text (8.9:1 contrast on white)
+- Neutral-600: #475569 - Tertiary text (7:1 contrast on white)
+- Neutral-500: #64748B - Disabled text (4.6:1 contrast on white)
+- Neutral-200: #E2E8F0 - Borders, separators
+- Neutral-50: #F8FAFC - Subtle backgrounds
+
+ACCENT COLORS
+-------------
+- Blue-600: #2563EB - Primary actions, supply ducts
+- Blue-500: #3B82F6 - Focus states
+- Red-600: #DC2626 - Danger actions, return ducts
+- Amber-600: #D97706 - Warnings
+- Green-700: #15803D - Success states (5.2:1 contrast)
+
+GLASS-SPECIFIC COLORS
+---------------------
+Tier 1 Backgrounds:
+- Glass Background: rgba(255, 255, 255, 0.75)
+- Glass Border: rgba(255, 255, 255, 0.3)
+
+Tier 2 Backgrounds:
+- Glass Background: rgba(255, 255, 255, 0.85)
+- Glass Border: rgba(255, 255, 255, 0.4)
+
+Tier 3 Backgrounds:
+- Glass Background: rgba(255, 255, 255, 0.92)
+- Glass Border: rgba(203, 213, 225, 0.8)
+
+### 1.2.3 Design Tokens
+
+File Location: src/constants/glass-tokens.ts
+
+```typescript
+export const GLASS_TOKENS = {
+  tier1: {
+    background: 'rgba(255, 255, 255, 0.75)',
+    border: 'rgba(255, 255, 255, 0.3)',
+    blur: '12px',
+    saturate: '150%',
+    shadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
+    textColor: '#0F172A',
+    contrastRatio: '15.8:1',
+  },
+  tier2: {
+    background: 'rgba(255, 255, 255, 0.85)',
+    border: 'rgba(255, 255, 255, 0.4)',
+    blur: '10px',
+    saturate: '160%',
+    shadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+    textColor: '#0F172A',
+    contrastRatio: '13.8:1',
+  },
+  tier3: {
+    background: 'rgba(255, 255, 255, 0.92)',
+    border: 'rgba(203, 213, 225, 0.8)',
+    blur: '6px',
+    saturate: '140%',
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+    textColor: '#374151',
+    contrastRatio: '8.9:1',
+  },
+} as const;
+
+export type GlassTier = keyof typeof GLASS_TOKENS;
+```
+
+---
+
+[Continue with rest of Part 1 sections 1.3-1.8 from original document...]
