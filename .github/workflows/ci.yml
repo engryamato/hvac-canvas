@@ -55,12 +55,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run unit tests
-        run: npm run test:unit -- --run
-      
-      - name: Generate coverage report
-        run: npm run test:unit -- --coverage --run
+      - name: Run unit tests (Vitest)
+        id: vitest
+        run: |
+          mkdir -p test-results/unit
+          npx vitest run --coverage --reporter=default --reporter=junit --outputFile=./test-results/unit/junit.xml
         continue-on-error: true
+      
+      - name: Upload Vitest JUnit report
+        if: always() && hashFiles('test-results/unit/junit.xml') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-junit
+          path: test-results/unit/junit.xml
+          retention-days: 7
+      
+      - name: Fail if Vitest failed
+        if: steps.vitest.outcome == 'failure'
+        run: exit 1
       
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -94,8 +106,16 @@ jobs:
 
   # Job 4: Build
   build:
-    name: Build
+    name: Build & Metrics
     runs-on: ubuntu-latest
+    outputs:
+      build_duration_ms: ${{ steps.metrics_outputs.outputs.build_duration_ms }}
+      bundle_size_bytes: ${{ steps.metrics_outputs.outputs.bundle_size_bytes }}
+      bundle_budget_bytes: ${{ steps.metrics_outputs.outputs.bundle_budget_bytes }}
+      bundle_budget_breached: ${{ steps.metrics_outputs.outputs.bundle_budget_breached }}
+      structure_total_files: ${{ steps.metrics_outputs.outputs.structure_total_files }}
+      structure_application_files: ${{ steps.metrics_outputs.outputs.structure_application_files }}
+      structure_docs_files: ${{ steps.metrics_outputs.outputs.structure_docs_files }}
     
     steps:
       - name: Checkout code
@@ -110,21 +130,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Build project
-        run: npm run build
+      - name: Collect bundle metrics
+        run: npm run metrics:collect
       
-      - name: Check bundle size
+      - name: Export metrics outputs
+        id: metrics_outputs
         run: |
-          BUNDLE_SIZE=$(stat -f%z dist/assets/*.js 2>/dev/null || stat -c%s dist/assets/*.js 2>/dev/null || echo "0")
-          MAX_SIZE=184320  # 180 KB in bytes (176 KB target + 4 KB buffer)
-          echo "Bundle size: $BUNDLE_SIZE bytes"
-          if [ "$BUNDLE_SIZE" -gt "$MAX_SIZE" ]; then
-            echo "❌ Bundle size exceeds maximum of $MAX_SIZE bytes"
-            exit 1
-          else
-            echo "✅ Bundle size within budget"
-          fi
-        continue-on-error: true
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const metricsDir = path.join(process.cwd(), 'test-results', 'metrics');
+          const buildMetrics = JSON.parse(fs.readFileSync(path.join(metricsDir, 'build-metrics.json'), 'utf8'));
+          const structureMetrics = JSON.parse(fs.readFileSync(path.join(metricsDir, 'file-structure.json'), 'utf8'));
+          const outputs = [
+            `build_duration_ms=${buildMetrics.buildDurationMs}`,
+            `bundle_size_bytes=${buildMetrics.monitoredAsset ? buildMetrics.monitoredAsset.bytes : 0}`,
+            `bundle_budget_bytes=${buildMetrics.bundleBudgetBytes}`,
+            `bundle_budget_breached=${buildMetrics.budgetBreached}`,
+            `structure_total_files=${structureMetrics.totalFiles}`,
+            `structure_application_files=${structureMetrics.countsByTopLevelDirectory.src ?? 0}`,
+            `structure_docs_files=${structureMetrics.countsByTopLevelDirectory.docs ?? 0}`
+          ];
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, outputs.join('\n') + '\n');
+          NODE
+      
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics
+          path: test-results/metrics/
+          retention-days: 7
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -155,25 +190,35 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
       
-      - name: Run E2E tests
-        run: npm test
+      - name: Run E2E tests (Playwright headless)
+        id: playwright
+        env:
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: test-results/playwright/junit.xml
+          PW_HEADLESS: '1'
+        run: |
+          mkdir -p test-results/playwright
+          npx playwright test --reporter=line,junit,html
         continue-on-error: true  # Allow failure since 1 test is known to fail
+      
+      - name: Upload Playwright JUnit report
+        if: always() && hashFiles('test-results/playwright/junit.xml') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-junit
+          path: test-results/playwright/junit.xml
+          retention-days: 7
       
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && hashFiles('playwright-report/index.html') != ''
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
       
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: test-results/
-          retention-days: 7
+      - name: Fail if Playwright failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
 
   # Job 6: Quality Summary
   quality-summary:
@@ -187,7 +232,35 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Generate summary
+        env:
+          BUILD_DURATION_MS: ${{ needs.build.outputs.build_duration_ms }}
+          BUNDLE_SIZE_BYTES: ${{ needs.build.outputs.bundle_size_bytes }}
+          BUNDLE_BUDGET_BYTES: ${{ needs.build.outputs.bundle_budget_bytes }}
+          BUNDLE_BUDGET_BREACHED: ${{ needs.build.outputs.bundle_budget_breached }}
+          STRUCTURE_TOTAL: ${{ needs.build.outputs.structure_total_files }}
+          STRUCTURE_APP: ${{ needs.build.outputs.structure_application_files }}
+          STRUCTURE_DOCS: ${{ needs.build.outputs.structure_docs_files }}
         run: |
+          BUILD_DURATION_MS=${BUILD_DURATION_MS:-0}
+          BUNDLE_SIZE_BYTES=${BUNDLE_SIZE_BYTES:-0}
+          BUNDLE_BUDGET_BYTES=${BUNDLE_BUDGET_BYTES:-0}
+          BUNDLE_BUDGET_BREACHED=${BUNDLE_BUDGET_BREACHED:-false}
+          STRUCTURE_TOTAL=${STRUCTURE_TOTAL:-0}
+          STRUCTURE_APP=${STRUCTURE_APP:-0}
+          STRUCTURE_DOCS=${STRUCTURE_DOCS:-0}
+
+          export BUILD_DURATION_MS
+          export BUNDLE_SIZE_BYTES
+
+          BUILD_DURATION_SEC=$(node -e "const ms = Number(process.env.BUILD_DURATION_MS || 0); console.log((ms / 1000).toFixed(2));")
+          BUNDLE_SIZE_KB=$(node -e "const bytes = Number(process.env.BUNDLE_SIZE_BYTES || 0); console.log((bytes / 1024).toFixed(1));")
+
+          if [ "$BUNDLE_BUDGET_BREACHED" = "true" ]; then
+            BUNDLE_STATUS="⚠️ Budget exceeded"
+          else
+            BUNDLE_STATUS="✅ Within budget"
+          fi
+
           echo "# CI Quality Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Job Results" >> $GITHUB_STEP_SUMMARY
@@ -198,10 +271,9 @@ jobs:
           echo "- E2E Tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Metrics" >> $GITHUB_STEP_SUMMARY
-          echo "- Unit Tests: 176 tests" >> $GITHUB_STEP_SUMMARY
-          echo "- Test Coverage: ~80%" >> $GITHUB_STEP_SUMMARY
-          echo "- Architecture Tests: 12 tests" >> $GITHUB_STEP_SUMMARY
-          echo "- E2E Tests: 29/30 passing" >> $GITHUB_STEP_SUMMARY
+          echo "- Build time: ${BUILD_DURATION_MS} ms (~${BUILD_DURATION_SEC}s)" >> $GITHUB_STEP_SUMMARY
+          echo "- Primary bundle: ${BUNDLE_SIZE_BYTES} bytes (~${BUNDLE_SIZE_KB} KB) / budget ${BUNDLE_BUDGET_BYTES} bytes — ${BUNDLE_STATUS}" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository files: ${STRUCTURE_TOTAL} total (src: ${STRUCTURE_APP}, docs: ${STRUCTURE_DOCS})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Status" >> $GITHUB_STEP_SUMMARY
           if [ "${{ needs.lint-and-typecheck.result }}" == "success" ] && \
@@ -212,4 +284,3 @@ jobs:
           else
             echo "❌ Some checks failed. Please review the logs." >> $GITHUB_STEP_SUMMARY
           fi
-

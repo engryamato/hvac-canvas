@@ -10,7 +10,7 @@ import React from 'react';
 /**
  * Tab identifier type
  */
-export type ModalTab = 'properties' | 'calculations' | 'advanced';
+export type ModalTab = 'properties' | 'calculations' | 'advanced' | 'connections';
 
 /**
  * Props for TabBar component
@@ -39,16 +39,17 @@ const TABS: TabConfig[] = [
   { id: 'properties', label: 'Properties' },
   { id: 'calculations', label: 'Calculations' },
   { id: 'advanced', label: 'Advanced' },
+  { id: 'connections', label: 'Connections' },
 ];
 
 /**
  * TabBar Component
- * 
- * Displays three equal-width tabs for modal navigation.
- * 
+ *
+ * Displays four equal-width tabs for modal navigation.
+ *
  * Features:
- * - Three tabs: Properties, Calculations, Advanced
- * - Equal width (~73px each for 220px total)
+ * - Four tabs: Properties, Calculations, Advanced, Connections
+ * - Equal width (~55px each for 220px total)
  * - 36px height
  * - 2px gap between tabs
  * - Active tab: blue bg (#2563eb), white text, 2px bottom border

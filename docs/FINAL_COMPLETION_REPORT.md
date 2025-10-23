@@ -7,6 +7,8 @@
 
 ---
 
+> **Note:** Latest CI-derived metrics (build time, bundle size, file counts) are tracked in `docs/status.md` (refreshed 2025-10-19). The figures below capture the 2025-10-09 project snapshot.
+
 ## Executive Summary
 
 The HVAC Canvas refactoring project has been successfully completed, transforming a monolithic 1,228-line component into a well-structured, modular codebase with 59 files organized across 7 architectural layers. All core objectives have been achieved, with the application now production-ready and fully tested.
@@ -308,4 +310,3 @@ The codebase is now **maintainable, testable, and ready for production deploymen
 **Prepared by:** AI Agent (Augment)  
 **Date:** 2025-10-09  
 **Version:** 1.0
-

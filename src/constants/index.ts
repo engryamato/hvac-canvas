@@ -24,6 +24,7 @@ export {
   SNAP_INDICATOR_RADIUS,
   SNAP_INDICATOR_COLOR,
   SNAP_INDICATOR_FILL,
+  CONNECTION_TOLERANCE_PX,
 } from './snap.constants';
 
 // Scale constants

@@ -14,6 +14,8 @@ import {
   SNAP_INDICATOR_RADIUS,
 } from '../../constants';
 
+const END_CAP_RADIUS_FACTOR = 0.35;
+
 /**
  * Options for drawing the line collection.
  */
@@ -36,6 +38,43 @@ export function drawLines(
   lines: Line[],
   options: DrawLinesOptions
 ): void {
+  const drawSegmentWithCaps = (
+    start: Pt,
+    end: Pt,
+    strokeWidth: number,
+    strokeColor: string
+  ) => {
+    ctx.save();
+    ctx.lineWidth = strokeWidth;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineCap = 'butt';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+    ctx.restore();
+
+    if (strokeWidth <= 0) {
+      return;
+    }
+
+    const radius = strokeWidth * END_CAP_RADIUS_FACTOR;
+    if (radius <= 0) {
+      return;
+    }
+
+    ctx.save();
+    ctx.fillStyle = strokeColor;
+    ctx.beginPath();
+    ctx.arc(start.x, start.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(end.x, end.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+
   const { selectedLineIds, viewportScale } = options;
   const selectedIdSet = new Set(selectedLineIds);
   const singleSelection = selectedLineIds.length === 1 ? selectedLineIds[0] : null;
@@ -45,23 +84,16 @@ export function drawLines(
       continue;
     }
 
-    ctx.lineWidth = line.width;
-    ctx.strokeStyle = line.color;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(line.a.x, line.a.y);
-    ctx.lineTo(line.b.x, line.b.y);
-    ctx.stroke();
+    drawSegmentWithCaps(line.a, line.b, line.width, line.color);
 
     if (selectedIdSet.has(line.id)) {
       const selectionColor = line.type === 'supply' ? '#2563eb' : '#dc2626';
-      ctx.lineWidth = line.width + SELECTION_HIGHLIGHT_WIDTH;
-      ctx.strokeStyle = `${selectionColor}40`;
-      ctx.beginPath();
-      ctx.moveTo(line.a.x, line.a.y);
-      ctx.lineTo(line.b.x, line.b.y);
-      ctx.stroke();
+      drawSegmentWithCaps(
+        line.a,
+        line.b,
+        line.width + SELECTION_HIGHLIGHT_WIDTH,
+        `${selectionColor}40`
+      );
 
       if (singleSelection === line.id) {
         const handleRadius = 6 / viewportScale;

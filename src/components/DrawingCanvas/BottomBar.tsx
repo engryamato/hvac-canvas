@@ -112,7 +112,7 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
         "flex items-center justify-between px-5 gap-4",
         "z-20"
       ].join(" ")}
-      style={{ borderRadius: '24px 24px 0 0' }}
+      style={{ borderRadius: '0px' }}
     >
       {/* Left Side - PDF Controls */}
       <div className="flex items-center gap-3">

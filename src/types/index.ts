@@ -15,7 +15,11 @@ export type {
   DuctType,
   Material,
   Gauge,
-  LineMetadata
+  LineMetadata,
+  LineEndpoint,
+  LineConnection,
+  LineConnectionMap,
+  ConnectionGraph
 } from './drawing.types';
 
 // Duct types

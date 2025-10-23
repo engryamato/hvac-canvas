@@ -5,8 +5,8 @@
  * Supports single-select and multi-select modes with three tabs.
  */
 
-import React, { useState, useRef, useMemo } from 'react';
-import type { Line } from '../../types/drawing.types';
+import React, { useState, useRef, useMemo, useLayoutEffect } from 'react';
+import type { Line, ConnectionGraph, LineEndpoint, LineConnection } from '../../types/drawing.types';
 import { ModalHeader } from './ModalHeader';
 import { TabBar, type ModalTab } from './TabBar';
 import { ModalFooter } from './ModalFooter';
@@ -14,22 +14,17 @@ import { Separator } from './shared';
 import { PropertiesTab } from './PropertiesTab';
 import { CalculationsTab } from './CalculationsTab';
 import { AdvancedTab } from './AdvancedTab';
+import { ConnectionsTab } from './ConnectionsTab';
 import {
   MultiSelectHeader,
   MultiSelectWarning,
   MultiSelectFooter,
 } from './MultiSelect';
-import { useModalPosition, type ViewportBounds } from '../../hooks/useModalPosition';
 import { useModalAnimation } from '../../hooks/useModalAnimation';
 import { useModalKeyboard } from '../../hooks/useModalKeyboard';
 import { useModalDrag } from '../../hooks/useModalDrag';
-import {
-  MODAL_WIDTH,
-  PROPERTIES_TAB_HEIGHT_COLLAPSED,
-  PROPERTIES_TAB_HEIGHT_EXPANDED,
-  CALCULATIONS_TAB_HEIGHT,
-  ADVANCED_TAB_HEIGHT,
-} from '../../constants/modal.constants';
+import type { ViewportBounds } from '../../hooks/useModalPosition';
+import { MODAL_WIDTH, MODAL_WIDTH_MIN } from '../../constants/modal.constants';
 
 /**
  * Props for LinePropertiesModal component
@@ -55,6 +50,10 @@ export interface LinePropertiesModalProps {
   canvasBounds?: DOMRect;
   /** Whether modal is open */
   isOpen: boolean;
+  /** Connection graph for all lines (Phase 4 integration) */
+  connections?: ConnectionGraph;
+  /** Get connected endpoints callback (Phase 4 integration) */
+  getConnectedEndpoints?: (lineId: string, endpoint: LineEndpoint) => LineConnection[];
 }
 
 /**
@@ -65,20 +64,18 @@ export interface LinePropertiesModalProps {
  * Features:
  * - **Single-Select Mode**: Edit one line with full property access
  * - **Multi-Select Mode**: Edit multiple lines with mixed value detection
- * - **Three Tabs**: Properties, Calculations, Advanced
- * - **Smart Positioning**: Positions near selected line(s)
+ * - **Four Tabs**: Properties, Calculations, Advanced, Connections
+ * - **Centered Layout**: Stays centered on screen with smooth transitions
+ * - **Adaptive Height**: Grows with content up to the viewport limit
+ * - **Responsive Width**: 280px on normal viewports, 240px on small viewports (< 400px)
  * - **Animations**: Smooth open/close with fade and scale
  * - **Keyboard Navigation**: Full keyboard support with focus trap
  * - **Accessibility**: ARIA labels, roles, and screen reader support
- * 
+ *
  * Dimensions:
- * - Width: 220px
+ * - Width: 280px (responsive: 240px on small viewports)
  * - Padding: 16px all sides
- * - Height: Dynamic based on active tab and expanded state
- *   - Properties (collapsed): 280px
- *   - Properties (expanded): 480px
- *   - Calculations: 320px
- *   - Advanced: 360px
+ * - Height: Adapts to content (capped to viewport for scrollable body)
  * 
  * @param props - Component props
  * 
@@ -105,8 +102,9 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
     onDelete,
     onDeleteAll,
     viewportBounds,
-    canvasBounds,
     isOpen,
+    connections,
+    getConnectedEndpoints,
   } = props;
 
   // Modal ref for keyboard navigation
@@ -124,44 +122,70 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
   // Get first line for positioning
   const firstLine = selectedLines[0];
 
-  // Calculate modal height based on active tab and expanded state
-  const modalHeight = useMemo(() => {
-    if (activeTab === 'properties') {
-      return isPropertiesExpanded
-        ? PROPERTIES_TAB_HEIGHT_EXPANDED
-        : PROPERTIES_TAB_HEIGHT_COLLAPSED;
-    } else if (activeTab === 'calculations') {
-      return CALCULATIONS_TAB_HEIGHT;
-    } else {
-      return ADVANCED_TAB_HEIGHT;
-    }
-  }, [activeTab, isPropertiesExpanded]);
-
-  // Use custom hooks
-  const initialPosition = useModalPosition({
-    selectedLineId: firstLine?.id || null,
-    lines: selectedLines,
-    modalHeight,
-    viewportBounds,
-    canvasBounds,
-  });
-
   const animation = useModalAnimation({ isOpen });
-
-  const { position, isDragging, dragHandleProps } = useModalDrag({
-    initialPosition,
-    isOpen,
-    viewportBounds,
-    modalDimensions: {
-      width: MODAL_WIDTH,
-      height: modalHeight,
-    },
-  });
 
   useModalKeyboard({
     isOpen: isOpen && animation.shouldRender,
     onClose,
     modalRef,
+  });
+
+  // Calculate responsive width based on viewport
+  // Use MODAL_WIDTH_MIN for small viewports (< 400px), otherwise use MODAL_WIDTH
+  const responsiveWidth = useMemo(() => {
+    return viewportBounds.width < 400 ? MODAL_WIDTH_MIN : MODAL_WIDTH;
+  }, [viewportBounds.width]);
+
+  // Track modal size for centering and drag constraints
+  const [modalSize, setModalSize] = useState<{ width: number; height: number }>({
+    width: responsiveWidth,
+    height: 360,
+  });
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const node = modalRef.current;
+    if (!node) return;
+    const rect = node.getBoundingClientRect();
+    setModalSize({
+      width: rect.width,
+      height: rect.height,
+    });
+  }, [
+    isOpen,
+    animation.isVisible,
+    activeTab,
+    isPropertiesExpanded,
+    selectedLines.length,
+    responsiveWidth,
+  ]);
+
+  const initialPosition = useMemo(() => {
+    const width = modalSize.width || responsiveWidth;
+    const height = modalSize.height || 360;
+    const viewportWidth = viewportBounds.width;
+    const viewportHeight = viewportBounds.height;
+
+    const centeredX = Math.max((viewportWidth - width) / 2, 0);
+    const centeredY = Math.max((viewportHeight - height) / 2, 0);
+
+    return {
+      x: centeredX,
+      y: centeredY,
+    };
+  }, [modalSize.width, modalSize.height, responsiveWidth, viewportBounds.width, viewportBounds.height]);
+
+  const { position, isDragging, dragHandleProps } = useModalDrag({
+    initialPosition,
+    isOpen,
+    viewportBounds: {
+      width: viewportBounds.width,
+      height: viewportBounds.height,
+    },
+    modalDimensions: {
+      width: modalSize.width,
+      height: modalSize.height,
+    },
   });
 
   // Handle line update
@@ -195,7 +219,7 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop - pointer-events-none allows clicks to pass through */}
       <div
         className={[
           'fixed inset-0',
@@ -203,112 +227,133 @@ export function LinePropertiesModal(props: LinePropertiesModalProps): JSX.Elemen
         ].join(' ')}
         style={{
           zIndex: 999,
-          background: 'rgba(224, 229, 236, 0.3)',
-          backdropFilter: 'blur(2px)',
+          background: 'transparent',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          pointerEvents: 'none',
         }}
-        onClick={handleBackdropClick}
         aria-hidden="true"
       />
 
-      {/* Modal */}
+      {/* Modal Container - pointer-events-auto allows modal to receive events */}
       <div
-        ref={modalRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={modalTitleId}
-        aria-describedby={isMultiSelect ? modalDescId : undefined}
-        className={[
-          'fixed neumorphic-raised-xl p-8',
-          animation.animationClass,
-        ].join(' ')}
-        style={{
-          width: `${MODAL_WIDTH}px`,
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          borderRadius: '32px',
-          // Disable transition during drag for immediate feedback
-          transition: isDragging ? 'none' : 'left 200ms ease-in-out, top 200ms ease-in-out',
-          zIndex: 1000,
-        }}
+        className="fixed inset-0 z-[1000]"
+        style={{ pointerEvents: 'auto' }}
+        onClick={handleBackdropClick}
       >
-        {/* Header */}
-        {isMultiSelect ? (
-          <>
-            <MultiSelectHeader
-              selectedCount={selectedLines.length}
+        {/* Modal Dialog */}
+        <div
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={modalTitleId}
+          aria-describedby={isMultiSelect ? modalDescId : undefined}
+          className={[
+            'neumorphic-raised-xl p-8',
+            'flex flex-col',
+            animation.animationClass,
+          ].join(' ')}
+          style={{
+            position: 'absolute',
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            width: `${responsiveWidth}px`,
+            maxWidth: '90vw',
+            maxHeight: '85vh',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            transition: isDragging
+              ? 'none'
+              : 'left 200ms ease, top 200ms ease, width 200ms ease, transform 200ms ease, opacity 200ms ease',
+            pointerEvents: 'auto',
+          }}
+        >
+          {/* Header */}
+          {isMultiSelect ? (
+            <>
+              <MultiSelectHeader
+                selectedCount={selectedLines.length}
+                dragHandleProps={dragHandleProps}
+              />
+              {/* Hidden description for screen readers */}
+              <span id={modalDescId} className="sr-only">
+                Editing {selectedLines.length} lines simultaneously. Changes will apply to all selected lines.
+              </span>
+            </>
+          ) : (
+            <ModalHeader
+              titleId={modalTitleId}
               dragHandleProps={dragHandleProps}
             />
-            {/* Hidden description for screen readers */}
-            <span id={modalDescId} className="sr-only">
-              Editing {selectedLines.length} lines simultaneously. Changes will apply to all selected lines.
-            </span>
-          </>
-        ) : (
-          <ModalHeader
-            titleId={modalTitleId}
-            dragHandleProps={dragHandleProps}
-          />
-        )}
+          )}
 
-      <Separator className="my-3" aria-hidden="true" />
+          <Separator className="my-3" aria-hidden="true" />
 
-      {/* Multi-Select Warning */}
-      {isMultiSelect && <MultiSelectWarning className="mb-2" />}
+          {/* Multi-Select Warning */}
+          {isMultiSelect && <MultiSelectWarning className="mb-2" />}
 
-      {/* Tab Bar */}
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Tab Bar */}
+          <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <Separator className="my-3" aria-hidden="true" />
+          <Separator className="my-3" aria-hidden="true" />
 
-      {/* Tab Content */}
-      <div
-        role="tabpanel"
-        id={`${activeTab}-panel`}
-        aria-labelledby={`${activeTab}-tab`}
-        tabIndex={0}
-        style={{ height: `${modalHeight}px` }}
-        className="overflow-y-auto focus:outline-none"
-      >
-        {activeTab === 'properties' && firstLine && (
-          <PropertiesTab
-            line={firstLine}
-            onUpdate={handleUpdate}
-            expanded={isPropertiesExpanded}
-            onToggleExpand={() => setIsPropertiesExpanded(!isPropertiesExpanded)}
-            className="animate-in fade-in duration-150"
-          />
-        )}
+          {/* Tab Content */}
+          <div
+            role="tabpanel"
+            id={`${activeTab}-panel`}
+            aria-labelledby={`${activeTab}-tab`}
+            tabIndex={0}
+            className="flex-1 min-h-0 overflow-y-auto focus:outline-none pr-1 pb-2"
+          >
+            {activeTab === 'properties' && firstLine && (
+              <PropertiesTab
+                line={firstLine}
+                onUpdate={handleUpdate}
+                expanded={isPropertiesExpanded}
+                onToggleExpand={() => setIsPropertiesExpanded(!isPropertiesExpanded)}
+                className="animate-in fade-in duration-150"
+              />
+            )}
 
-        {activeTab === 'calculations' && firstLine && (
-          <CalculationsTab
-            line={firstLine}
-            onUpdate={handleUpdate}
-            className="animate-in fade-in duration-150"
-          />
-        )}
+            {activeTab === 'calculations' && firstLine && (
+              <CalculationsTab
+                line={firstLine}
+                onUpdate={handleUpdate}
+                className="animate-in fade-in duration-150"
+              />
+            )}
 
-        {activeTab === 'advanced' && firstLine && (
-          <AdvancedTab
-            line={firstLine}
-            onUpdate={handleUpdate}
-            className="animate-in fade-in duration-150"
-          />
-        )}
-      </div>
+            {activeTab === 'advanced' && firstLine && (
+              <AdvancedTab
+                line={firstLine}
+                onUpdate={handleUpdate}
+                className="animate-in fade-in duration-150"
+              />
+            )}
 
-      <Separator className="my-4" aria-hidden="true" />
+            {activeTab === 'connections' && firstLine && (
+              <ConnectionsTab
+                line={firstLine}
+                connections={connections}
+                getConnectedEndpoints={getConnectedEndpoints}
+                className="animate-in fade-in duration-150"
+              />
+            )}
+          </div>
 
-      {/* Footer */}
-      {isMultiSelect ? (
-        <MultiSelectFooter
-          onApply={onClose}
-          onDeleteAll={onDeleteAll || onDelete}
-        />
-      ) : (
-        <ModalFooter onDuplicate={onDuplicate} onDelete={onDelete} />
-      )}
+          <Separator className="my-4" aria-hidden="true" />
+
+          {/* Footer */}
+          {isMultiSelect ? (
+            <MultiSelectFooter
+              onApply={onClose}
+              onDeleteAll={onDeleteAll || onDelete}
+            />
+          ) : (
+            <ModalFooter onDuplicate={onDuplicate} onDelete={onDelete} />
+          )}
+        </div>
       </div>
     </>
   );
 }
-

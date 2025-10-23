@@ -11,7 +11,7 @@
 import type { Line } from '../../types/drawing.types';
 import type { ModalPosition } from '../../types/modal.types';
 import type { Pt } from '../../types/canvas.types';
-import { MODAL_WIDTH, EDGE_CLEARANCE } from '../../constants/modal.constants';
+import { EDGE_CLEARANCE } from '../../constants/modal.constants';
 
 /**
  * Canvas bounds for boundary checking
@@ -153,30 +153,32 @@ export function adjustPositionForBoundaries(
 
 /**
  * Calculate optimal modal position near a selected line
- * 
+ *
  * Positioning priority:
  * 1. Below-center (preferred)
  * 2. Above-center
  * 3. Right-center
  * 4. Left-center
- * 
+ *
  * Always maintains EDGE_CLEARANCE (16px) from:
  * - Canvas edges
  * - Selected line
- * 
+ *
  * @param lineId - ID of the selected line
  * @param lines - Array of all lines
  * @param viewport - Viewport transformation info
  * @param modalHeight - Current height of the modal in pixels
+ * @param modalWidth - Current width of the modal in pixels
  * @param canvasBounds - Canvas boundaries
  * @returns Modal position with placement strategy
- * 
+ *
  * @example
  * ```typescript
  * const position = calculateModalPosition(
  *   'line-123',
  *   allLines,
  *   { scale: 1, offset: { x: 0, y: 0 } },
+ *   280,
  *   280,
  *   { width: 1920, height: 1080, top: 0, left: 0 }
  * );
@@ -188,6 +190,7 @@ export function calculateModalPosition(
   lines: Line[],
   viewport: ViewportInfo,
   modalHeight: number,
+  modalWidth: number,
   canvasBounds: CanvasBounds
 ): ModalPosition {
   // Find the selected line
@@ -195,7 +198,7 @@ export function calculateModalPosition(
   if (!line) {
     // Fallback to center of canvas if line not found
     return {
-      x: canvasBounds.left + canvasBounds.width / 2 - MODAL_WIDTH / 2,
+      x: canvasBounds.left + canvasBounds.width / 2 - modalWidth / 2,
       y: canvasBounds.top + canvasBounds.height / 2 - modalHeight / 2,
       placement: 'below',
     };
@@ -203,7 +206,6 @@ export function calculateModalPosition(
 
   const center = getLineCenter(line);
   const bounds = getLineBounds(line);
-  const modalWidth = MODAL_WIDTH;
 
   // Try positioning below-center (preferred)
   let position: Pt = {

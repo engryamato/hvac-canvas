@@ -58,7 +58,10 @@ export function MultiSelectHeader(props: MultiSelectHeaderProps): JSX.Element {
       role="banner"
       aria-label={title}
       onMouseDown={dragHandleProps?.onMouseDown}
-      style={dragHandleProps?.style}
+      style={{
+        cursor: dragHandleProps?.style.cursor || 'auto',
+        userSelect: dragHandleProps?.style.userSelect || 'auto',
+      }}
     >
       {/* Title */}
       <h2 className="text-sm font-semibold text-neutral-900">

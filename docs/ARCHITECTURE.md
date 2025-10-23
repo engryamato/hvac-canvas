@@ -1,6 +1,6 @@
 # HVAC Canvas - System Architecture
 
-**Last Updated:** 2025-10-09  
+**Last Updated:** 2025-10-19  
 **Version:** 2.0 (Post-Refactoring)
 
 ---
@@ -11,10 +11,10 @@ The HVAC Canvas application is a CAD-style drawing tool for HVAC duct design. Th
 
 ### Key Characteristics
 
-- **Modular:** 59 files organized into 7 architectural layers
-- **Tested:** 176 unit tests with ~80% coverage
+- **Modular:** 148 application files organized into 7 architectural layers (metrics as of 2025-10-19)
+- **Tested:** 567 Vitest assertions (555 passing, 12 flagged for repair) with ~80% coverage
 - **Type-Safe:** Full TypeScript strict mode compliance
-- **Performant:** 161 KB bundle, 676ms build time
+- **Performant:** ~648 KB primary bundle, 1.42 s build time (`npm run metrics:build`)
 - **Maintainable:** Clear dependency flow, no circular dependencies
 
 ---
@@ -437,4 +437,3 @@ Types/
 - **Refactor Scorecard:** `docs/REFACTOR_SCORECARD.md` - Metrics tracking
 - **Directory READMEs:** `src/*/README.md` - Layer-specific documentation
 - **Line Properties Modal:** `docs/LINE_PROPERTIES_MODAL.md` - Feature documentation
-

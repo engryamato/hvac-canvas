@@ -5,10 +5,10 @@
  * Uses smart positioning logic to keep modal visible near selected line.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Line } from '../types/drawing.types';
 import { calculateModalPosition } from '../utils/modal/positioning';
-import { MODAL_WIDTH } from '../constants/modal.constants';
+import { MODAL_WIDTH, MODAL_WIDTH_MIN } from '../constants/modal.constants';
 
 /**
  * Viewport bounds
@@ -27,6 +27,14 @@ export interface ModalPosition {
   x: number;
   y: number;
   placement: 'below' | 'above' | 'left' | 'right';
+}
+
+/**
+ * useModalPosition hook return value
+ */
+export interface UseModalPositionReturn extends ModalPosition {
+  /** Responsive width based on viewport bounds */
+  width: number;
 }
 
 /**
@@ -64,19 +72,27 @@ export interface UseModalPositionProps {
  * 
  * @example
  * ```tsx
- * const position = useModalPosition({
+ * const { x, y, placement, width } = useModalPosition({
  *   selectedLineId: 'line-123',
  *   lines: allLines,
  *   modalHeight: 320,
  *   viewportBounds: { width: 1920, height: 1080, scrollX: 0, scrollY: 0 },
  * });
- * 
+ *
  * // Apply to modal
- * <div style={{ left: position.x, top: position.y }}>
+ * <div style={{ left: x, top: y, width: `${width}px` }}>
  * ```
  */
-export function useModalPosition(props: UseModalPositionProps): ModalPosition {
+export function useModalPosition(props: UseModalPositionProps): UseModalPositionReturn {
   const { selectedLineId, lines, modalHeight, viewportBounds, canvasBounds } = props;
+
+  /**
+   * Calculate responsive width based on viewport
+   * Use MODAL_WIDTH_MIN for small viewports (< 400px), otherwise use MODAL_WIDTH
+   */
+  const responsiveWidth = useMemo(() => {
+    return viewportBounds.width < 400 ? MODAL_WIDTH_MIN : MODAL_WIDTH;
+  }, [viewportBounds.width]);
 
   /**
    * Calculate position using utility
@@ -104,10 +120,14 @@ export function useModalPosition(props: UseModalPositionProps): ModalPosition {
       lines,
       viewportBounds,
       modalHeight,
+      responsiveWidth,
       bounds
     );
-  }, [selectedLineId, lines, modalHeight, viewportBounds, canvasBounds]);
+  }, [selectedLineId, lines, modalHeight, responsiveWidth, viewportBounds, canvasBounds]);
 
-  return position;
+  return {
+    ...position,
+    width: responsiveWidth,
+  };
 }
 

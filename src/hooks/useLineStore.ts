@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import type { Line } from '../types';
+import type { Line, ConnectionGraph, LineEndpoint, LineConnection } from '../types';
 import {
   addLine as addLineToCollection,
   updateLineLength as updateLineLengthInCollection,
@@ -17,7 +17,10 @@ import {
   updateLineProperties as updateLinePropertiesService,
   removeLines as removeLinesFromCollection,
   duplicateLine,
+  buildConnectionGraph,
+  getConnectedEndpoints as getConnectedEndpointsService,
 } from '../services';
+import { CONNECTION_TOLERANCE_PX } from '../constants';
 
 /**
  * Options for adding a line to the store.
@@ -53,6 +56,10 @@ export interface UseLineStoreReturn {
   isModalOpen: boolean;
   /** Whether any lines are selected */
   hasSelection: boolean;
+  /** Connection graph for all lines */
+  connections: ConnectionGraph;
+  /** Get connected endpoints for a specific line endpoint */
+  getConnectedEndpoints: (lineId: string, endpoint: LineEndpoint) => LineConnection[];
   /** Add a new line to the collection */
   addLine: (line: Line, options?: AddLineOptions) => void;
   /** Replace the entire line collection */
@@ -108,6 +115,19 @@ export function useLineStore(initialLines: Line[] = []): UseLineStoreReturn {
     const selection = new Set(selectedLineIds);
     return lines.filter((line) => selection.has(line.id));
   }, [lines, selectedLineIds]);
+
+  // Compute connection graph whenever lines change
+  const connections = useMemo(() => {
+    return buildConnectionGraph(lines, CONNECTION_TOLERANCE_PX);
+  }, [lines]);
+
+  // Helper to get connections for a specific endpoint
+  const getConnectedEndpoints = useCallback(
+    (lineId: string, endpoint: LineEndpoint) => {
+      return getConnectedEndpointsService(connections, lineId, endpoint);
+    },
+    [connections]
+  );
 
   const replaceLines = useCallback((next: Line[]) => {
     setLines(next);
@@ -260,6 +280,8 @@ export function useLineStore(initialLines: Line[] = []): UseLineStoreReturn {
     selectedLineIds,
     isModalOpen,
     hasSelection,
+    connections,
+    getConnectedEndpoints,
     addLine,
     replaceLines,
     updateLines,

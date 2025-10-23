@@ -60,9 +60,9 @@ export interface UseModalDragReturn {
 
 /**
  * useModalDrag Hook
- * 
+ *
  * Makes a modal draggable while preserving initial smart positioning.
- * 
+ *
  * Features:
  * - Drag modal by clicking and dragging the header
  * - Initial position from useModalPosition is preserved
@@ -71,19 +71,27 @@ export interface UseModalDragReturn {
  * - Prevents dragging modal completely off-screen
  * - Visual feedback with cursor changes (grab/grabbing)
  * - Prevents text selection during drag
- * 
+ * - Supports dynamic modal width via modalDimensions prop
+ *
+ * Dynamic Width Support:
+ * - The hook receives modalDimensions.width from the parent component
+ * - Width is used for boundary calculations during drag
+ * - When width changes (e.g., responsive breakpoint), parent updates modalDimensions
+ * - Hook automatically uses the new width for constraint calculations
+ * - No changes needed in this hook for responsive width support
+ *
  * @param props - Hook props
  * @returns Position, dragging state, and drag handler props
- * 
+ *
  * @example
  * ```tsx
  * const { position, isDragging, dragHandleProps } = useModalDrag({
  *   initialPosition: { x: 100, y: 100 },
  *   isOpen: true,
  *   viewportBounds: { width: 1920, height: 1080 },
- *   modalDimensions: { width: 220, height: 320 },
+ *   modalDimensions: { width: 280, height: 320 }, // Dynamic width from parent
  * });
- * 
+ *
  * // Apply to modal
  * <div style={{ left: position.x, top: position.y }}>
  *   <header {...dragHandleProps}>Drag me</header>

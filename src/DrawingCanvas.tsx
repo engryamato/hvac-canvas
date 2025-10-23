@@ -54,6 +54,8 @@ import {
   useLineStore,
 } from "./hooks";
 
+import type { ConnectionGraph, LineEndpoint, LineConnection } from "./types";
+
 import {
   DrawButton,
   Sidebar,
@@ -126,6 +128,11 @@ export default function DrawingCanvasWithFAB() {
 
   // Drawing state (consolidated via custom hook)
   const drawingState = useDrawingState();
+
+  // Get connection graph from useLineStore (for Phase 5 UI exposure)
+  // Note: We pass the current lines to useLineStore to compute connections
+  const lineStore = useLineStore(lines);
+  const { connections, getConnectedEndpoints } = lineStore;
 
   // Combined scale options for dropdown
   const allScaleOptions = useMemo(() => [
@@ -1081,6 +1088,8 @@ export default function DrawingCanvasWithFAB() {
               }}
               canvasBounds={containerRef.current?.getBoundingClientRect()}
               isOpen={isModalOpen}
+              connections={connections}
+              getConnectedEndpoints={getConnectedEndpoints}
             />
           )}
 

@@ -1,8 +1,8 @@
 /**
  * ColorIndicator Component
  * 
- * Colored circle component for visualizing duct types and other color-coded items.
- * Used in dropdowns to show supply (blue) and return (red) indicators.
+ * Colored indicator for visualizing duct types and other color-coded items.
+ * Used in dropdowns to show supply (blue) and return (red) markers.
  */
 
 import React from 'react';
@@ -24,11 +24,11 @@ export interface ColorIndicatorProps {
 /**
  * ColorIndicator Component
  * 
- * Displays a colored circle for visual indication.
+ * Displays a colored square for visual indication.
  * 
  * Features:
- * - Circular shape (border-radius: 50%)
- * - Default size: 12px diameter
+ * - Square shape for neutral styling
+ * - Default size: 12px
  * - Customizable size and color
  * - Accessible with aria-label
  * - Used for duct type visualization:
@@ -54,7 +54,7 @@ export function ColorIndicator(props: ColorIndicatorProps): JSX.Element {
 
   return (
     <span
-      className={`inline-block rounded-full flex-shrink-0 ${className}`}
+      className={`inline-block flex-shrink-0 ${className}`}
       style={{
         width: `${size}px`,
         height: `${size}px`,
@@ -65,4 +65,3 @@ export function ColorIndicator(props: ColorIndicatorProps): JSX.Element {
     />
   );
 }
-

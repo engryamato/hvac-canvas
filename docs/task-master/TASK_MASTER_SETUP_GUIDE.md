@@ -6,6 +6,13 @@ Task Master AI is now successfully integrated with Augment! You can see all 36 t
 
 ---
 
+## 📊 Current Project Metrics (2025-10-19)
+- Build time: **1.42 s** (1,422 ms) from `npm run metrics:build`
+- Primary bundle: **663,502 bytes** (~648 KB) vs 716,800-byte budget
+- Repository footprint: **313 tracked files** (148 `src/`, 127 `docs/`)
+- Unit tests: **555 / 567 passing**, 12 failures confined to Sidebar + Line Properties specs
+- Metrics source: `test-results/metrics/build-metrics.json` & `file-structure.json`
+
 ## 📦 What's Been Prepared
 
 I've created a complete setup for you to use Task Master AI effectively:
@@ -470,4 +477,3 @@ Good luck building your HVAC Canvas Line Properties Modal! 🚀
 - Official Docs: https://www.task-master.dev/
 - GitHub: https://github.com/eyaltoledano/claude-task-master
 - NPM: https://www.npmjs.com/package/task-master-ai
-

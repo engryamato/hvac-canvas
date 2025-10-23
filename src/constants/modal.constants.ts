@@ -8,7 +8,8 @@
 /**
  * Modal dimensions (in pixels)
  */
-export const MODAL_WIDTH = 220;
+export const MODAL_WIDTH = 280; // Increased from 220px to accommodate 4 tabs with readable labels
+export const MODAL_WIDTH_MIN = 240; // Minimum width for small viewports (< 400px)
 export const MODAL_PADDING = 16;
 export const MODAL_BORDER_RADIUS = 8;
 export const EDGE_CLEARANCE = 16; // Minimum distance from viewport edges

@@ -3,6 +3,13 @@
 ## Overview
 Task Master AI has been installed and configured for this HVAC Canvas project. It provides AI-powered task management to help organize and track development work.
 
+## Current Project Metrics (2025-10-19)
+- Build time: **1.42 s** (1,422 ms) via `npm run metrics:build`
+- Primary bundle: **663,502 bytes** (~648 KB) within a 716,800-byte budget
+- Repository footprint: **313 tracked files** (148 in `src/`, 127 in `docs/`)
+- Unit tests: **555 / 567 passing** (12 failures focused on Sidebar and Line Properties interactions)
+- Metrics source: `npm run metrics:collect` → `test-results/metrics/*.json`
+
 ## Installation Details
 
 ### Configuration Files Created
@@ -120,4 +127,3 @@ Your HVAC Canvas app is a React/TypeScript drawing application with:
 **Installation Date**: 2025-10-16  
 **Configured By**: Augment AI Assistant  
 **Primary Model**: OpenAI GPT-4o
-

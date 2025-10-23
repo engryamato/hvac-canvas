@@ -24,7 +24,11 @@
     "docker:prod:build": "./docker-scripts.sh prod-build",
     "docker:prod:stop": "./docker-scripts.sh prod-stop",
     "docker:clean": "./docker-scripts.sh clean",
-    "docker:status": "./docker-scripts.sh status"
+    "docker:status": "./docker-scripts.sh status",
+    "metrics:compile": "tsc -p tsconfig.metrics.json",
+    "report:structure": "npm run --silent metrics:compile && node .cache/metrics/report-structure.js",
+    "metrics:build": "npm run --silent metrics:compile && node .cache/metrics/collect-build-metrics.js",
+    "metrics:collect": "npm run report:structure && npm run metrics:build"
   },
   "dependencies": {
     "lucide-react": "0.277.0",

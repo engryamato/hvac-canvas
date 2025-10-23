@@ -145,4 +145,207 @@ describe('useLineStore', () => {
 
     expect(result.current.lines[0].width).toBe(10);
   });
+
+  describe('Connection Detection', () => {
+    it('should compute connection graph when lines are added', () => {
+      const { result } = renderHook(() => useLineStore());
+
+      const lineA = createLine({
+        id: 'line-a',
+        a: { x: 0, y: 0 },
+        b: { x: 100, y: 0 },
+      });
+      const lineB = createLine({
+        id: 'line-b',
+        a: { x: 100, y: 0 },
+        b: { x: 100, y: 100 },
+      });
+
+      act(() => {
+        result.current.addLine(lineA);
+        result.current.addLine(lineB);
+      });
+
+      // Verify connections are computed
+      expect(result.current.connections).toBeDefined();
+      expect(result.current.connections['line-a']).toBeDefined();
+      expect(result.current.connections['line-b']).toBeDefined();
+
+      // Verify lineA.b connects to lineB.a
+      expect(result.current.connections['line-a'].b).toContainEqual({
+        lineId: 'line-b',
+        endpoint: 'a',
+      });
+      expect(result.current.connections['line-b'].a).toContainEqual({
+        lineId: 'line-a',
+        endpoint: 'b',
+      });
+    });
+
+    it('should update connection graph when lines are modified', () => {
+      const lineA = createLine({
+        id: 'line-a',
+        a: { x: 0, y: 0 },
+        b: { x: 100, y: 0 },
+      });
+      const lineB = createLine({
+        id: 'line-b',
+        a: { x: 200, y: 200 },
+        b: { x: 300, y: 200 },
+      });
+
+      const { result } = renderHook(() => useLineStore([lineA, lineB]));
+
+      // Initially no connections
+      expect(result.current.connections['line-a'].b).toHaveLength(0);
+      expect(result.current.connections['line-b'].a).toHaveLength(0);
+
+      // Move lineB.a to connect with lineA.b
+      act(() => {
+        result.current.updateLine('line-b', (line) => ({
+          ...line,
+          a: { x: 100, y: 0 },
+        }));
+      });
+
+      // Now they should be connected
+      expect(result.current.connections['line-a'].b).toContainEqual({
+        lineId: 'line-b',
+        endpoint: 'a',
+      });
+      expect(result.current.connections['line-b'].a).toContainEqual({
+        lineId: 'line-a',
+        endpoint: 'b',
+      });
+    });
+
+    it('should update connection graph when lines are deleted', () => {
+      const lineA = createLine({
+        id: 'line-a',
+        a: { x: 0, y: 0 },
+        b: { x: 100, y: 0 },
+      });
+      const lineB = createLine({
+        id: 'line-b',
+        a: { x: 100, y: 0 },
+        b: { x: 100, y: 100 },
+      });
+
+      const { result } = renderHook(() => useLineStore([lineA, lineB]));
+
+      // Verify initial connection
+      expect(result.current.connections['line-a'].b).toHaveLength(1);
+
+      // Remove lineB
+      act(() => {
+        result.current.removeLinesById(['line-b']);
+      });
+
+      // lineA should no longer have connections
+      expect(result.current.connections['line-a']).toBeDefined();
+      expect(result.current.connections['line-a'].b).toHaveLength(0);
+      expect(result.current.connections['line-b']).toBeUndefined();
+    });
+
+    it('should return correct connections via getConnectedEndpoints callback', () => {
+      const lineA = createLine({
+        id: 'line-a',
+        a: { x: 0, y: 0 },
+        b: { x: 100, y: 0 },
+      });
+      const lineB = createLine({
+        id: 'line-b',
+        a: { x: 100, y: 0 },
+        b: { x: 100, y: 100 },
+      });
+
+      const { result } = renderHook(() => useLineStore([lineA, lineB]));
+
+      // Get connections for lineA.b
+      const connectionsAtB = result.current.getConnectedEndpoints('line-a', 'b');
+      expect(connectionsAtB).toHaveLength(1);
+      expect(connectionsAtB[0]).toEqual({
+        lineId: 'line-b',
+        endpoint: 'a',
+      });
+
+      // Get connections for lineA.a (should be empty)
+      const connectionsAtA = result.current.getConnectedEndpoints('line-a', 'a');
+      expect(connectionsAtA).toHaveLength(0);
+    });
+
+    it('should handle multi-branch junctions (3+ lines)', () => {
+      const lineA = createLine({
+        id: 'line-a',
+        a: { x: 0, y: 0 },
+        b: { x: 100, y: 100 },
+      });
+      const lineB = createLine({
+        id: 'line-b',
+        a: { x: 100, y: 100 },
+        b: { x: 200, y: 200 },
+      });
+      const lineC = createLine({
+        id: 'line-c',
+        a: { x: 100, y: 100 },
+        b: { x: 300, y: 300 },
+      });
+
+      const { result } = renderHook(() => useLineStore([lineA, lineB, lineC]));
+
+      // All three should be connected at (100, 100)
+      expect(result.current.connections['line-a'].b).toHaveLength(2);
+      expect(result.current.connections['line-b'].a).toHaveLength(2);
+      expect(result.current.connections['line-c'].a).toHaveLength(2);
+    });
+
+    it('should memoize connections (only recompute when lines change)', () => {
+      const lineA = createLine({ id: 'line-a' });
+      const { result, rerender } = renderHook(() => useLineStore([lineA]));
+
+      const firstConnections = result.current.connections;
+
+      // Rerender without changing lines
+      rerender();
+
+      // Should be the same reference (memoized)
+      expect(result.current.connections).toBe(firstConnections);
+
+      // Add a line
+      act(() => {
+        result.current.addLine(createLine({ id: 'line-b' }));
+      });
+
+      // Should be a different reference
+      expect(result.current.connections).not.toBe(firstConnections);
+    });
+
+    it('should return empty array for non-existent line in getConnectedEndpoints', () => {
+      const { result } = renderHook(() => useLineStore());
+
+      const connections = result.current.getConnectedEndpoints('non-existent', 'a');
+      expect(connections).toEqual([]);
+    });
+
+    it('should handle isolated lines (no connections)', () => {
+      const lineA = createLine({
+        id: 'line-a',
+        a: { x: 0, y: 0 },
+        b: { x: 100, y: 0 },
+      });
+      const lineB = createLine({
+        id: 'line-b',
+        a: { x: 200, y: 200 },
+        b: { x: 300, y: 200 },
+      });
+
+      const { result } = renderHook(() => useLineStore([lineA, lineB]));
+
+      // Both lines should have no connections
+      expect(result.current.connections['line-a'].a).toHaveLength(0);
+      expect(result.current.connections['line-a'].b).toHaveLength(0);
+      expect(result.current.connections['line-b'].a).toHaveLength(0);
+      expect(result.current.connections['line-b'].b).toHaveLength(0);
+    });
+  });
 });

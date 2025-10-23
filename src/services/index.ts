@@ -28,6 +28,10 @@ export {
   drawLines,
   drawSnapIndicator,
   drawDraftLine,
+  normalizeCoordinate,
+  buildConnectionGraph,
+  getConnectedEndpoints,
+  getConnectionsForLine,
   type CreateLineParams,
   type CreateLineResult,
 } from './drawing';

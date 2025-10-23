@@ -78,3 +78,44 @@ export type Line = {
  */
 export type DrawingPhase = 'idle' | 'waiting-for-end';
 
+/**
+ * Represents a single endpoint of a line
+ * - 'a': Start point of the line
+ * - 'b': End point of the line
+ */
+export type LineEndpoint = 'a' | 'b';
+
+/**
+ * Represents a connection between two line endpoints
+ * Example: Line A's endpoint 'b' connects to Line B's endpoint 'a'
+ */
+export interface LineConnection {
+  /** ID of the connected line */
+  lineId: string;
+  /** Which endpoint of the connected line ('a' or 'b') */
+  endpoint: LineEndpoint;
+}
+
+/**
+ * Connection map for a single line
+ * Shows all lines connected at each endpoint
+ */
+export interface LineConnectionMap {
+  /** Lines connected at endpoint 'a' */
+  a: LineConnection[];
+  /** Lines connected at endpoint 'b' */
+  b: LineConnection[];
+}
+
+/**
+ * Complete connection graph for all lines
+ * Maps line IDs to their connection information
+ *
+ * Example:
+ * {
+ *   'line-1': { a: [], b: [{lineId: 'line-2', endpoint: 'a'}] },
+ *   'line-2': { a: [{lineId: 'line-1', endpoint: 'b'}], b: [] }
+ * }
+ */
+export type ConnectionGraph = Record<string, LineConnectionMap>;
+

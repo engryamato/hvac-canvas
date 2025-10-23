@@ -12,6 +12,13 @@
 export const SNAP_THRESHOLD_ENDPOINT = 20;
 
 /**
+ * Connection detection tolerance (pixels)
+ * Endpoints within this distance are considered connected
+ * Aligned with SNAP_THRESHOLD_ENDPOINT to keep snapping and connection detection consistent
+ */
+export const CONNECTION_TOLERANCE_PX = SNAP_THRESHOLD_ENDPOINT;
+
+/**
  * Snap threshold for midpoints (pixels)
  * Cursor must be within this distance to snap to a line's midpoint
  * Medium priority snap type

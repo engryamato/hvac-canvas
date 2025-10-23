@@ -35,3 +35,10 @@ export {
   drawDraftLine,
   type DrawLinesOptions,
 } from './CanvasRenderService';
+
+export {
+  normalizeCoordinate,
+  buildConnectionGraph,
+  getConnectedEndpoints,
+  getConnectionsForLine,
+} from './ConnectionService';

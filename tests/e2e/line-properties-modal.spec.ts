@@ -587,5 +587,88 @@ test.describe('Line Properties Modal - E2E Tests', () => {
       await expect(page.getByText(/mixed/i)).toBeVisible();
     });
   });
+
+  test.describe('Modal Dragging', () => {
+    test('should have draggable header with grab cursor', async ({ page }) => {
+      // Draw a line and open modal
+      await page.getByRole('button', { name: 'Enable Draw tool' }).click();
+      await drawLineAndOpenModal(page, 100, 100, 300, 100);
+
+      // Modal should be visible
+      const modal = page.getByRole('dialog', { name: /line properties/i });
+      await expect(modal).toBeVisible();
+
+      // Get the header element
+      const header = page.getByText('Line Properties');
+
+      // Verify header has grab cursor style
+      const cursorStyle = await header.evaluate((el) => {
+        const parent = el.closest('header');
+        return window.getComputedStyle(parent!).cursor;
+      });
+
+      expect(cursorStyle).toBe('grab');
+    });
+
+    test('should have grab cursor on modal header', async ({ page }) => {
+      // Draw a line and open modal
+      await page.getByRole('button', { name: 'Enable Draw tool' }).click();
+      await drawLineAndOpenModal(page, 100, 100, 300, 100);
+
+      // Modal should be visible
+      const modal = page.getByRole('dialog', { name: /line properties/i });
+      await expect(modal).toBeVisible();
+
+      // Get the header element
+      const header = page.getByText('Line Properties');
+
+      // Verify header has grab cursor style (indicating it's draggable)
+      const cursorStyle = await header.evaluate((el) => {
+        const parent = el.closest('header');
+        return window.getComputedStyle(parent!).cursor;
+      });
+
+      expect(cursorStyle).toBe('grab');
+    });
+
+    test('should allow clicking on modal without closing it', async ({ page }) => {
+      // Draw a line and open modal
+      await page.getByRole('button', { name: 'Enable Draw tool' }).click();
+      await drawLineAndOpenModal(page, 100, 100, 300, 100);
+
+      // Modal should be visible
+      const modal = page.getByRole('dialog', { name: /line properties/i });
+      await expect(modal).toBeVisible();
+
+      // Get the header element
+      const header = page.getByText('Line Properties');
+
+      // Verify header has grab cursor (indicating it's draggable)
+      const cursorStyle = await header.evaluate((el) => {
+        const parent = el.closest('header');
+        return window.getComputedStyle(parent!).cursor;
+      });
+      expect(cursorStyle).toBe('grab');
+
+      // Click on the header (this should NOT close the modal)
+      await header.click();
+
+      // Wait a bit
+      await page.waitForTimeout(300);
+
+      // Modal should still be visible (not closed by backdrop click)
+      await expect(modal).toBeVisible();
+
+      // Click on the modal content (should also not close it)
+      const firstInput = page.locator('input').first();
+      await firstInput.click();
+
+      // Wait a bit
+      await page.waitForTimeout(300);
+
+      // Modal should still be visible
+      await expect(modal).toBeVisible();
+    });
+  });
 });
 

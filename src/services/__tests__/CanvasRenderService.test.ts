@@ -18,6 +18,8 @@ function createMockContext() {
     lineCap: '',
     lineJoin: '',
     fillStyle: '',
+    save: vi.fn(),
+    restore: vi.fn(),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
@@ -54,7 +56,7 @@ describe('CanvasRenderService', () => {
     expect(ctx.moveTo).toHaveBeenCalledWith(line.a.x, line.a.y);
     expect(ctx.lineTo).toHaveBeenCalledWith(line.b.x, line.b.y);
     expect(ctx.stroke).toHaveBeenCalled();
-    expect(ctx.arc).toHaveBeenCalledTimes(2);
+    expect(ctx.arc).toHaveBeenCalledTimes(6);
   });
 
   it('should draw snap indicator with scaled radius', () => {

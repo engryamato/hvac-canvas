@@ -57,7 +57,10 @@ export function ModalHeader(props: ModalHeaderProps): JSX.Element {
     <header
       className={`flex items-center h-10 px-0 py-1 ${className}`}
       onMouseDown={dragHandleProps?.onMouseDown}
-      style={dragHandleProps?.style}
+      style={{
+        cursor: dragHandleProps?.style.cursor || 'auto',
+        userSelect: dragHandleProps?.style.userSelect || 'auto',
+      }}
     >
       {/* Title */}
       <h2 id={titleId} className="text-base font-semibold text-neutral-900">

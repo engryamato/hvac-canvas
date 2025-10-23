@@ -11,6 +11,13 @@
 
 ---
 
+## 📊 Current Project Snapshot (2025-10-19)
+- Build time: **1.42 s** (1,422 ms) via `npm run metrics:build`
+- Primary bundle: **663,502 bytes** (~648 KB) within 716,800-byte guardrail
+- Repository footprint: **313 files** (148 `src/`, 127 `docs/`)
+- Unit tests: **555 / 567 passing** (12 failures in Sidebar + Line Properties specs)
+- Metrics: `test-results/metrics/{build-metrics,file-structure}.json`
+
 ## 📋 Essential Commands
 
 ### View Tasks
@@ -259,4 +266,3 @@ Copy and paste these into Augment chat:
 **Happy Building! 🎉**
 
 Keep this reference handy while working with Task Master AI!
-

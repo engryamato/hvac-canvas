@@ -256,33 +256,36 @@ describe('Modal Positioning Utilities', () => {
 
   describe('calculateModalPosition', () => {
     const modalHeight = 280;
+    const modalWidth = MODAL_WIDTH; // 280px
 
     it('should position modal below-center when space available', () => {
       const line = createLine('line1', 500, 300, 700, 300);
       const lines = [line];
-      
+
       const position = calculateModalPosition(
         'line1',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 
       expect(position.placement).toBe('below');
-      expect(position.x).toBeCloseTo(600 - MODAL_WIDTH / 2, 0); // Center of line
+      expect(position.x).toBeCloseTo(600 - modalWidth / 2, 0); // Center of line
       expect(position.y).toBe(300 + EDGE_CLEARANCE); // Below line
     });
 
     it('should position modal above-center when no space below', () => {
       const line = createLine('line1', 500, 900, 700, 900); // Near bottom
       const lines = [line];
-      
+
       const position = calculateModalPosition(
         'line1',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 
@@ -305,25 +308,27 @@ describe('Modal Positioning Utilities', () => {
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         smallBounds
       );
 
       // Should be adjusted to fit within bounds
       expect(position.x).toBeGreaterThanOrEqual(EDGE_CLEARANCE);
       expect(position.y).toBeGreaterThanOrEqual(EDGE_CLEARANCE);
-      expect(position.x + MODAL_WIDTH).toBeLessThanOrEqual(600 - EDGE_CLEARANCE);
+      expect(position.x + modalWidth).toBeLessThanOrEqual(600 - EDGE_CLEARANCE);
       expect(position.y + modalHeight).toBeLessThanOrEqual(400 - EDGE_CLEARANCE);
     });
 
     it('should fallback to below-center with adjustment when no good position', () => {
       const line = createLine('line1', 100, 100, 200, 100); // Top-left corner
       const lines = [line];
-      
+
       const position = calculateModalPosition(
         'line1',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 
@@ -335,63 +340,67 @@ describe('Modal Positioning Utilities', () => {
 
     it('should return center position when line not found', () => {
       const lines: Line[] = [];
-      
+
       const position = calculateModalPosition(
         'nonexistent',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 
       expect(position.placement).toBe('below');
-      expect(position.x).toBeCloseTo(defaultCanvasBounds.width / 2 - MODAL_WIDTH / 2, 0);
+      expect(position.x).toBeCloseTo(defaultCanvasBounds.width / 2 - modalWidth / 2, 0);
       expect(position.y).toBeCloseTo(defaultCanvasBounds.height / 2 - modalHeight / 2, 0);
     });
 
     it('should handle vertical lines correctly', () => {
       const line = createLine('line1', 500, 200, 500, 600); // Vertical line
       const lines = [line];
-      
+
       const position = calculateModalPosition(
         'line1',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 
       expect(position.placement).toBe('below');
-      expect(position.x).toBeCloseTo(500 - MODAL_WIDTH / 2, 0); // Centered on line
+      expect(position.x).toBeCloseTo(500 - modalWidth / 2, 0); // Centered on line
       expect(position.y).toBe(600 + EDGE_CLEARANCE); // Below bottom of line
     });
 
     it('should handle horizontal lines correctly', () => {
       const line = createLine('line1', 200, 500, 800, 500); // Horizontal line
       const lines = [line];
-      
+
       const position = calculateModalPosition(
         'line1',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 
       expect(position.placement).toBe('below');
-      expect(position.x).toBeCloseTo(500 - MODAL_WIDTH / 2, 0); // Center of line
+      expect(position.x).toBeCloseTo(500 - modalWidth / 2, 0); // Center of line
       expect(position.y).toBe(500 + EDGE_CLEARANCE); // Below line
     });
 
     it('should respect EDGE_CLEARANCE from line', () => {
       const line = createLine('line1', 500, 300, 700, 300);
       const lines = [line];
-      
+
       const position = calculateModalPosition(
         'line1',
         lines,
         defaultViewport,
         modalHeight,
+        modalWidth,
         defaultCanvasBounds
       );
 

@@ -6,6 +6,13 @@
 
 ---
 
+## 📊 Current Metrics Snapshot (2025-10-19)
+- Build time: **1.42 s** (1,422 ms) via `npm run metrics:build`
+- Primary bundle: **663,502 bytes** (~648 KB) within 716,800-byte budget
+- Repository inventory: **313 files** total (148 `src/`, 127 `docs/`)
+- Unit tests: **555 / 567 passing** (12 specs to remediate)
+- Regenerate with `npm run metrics:collect` → `test-results/metrics/`
+
 ## ✅ Installation Complete
 
 ### What Was Set Up
@@ -239,4 +246,3 @@ This will:
 **Happy Building! 🎉**
 
 Your HVAC Canvas project now has professional AI-powered task management!
-

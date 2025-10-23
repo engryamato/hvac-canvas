@@ -9,7 +9,7 @@ A professional CAD-style drawing application for HVAC duct design with comprehen
 ![Tests](https://img.shields.io/badge/tests-325%20passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen)
 ![E2E](https://img.shields.io/badge/E2E-13%2F34-yellow)
-![Bundle Size](https://img.shields.io/badge/bundle-161%20KB-success)
+![Bundle Size](https://img.shields.io/badge/bundle-648%20KB-yellow)
 ![Build Time](https://img.shields.io/badge/build-632ms-success)
 
 ---
@@ -442,4 +442,3 @@ For questions or issues, please contact the development team.
 ---
 
 **Happy Drawing!** 🎨✨
-
